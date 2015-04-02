@@ -1,0 +1,9 @@
+Makefile
+*.so
+*.bundle
+tmp/*
+.DS_Store
+*.sublime-*
+*.gem
+*~
+.ruby-version

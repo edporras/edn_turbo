@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH << File.expand_path( File.dirname(__FILE__) + '/../lib' )
+
+require 'optparse'
+require 'pp'
+require 'edsel'
+
+
+data = { }
+data[:int] = 1
+data[:string] = "hello"
+data[:char] = 'a'
+data[:array] = [0, 1]
+data[:hash] = { :key => "value" }
+
+Edsel::Output::EDN::write("test.edn", data)

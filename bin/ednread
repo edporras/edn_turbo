@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH << File.expand_path( File.dirname(__FILE__) + '/../lib' )
+require 'edn'
+require 'pp'
+require 'optparse'
+
+if ARGV.size == 0
+  $stderr.puts "invalid arg count"
+  exit 1
+end
+
+filename = ARGV[0]
+if !File.exist? filename
+  $stderr.puts "error opening file '#{filename}'"
+  exit 1
+end
+
+# instantiate Delorean to do the processing and open the file
+output = EDN::Parser.new.parse(filename)
+
+$stderr.puts "Parsed doc. Output:"
+pp output
