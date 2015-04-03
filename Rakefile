@@ -6,9 +6,6 @@ require 'rbconfig'
 NAME = 'edn'
 
 
-CLOBBER.include 'doc', 'Gemfile.lock'
-
-
 EXT_PATH               = "ext/edn"
 RAGEL_PARSER_SRC       = "edn_parser.rl"
 RAGEL_PARSER_SRC_PATH  = "#{EXT_PATH}/#{RAGEL_PARSER_SRC}"
@@ -28,7 +25,6 @@ task :ragel => GEN_CC_PARSER_SRC_PATH
 
 
 file GEN_CC_PARSER_SRC_PATH => RAGEL_PARSER_SRC_PATH do
-  puts ":ragel!"
   cd EXT_PATH do
     puts sh "ragel -o #{GEN_CC_PARSER_SRC} #{RAGEL_PARSER_SRC}"
     src = File.read(GEN_CC_PARSER_SRC).gsub(/[ \t]+$/, '')

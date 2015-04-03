@@ -1,11 +1,14 @@
 require_relative 'version'
 
 module EDN
-  class Parser
 
-    # ----------------------------------------------------------------------------
-    #
+  # ----------------------------------------------------------------------------
+  # instantiate a parser (defined in the C-side) and process the file
+  #
+  def self.read(file)
 
-  end # Engine class
+    Parser.new.parse(file)
+
+  end
 
 end # EDN namespace

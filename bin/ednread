@@ -18,7 +18,8 @@ if !File.exist? filename
 end
 
 # instantiate Delorean to do the processing and open the file
-output = EDN::Parser.new.parse(filename)
+#output = EDN::Parser.new.parse(filename)
+output = EDN.read(filename)
 
 $stderr.puts "Parsed doc. Output:"
 pp output
