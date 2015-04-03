@@ -8,7 +8,7 @@ namespace edn
     // ============================================================
     // reads the contents of a file and begins the parsing process
     //
-    Rice::Object edn::Parser::parse(const std::string& file)
+    Rice::Object Parser::parse(const std::string& file)
     {
         Rice::Object rslt = Qnil;
 
@@ -33,4 +33,5 @@ namespace edn
         }
         return rslt;
     }
+
 }

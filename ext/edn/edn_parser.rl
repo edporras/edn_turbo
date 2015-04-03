@@ -122,12 +122,8 @@ const char* edn::Parser::EDN_parse_decimal(const char *p, const char *pe, Rice::
     %% write exec;
 
     if (cs >= EDN_decimal_first_final) {
-        long len = p - p_save;
-        std::string buf;
-        buf.append(p_save, len);
         double value;
-        std::istringstream(buf) >> value;
-        o = to_ruby<double>(value);
+        o = Parser::buftotype<double>(p_save, p - p_save, value);
         return p + 1;
     }
 
@@ -145,7 +141,7 @@ const char* edn::Parser::EDN_parse_decimal(const char *p, const char *pe, Rice::
     main := '-'? ('0' | [1-9][0-9]*) (^[0-9]? @exit);
 }%%
 
-const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::Object& r_int)
+const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::Object& o)
 {
     std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
     int cs;
@@ -155,12 +151,8 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
     %% write exec;
 
     if (cs >= EDN_integer_first_final) {
-        long len = p - p_save;
-        std::string buf;
-        buf.append(p_save, len);
         int value;
-        std::istringstream(buf) >> value;
-        r_int = to_ruby<int>(value);
+        o = Parser::buftotype<int>(p_save, p - p_save, value);
         return p + 1;
     }
 
