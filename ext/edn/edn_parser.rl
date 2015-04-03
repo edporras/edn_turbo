@@ -1,40 +1,15 @@
 #include <iostream>
 #include <string>
-#include <fstream>
-
+#include <strstream>
 #include <rice/Hash.hpp>
 #include <rice/Array.hpp>
 #include <rice/to_from_ruby.hpp>
 
 #include "edn_parser.h"
 
-using namespace std;
-
-
-Rice::Object edn::Parser::parse(const std::string& file) {
-    Rice::Object rslt = Qnil;
-
-    ifstream f(file);
-
-    if (f.is_open()) {
-
-        f.seekg (0, f.end);
-        long len = f.tellg();
-        f.seekg (0, f.beg);
-
-        char* buf = new char[len];
-
-        f.read(buf, len);
-        f.close();
-
-        rslt = execute(buf, len);
-
-        delete [] buf;
-    }
-    return rslt;
-}
-
+//
 // based on https://github.com/edn-format/edn
+//
 
 %%{
         machine EDN_common;
@@ -62,7 +37,7 @@ Rice::Object edn::Parser::parse(const std::string& file) {
     machine EDN_value;
     include EDN_common;
 
-    write data;
+    write data noerror;
 
     action parse_nil {
         result = Qnil;
@@ -78,9 +53,12 @@ Rice::Object edn::Parser::parse(const std::string& file) {
         const char *np;
 
         np = EDN_parse_decimal(fpc, pe, result);
-        if (np != NULL) fexec np;
-        np = EDN_parse_integer(fpc, pe, result);
-        if (np != NULL) fexec np;
+        if (np != NULL) {
+            fexec np;
+        } else {
+            np = EDN_parse_integer(fpc, pe, result);
+            if (np != NULL) fexec np;
+        }
         fhold; fbreak;
     }
 
@@ -103,7 +81,7 @@ Rice::Object edn::Parser::parse(const std::string& file) {
 
 const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Object& result)
 {
-    cerr << "+ == " << __FUNCTION__ << " == +" << endl;
+    std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
 
     int cs;
 
@@ -123,7 +101,7 @@ const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Ob
     machine EDN_decimal;
     include EDN_common;
 
-    write data;
+    write data noerror;
 
     action exit { fhold; fbreak; }
 
@@ -136,6 +114,7 @@ const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Ob
 
 const char* edn::Parser::EDN_parse_decimal(const char *p, const char *pe, Rice::Object& o)
 {
+    std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
     int cs;
 
     %% write init;
@@ -144,10 +123,10 @@ const char* edn::Parser::EDN_parse_decimal(const char *p, const char *pe, Rice::
 
     if (cs >= EDN_decimal_first_final) {
         long len = p - p_save;
-        buf = "";
+        std::string buf;
         buf.append(p_save, len);
         double value;
-        istringstream(buf) >> value;
+        std::istringstream(buf) >> value;
         o = to_ruby<double>(value);
         return p + 1;
     }
@@ -159,7 +138,7 @@ const char* edn::Parser::EDN_parse_decimal(const char *p, const char *pe, Rice::
 %%{
     machine EDN_integer;
 
-    write data;
+    write data noerror;
 
     action exit { fhold; fbreak; }
 
@@ -168,20 +147,19 @@ const char* edn::Parser::EDN_parse_decimal(const char *p, const char *pe, Rice::
 
 const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::Object& r_int)
 {
-    cerr << "+ == " << __FUNCTION__ << " == +" << endl;
+    std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
     int cs;
 
     %% write init;
     p_save = p;
-    //    json->memo = p;
     %% write exec;
 
     if (cs >= EDN_integer_first_final) {
         long len = p - p_save;
-        buf = "";
+        std::string buf;
         buf.append(p_save, len);
         int value;
-        istringstream(buf) >> value;
+        std::istringstream(buf) >> value;
         r_int = to_ruby<int>(value);
         return p + 1;
     }
@@ -191,11 +169,14 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
 
 
 
+// ============================================================
+// vector parsing machine
+//
 %%{
     machine EDN_vector;
     include EDN_common;
 
-    write data;
+    write data noerror;
 
     action parse_value {
         Rice::Object v;
@@ -218,28 +199,33 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
             end_vector @exit;
 }%%
 
-
+//
+//
+//
 const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::Object& result)
 {
-    cerr << "+ == " << __FUNCTION__ << " == +" << endl;
+    std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
     int cs;
     Rice::Array arr;
 
     %% write init;
     %% write exec;
 
-    if(cs >= EDN_vector_first_final) {
+    if (cs >= EDN_vector_first_final) {
         result = arr;
         return p + 1;
     }
 
-    cerr << "Parse error: unexpected token at '" << p << "'" << endl;
     return NULL;
 }
 
+
+// ============================================================
+// main parsing machine
+//
 %%{
     machine EDN;
-    write data;
+    write data nofinal;
     include EDN_common;
 
     action parse_vector {
@@ -252,23 +238,17 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
     #        if (np == NULL) { fhold; fbreak; } else fexec np;
     #    }
 
-    action parse_value {
-        const char *np = EDN_parse_value(fpc, pe, result);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
-    }
-
     main := ws* (
                  begin_vector >parse_vector
-                 #                 begin_array >parse_array |
-|                 begin_value >parse_value
+                 #                 begin_array >parse_array
                  ) ws*;
-  }%%
+}%%
 
-
-Rice::Object edn::Parser::execute(const char* buf, long len)
+//
+//
+//
+Rice::Object edn::Parser::process(const char* buf, long len)
 {
-    cerr << "+ == " << __FUNCTION__ << " == +" << endl;
-
     int cs;
     const char *p;
     const char *pe;
@@ -281,8 +261,10 @@ Rice::Object edn::Parser::execute(const char* buf, long len)
     eof = pe;
     %% write exec;
 
-    if ( cs == EDN_error )
+    if (cs == EDN_error) {
+        std::cerr << "Parse error: unexpected value '" << *p << "'" << std::endl;
         return Qnil;
+    }
 
     return result;
 }

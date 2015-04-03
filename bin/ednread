@@ -13,13 +13,8 @@ end
 
 filename = ARGV[0]
 if !File.exist? filename
-  $stderr.puts "error opening file '#{filename}'"
+  $stderr.puts "Path '#{filename}' not valid"
   exit 1
 end
 
-# instantiate Delorean to do the processing and open the file
-#output = EDN::Parser.new.parse(filename)
-output = EDN.read(filename)
-
-$stderr.puts "Parsed doc. Output:"
-pp output
+pp EDN.read(filename)

@@ -14,9 +14,8 @@ namespace edn
     {
     private:
         const char* p_save;
-        std::string buf;
 
-        Rice::Object execute(const char* b, long len);
+        Rice::Object process(const char* b, long len);
         const char* EDN_parse_decimal(const char *p, const char *pe, Rice::Object& o);
         const char* EDN_parse_integer(const char *p, const char *pe, Rice::Object& o);
         const char* EDN_parse_value(const char *p, const char *pe, Rice::Object& o);

@@ -26,7 +26,7 @@ task :ragel => GEN_CC_PARSER_SRC_PATH
 
 file GEN_CC_PARSER_SRC_PATH => RAGEL_PARSER_SRC_PATH do
   cd EXT_PATH do
-    puts sh "ragel -o #{GEN_CC_PARSER_SRC} #{RAGEL_PARSER_SRC}"
+    sh "ragel -o #{GEN_CC_PARSER_SRC} #{RAGEL_PARSER_SRC}"
     src = File.read(GEN_CC_PARSER_SRC).gsub(/[ \t]+$/, '')
     File.open(GEN_CC_PARSER_SRC, "w") {|f| f.print src}
   end

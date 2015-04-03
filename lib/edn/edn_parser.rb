@@ -7,6 +7,7 @@ module EDN
   #
   def self.read(file)
 
+    $stderr.puts "EDN-ruby-ext #{VERSION}"
     Parser.new.parse(file)
 
   end
