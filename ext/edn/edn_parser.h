@@ -20,8 +20,9 @@ namespace edn
         Rice::Object process(const char* b, long len);
         const char* EDN_parse_decimal(const char *p, const char *pe, Rice::Object& o);
         const char* EDN_parse_integer(const char *p, const char *pe, Rice::Object& o);
-        const char* EDN_parse_value(const char *p, const char *pe, Rice::Object& o);
-        const char* EDN_parse_vector(const char *p, const char *pe, Rice::Object& o);
+        const char* EDN_parse_string (const char *p, const char *pe, Rice::Object& o);
+        const char* EDN_parse_value  (const char *p, const char *pe, Rice::Object& o);
+        const char* EDN_parse_vector (const char *p, const char *pe, Rice::Object& o);
 
         // utility method to convert a primitive in string form to a
         // ruby type

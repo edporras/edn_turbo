@@ -14,8 +14,11 @@
 %%{
         machine EDN_common;
 
+        cr             = '\n';
+        cr_neg         = [^\n];
         ws             = [ ,\t\r\n];
-        begin_comment  = ';';
+        comment        = ';' cr_neg* cr;
+        ignore         = ws | comment;
         begin_keyword  = ':';
         k_nil          = 'nil';
         k_true         = 'true';
@@ -33,6 +36,10 @@
 
 }%%
 
+// ============================================================
+// machine for parsing various types
+//
+
 %%{
     machine EDN_value;
     include EDN_common;
@@ -40,30 +47,30 @@
     write data noerror;
 
     action parse_nil {
-        result = Qnil;
+        o = Qnil;
     }
     action parse_false {
-        result = Qfalse;
+        o = Qfalse;
     }
     action parse_true {
-        result = Qtrue;
+        o = Qtrue;
     }
 
     action parse_number {
         const char *np;
 
-        np = EDN_parse_decimal(fpc, pe, result);
-        if (np != NULL) {
+        np = EDN_parse_decimal(fpc, pe, o);
+        if (np != NULL)
             fexec np;
-        } else {
-            np = EDN_parse_integer(fpc, pe, result);
+        else {
+            np = EDN_parse_integer(fpc, pe, o);
             if (np != NULL) fexec np;
         }
         fhold; fbreak;
     }
 
     action parse_vector {
-        const char *np = EDN_parse_vector(fpc, pe, result);
+        const char *np = EDN_parse_vector(fpc, pe, o);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
@@ -79,7 +86,7 @@
 }%%
 
 
-const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Object& result)
+const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Object& o)
 {
     std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
 
@@ -96,7 +103,9 @@ const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Ob
 }
 
 
-
+// ============================================================
+// decimal parsing grammar
+//
 %%{
     machine EDN_decimal;
     include EDN_common;
@@ -131,6 +140,9 @@ const char* edn::Parser::EDN_parse_decimal(const char *p, const char *pe, Rice::
 }
 
 
+// ============================================================
+// integer parsing grammar
+//
 %%{
     machine EDN_integer;
 
@@ -160,7 +172,6 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
 }
 
 
-
 // ============================================================
 // vector parsing machine
 //
@@ -183,18 +194,18 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
 
     action exit { fhold; fbreak; }
 
-    next_element  = ws* begin_value >parse_value;
+    next_element  = ignore* begin_value >parse_value;
 
-    main := begin_vector ws*
-            ((begin_value >parse_value ws*)
-             (ws* next_element ws*)*)?
+    main := begin_vector ignore*
+            ((begin_value >parse_value ignore*)
+             (ignore* next_element ignore*)*)?
             end_vector @exit;
 }%%
 
 //
 //
 //
-const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::Object& result)
+const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::Object& o)
 {
     std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
     int cs;
@@ -204,7 +215,7 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
     %% write exec;
 
     if (cs >= EDN_vector_first_final) {
-        result = arr;
+        o = arr;
         return p + 1;
     }
 
@@ -230,10 +241,10 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
     #        if (np == NULL) { fhold; fbreak; } else fexec np;
     #    }
 
-    main := ws* (
+    main := ignore* (
                  begin_vector >parse_vector
                  #                 begin_array >parse_array
-                 ) ws*;
+                 ) ignore*;
 }%%
 
 //
