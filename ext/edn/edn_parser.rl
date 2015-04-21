@@ -56,6 +56,11 @@
         o = Qtrue;
     }
 
+    action parse_string {
+        const char *np = EDN_parse_string(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
     action parse_number {
         const char *np;
 
@@ -80,6 +85,7 @@
               k_nil @parse_nil |
               k_false @parse_false |
               k_true @parse_true |
+              begin_string >parse_string |
               begin_number >parse_number |
               begin_vector >parse_vector
         ) %*exit;
@@ -102,6 +108,62 @@ const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Ob
     return NULL;
 }
 
+
+// ============================================================
+// string parsing
+//
+%%{
+    machine EDN_string;
+    include EDN_common;
+
+    write data noerror;
+
+    action parse_string {
+        if (!EDN_parse_byte_stream(p_save + 1, p, s)) {
+            fhold;
+            fbreak;
+        } else {
+            fexec p + 1;
+        }
+    }
+
+    action exit { fhold; fbreak; }
+
+    main := '"' ((^([\"\\] | 0..0x1f) | '\\'[\"\\/bfnrt] | '\\u'[0-9a-fA-F]{4} | '\\'^([\"\\/bfnrtu]|0..0x1f))* %parse_string) '"' @exit;
+}%%
+
+
+bool edn::Parser::EDN_parse_byte_stream(const char *p, const char *pe, Rice::String& s)
+{
+    std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
+
+    std::string result;// = from_ruby<std::string>(s);
+
+    std::string buf;
+    buf.append(p, pe - p);
+    result += buf;
+    s = to_ruby<Rice::String>(result);
+    return true;
+}
+
+
+
+const char* edn::Parser::EDN_parse_string(const char *p, const char *pe, Rice::Object& o)
+{
+    std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
+    int cs;
+
+    Rice::String s;
+    %% write init;
+    p_save = p;
+    %% write exec;
+
+    if (cs >= EDN_string_first_final) {
+        o = s;
+        return p + 1;
+    }
+    return NULL;
+}
 
 // ============================================================
 // decimal parsing grammar
