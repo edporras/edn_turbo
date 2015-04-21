@@ -1,6 +1,10 @@
 #include <iostream>
 #include <string>
 #include <strstream>
+
+#include <ruby/ruby.h>
+#include <ruby/encoding.h>
+
 #include <rice/Hash.hpp>
 #include <rice/Array.hpp>
 #include <rice/to_from_ruby.hpp>
@@ -135,15 +139,21 @@ const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Ob
 
 bool edn::Parser::EDN_parse_byte_stream(const char *p, const char *pe, Rice::String& s)
 {
-    std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
+    long len = pe - p;
 
-    std::string result;// = from_ruby<std::string>(s);
+    std::cerr << "+ == " << __FUNCTION__ << " - len: " << len << " == +" << std::endl;
 
-    std::string buf;
-    buf.append(p, pe - p);
-    result += buf;
-    s = to_ruby<Rice::String>(result);
-    return true;
+    if (len > 0) {
+        std::string buf;
+        buf.append(p, len);
+
+        VALUE vs = Rice::protect( rb_str_new2, buf.c_str() );
+        VALUE s_utf8 = Rice::protect( rb_enc_associate, vs, rb_utf8_encoding() );
+        s = Rice::String(s_utf8);
+        return true;
+    }
+
+    return false;
 }
 
 

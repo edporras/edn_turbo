@@ -1,3 +1,4 @@
+#include <signal.h>
 #include <iostream>
 #include <clocale>
 
@@ -7,11 +8,22 @@
 
 #include "edn_parser.h"
 
+void die(int sig)
+{
+    exit(-1);
+}
+
 //
 // ruby calls this to load the extension
 extern "C"
 void Init_edn(void)
 {
+    struct sigaction a;
+    a.sa_handler = die;
+    sigemptyset(&a.sa_mask);
+    a.sa_flags = 0;
+    sigaction(SIGINT, &a, 0);
+
     // pass things back as utf-8
     if (!setlocale( LC_ALL, "" )) {
         std::cerr << "Error setting locale" << std::endl;
