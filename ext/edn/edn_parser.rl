@@ -27,14 +27,14 @@
         k_nil          = 'nil';
         k_true         = 'true';
         k_false        = 'false';
-        begin_value    = [:nft\"\-\[\\#] | digit;
+        begin_value    = [:nft\"\-\{\[\\#] | digit;
         begin_dispatch = '#';
         begin_vector   = '[';
         end_vector     = ']';
         begin_list     = '(';
         end_list       = ')';
         begin_map      = '{';
-        end_map        = '{';
+        end_map        = '}';
         string_delim   = '"';
         begin_number   = digit | '-';
 
@@ -88,6 +88,11 @@
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
+    action parse_map {
+        const char *np = EDN_parse_map(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
     action exit { fhold; fbreak; }
 
     main := (
@@ -97,7 +102,8 @@
               begin_keyword >parse_keyword |
               string_delim >parse_string |
               begin_number >parse_number |
-              begin_vector >parse_vector
+              begin_vector >parse_vector |
+              begin_map >parse_map
         ) %*exit;
 }%%
 
@@ -337,6 +343,71 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
 }
 
 
+
+
+// ============================================================
+// hash parsing
+//
+%%{
+    machine EDN_map;
+    include EDN_common;
+
+    write data noerror;
+
+    action parse_key {
+        const char *np = EDN_parse_value(fpc, pe, k);
+        if (np == NULL) {
+            fhold; fbreak;
+        } else {
+            fexec np;
+        }
+    }
+
+    action parse_value {
+        const char *np = EDN_parse_value(fpc, pe, v);
+        if (np == NULL) {
+            fhold; fbreak;
+        } else {
+            map[k] = v;
+            fexec np;
+        }
+    }
+
+    action exit { fhold; fbreak; }
+
+    pair        = ignore* begin_value >parse_key ignore* begin_value >parse_value;
+    next_pair   = ignore* pair;
+
+    main := (
+      begin_map
+      (pair (next_pair)*)? ignore*
+      end_map
+    ) @exit;
+}%%
+
+
+const char* edn::Parser::EDN_parse_map(const char *p, const char *pe, Rice::Object& o)
+{
+    int cs;
+
+    std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
+
+    Rice::Hash map;
+    Rice::Object k, v;
+
+    %% write init;
+    %% write exec;
+
+    if (cs >= EDN_map_first_final) {
+        o = map;
+        return p + 1;
+    }
+
+    return NULL;
+}
+
+
+
 // ============================================================
 // main parsing machine
 //
@@ -350,14 +421,14 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
-    #    action parse_hash {
-    #        char *np = EDN_parse_hash(fpc, pe, &result);
-    #        if (np == NULL) { fhold; fbreak; } else fexec np;
-    #    }
+    action parse_map {
+        const char *np = EDN_parse_map(fpc, pe, result);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
 
     main := ignore* (
-                 begin_vector >parse_vector
-                 #                 begin_array >parse_array
+                 begin_vector >parse_vector |
+                 begin_map >parse_map
                  ) ignore*;
 }%%
 
