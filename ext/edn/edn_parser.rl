@@ -27,7 +27,7 @@
         k_nil          = 'nil';
         k_true         = 'true';
         k_false        = 'false';
-        begin_value    = [nft\"\-\[\\#] | digit;
+        begin_value    = [:nft\"\-\[\\#] | digit;
         begin_dispatch = '#';
         begin_vector   = '[';
         end_vector     = ']';
@@ -35,7 +35,7 @@
         end_list       = ')';
         begin_map      = '{';
         end_map        = '{';
-        begin_string   = '"';
+        string_delim   = '"';
         begin_number   = digit | '-';
 
 }%%
@@ -58,6 +58,11 @@
     }
     action parse_true {
         o = Qtrue;
+    }
+
+    action parse_keyword {
+        const char *np = EDN_parse_keyword(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     action parse_string {
@@ -89,7 +94,8 @@
               k_nil @parse_nil |
               k_false @parse_false |
               k_true @parse_true |
-              begin_string >parse_string |
+              begin_keyword >parse_keyword |
+              string_delim >parse_string |
               begin_number >parse_number |
               begin_vector >parse_vector
         ) %*exit;
@@ -114,6 +120,42 @@ const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Ob
 
 
 // ============================================================
+// keyword parsing
+//
+%%{
+    machine EDN_keyword;
+    include EDN_common;
+
+    write data noerror;
+
+    action exit { fhold; fbreak; }
+
+    main := begin_keyword [a-zA-Z_][a-zA-Z_0-9]* ('/' [a-zA-Z_][a-zA-Z_0-9]*)? (^[a-zA-Z_0-9'/']? @exit);
+}%%
+
+
+const char* edn::Parser::EDN_parse_keyword(const char *p, const char *pe, Rice::Object& o)
+{
+    std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
+    int cs;
+
+    %% write init;
+    p_save = p + 1;
+    %% write exec;
+
+    if (cs >= EDN_keyword_first_final) {
+        std::string buf;
+        buf.append(p_save, p - p_save);
+        o = Rice::Symbol(buf);
+        return p + 1;
+    }
+
+    return NULL;
+}
+
+
+
+// ============================================================
 // string parsing
 //
 %%{
@@ -133,7 +175,7 @@ const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Ob
 
     action exit { fhold; fbreak; }
 
-    main := '"' ((^([\"\\] | 0..0x1f) | '\\'[\"\\/bfnrt] | '\\u'[0-9a-fA-F]{4} | '\\'^([\"\\/bfnrtu]|0..0x1f))* %parse_string) '"' @exit;
+    main := string_delim ((^([\"\\] | 0..0x1f) | '\\'[\"\\/bfnrt] | '\\u'[0-9a-fA-F]{4} | '\\'^([\"\\/bfnrtu]|0..0x1f))* %parse_string) string_delim @exit;
 }%%
 
 
