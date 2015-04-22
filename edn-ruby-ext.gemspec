@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
                reject{|f| f =~ /\.edn/}
 
   s.extensions = ['ext/edn/extconf.rb']
-  s.executables = ['ednio']
+  s.executables = ['ednread']
   s.test_files = ["test/test_version.rb"]
   s.homepage = %q{http://rubygems.org/gems/ednio}
   s.require_paths = ["lib"]
