@@ -136,7 +136,7 @@ const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Ob
 
     action exit { fhold; fbreak; }
 
-    main := begin_keyword [a-zA-Z_][a-zA-Z_0-9]* ('/' [a-zA-Z_][a-zA-Z_0-9]*)? (^[a-zA-Z_0-9'/']? @exit);
+    main := begin_keyword [a-zA-Z_][a-zA-Z_0-9\-]* ('/' [a-zA-Z_][a-zA-Z_0-9\-]*)? (^[a-zA-Z_0-9\-'/']? @exit);
 }%%
 
 

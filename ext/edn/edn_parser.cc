@@ -281,18 +281,18 @@ static const char _EDN_keyword_actions[] = {
 };
 
 static const char _EDN_keyword_key_offsets[] = {
-	0, 0, 1, 6, 11, 20, 20
+	0, 0, 1, 6, 11, 21, 21
 };
 
 static const char _EDN_keyword_trans_keys[] = {
 	58, 95, 65, 90, 97, 122, 95, 65,
-	90, 97, 122, 39, 47, 95, 48, 57,
-	65, 90, 97, 122, 39, 47, 95, 48,
-	57, 65, 90, 97, 122, 0
+	90, 97, 122, 39, 45, 47, 95, 48,
+	57, 65, 90, 97, 122, 39, 45, 47,
+	95, 48, 57, 65, 90, 97, 122, 0
 };
 
 static const char _EDN_keyword_single_lengths[] = {
-	0, 1, 1, 1, 3, 0, 3
+	0, 1, 1, 1, 4, 0, 4
 };
 
 static const char _EDN_keyword_range_lengths[] = {
@@ -300,14 +300,14 @@ static const char _EDN_keyword_range_lengths[] = {
 };
 
 static const char _EDN_keyword_index_offsets[] = {
-	0, 0, 2, 6, 10, 17, 18
+	0, 0, 2, 6, 10, 18, 19
 };
 
 static const char _EDN_keyword_indicies[] = {
 	0, 1, 2, 2, 2, 1, 3, 3,
-	3, 1, 1, 5, 2, 2, 2, 2,
-	4, 1, 1, 1, 3, 3, 3, 3,
-	4, 0
+	3, 1, 1, 2, 5, 2, 2, 2,
+	2, 4, 1, 1, 3, 1, 3, 3,
+	3, 3, 4, 0
 };
 
 static const char _EDN_keyword_trans_targs[] = {
