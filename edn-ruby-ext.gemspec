@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
   s.name               = "edn-ruby-ext"
   s.version            = EDN::VERSION
   s.platform           = Gem::Platform::RUBY
-  s.default_executable = "ednio"
+  s.default_executable = "ednread"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
 
