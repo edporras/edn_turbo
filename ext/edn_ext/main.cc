@@ -16,7 +16,7 @@ void die(int sig)
 //
 // ruby calls this to load the extension
 extern "C"
-void Init_edn(void)
+void Init_edn_ext(void)
 {
     struct sigaction a;
     a.sa_handler = die;
@@ -30,7 +30,7 @@ void Init_edn(void)
         return;
     }
 
-    Rice::Module rb_mEDN = Rice::define_module("EDN");
+    Rice::Module rb_mEDN = Rice::define_module("EDN_EXT");
 
     // bind the ruby Parser class to the C++ one
     Rice::Data_Type<edn::Parser> rb_cParser =
@@ -40,6 +40,6 @@ void Init_edn(void)
                        (Rice::Arg("filename")));
 
     // import whatever else we've defined in the ruby side
-    rb_require("edn/edn_parser");
-    rb_require("edn/version");
+    rb_require("edn_ext/edn_parser");
+    rb_require("edn_ext/version");
 }

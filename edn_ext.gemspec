@@ -1,9 +1,9 @@
 $:.push File.expand_path('../lib', __FILE__)
-require 'edn/version'
+require 'edn_ext/version'
 
 Gem::Specification.new do |s|
-  s.name               = "edn-ruby-ext"
-  s.version            = EDN::VERSION
+  s.name               = "edn_ext"
+  s.version            = EDN_EXT::VERSION
   s.platform           = Gem::Platform::RUBY
   s.default_executable = "ednread"
 
@@ -21,10 +21,10 @@ Gem::Specification.new do |s|
                reject{|f| f =~ /\.txt/}.
                reject{|f| f =~ /\.edn/}
 
-  s.extensions = ['ext/edn/extconf.rb']
+  s.extensions = ['ext/edn_ext/extconf.rb']
   s.executables = ['ednread']
   s.test_files = ["test/test_version.rb"]
-  s.homepage = %q{http://rubygems.org/gems/ednio}
+  s.homepage = %q{http://rubygems.org/gems/edn_ext}
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.6.2}
 

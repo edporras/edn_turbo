@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 $LOAD_PATH << File.expand_path( File.dirname(__FILE__) + '/../lib' )
-require 'edn'
+require 'edn_ext'
 require 'pp'
 
 if ARGV.size == 0
@@ -16,4 +16,4 @@ if !File.exist? filename
   exit 1
 end
 
-pp EDN.read(filename)
+pp EDN_EXT.read(filename)

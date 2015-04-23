@@ -3,10 +3,10 @@ require 'rake/extensiontask'
 require 'rake/clean'
 require 'rbconfig'
 
-NAME = 'edn'
+NAME = 'edn_ext'
 
 
-EXT_PATH               = "ext/edn"
+EXT_PATH               = "ext/#{NAME}"
 RAGEL_PARSER_SRC       = "edn_parser.rl"
 RAGEL_PARSER_SRC_PATH  = "#{EXT_PATH}/#{RAGEL_PARSER_SRC}"
 GEN_CC_PARSER_SRC      = "edn_parser.cc"
@@ -26,7 +26,7 @@ task :ragel => GEN_CC_PARSER_SRC_PATH
 
 file GEN_CC_PARSER_SRC_PATH => RAGEL_PARSER_SRC_PATH do
   cd EXT_PATH do
-    sh "ragel -o #{GEN_CC_PARSER_SRC} #{RAGEL_PARSER_SRC}"
+    sh "ragel -G2 -o #{GEN_CC_PARSER_SRC} #{RAGEL_PARSER_SRC}"
     src = File.read(GEN_CC_PARSER_SRC).gsub(/[ \t]+$/, '')
     File.open(GEN_CC_PARSER_SRC, "w") {|f| f.print src}
   end

@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+require 'edn'
+
+if ARGV.size == 0
+  $stderr.puts "no filename given"
+  exit 1
+end
+
+# file checks
+filename = ARGV[0]
+if !File.exist? filename
+  $stderr.puts "Error opening #{filename}"
+  abort
+end
+
+# read the file
+doc_data = {}
+begin
+  File.open(filename) do |file|
+    doc_data = EDN.read(file)
+  end
+rescue Exception => e
+  $stderr.puts "Error reading file"
+  abort
+end

@@ -1,7 +1,7 @@
-edn-ruby-ext
+edn_ext
 ============
 
-Ruby C-extension for EDN file I/O
+Ruby C-extension for EDN file parser
 
 Dependencies
 ============
@@ -24,6 +24,7 @@ Setup
 Usage
 =====
 ```ruby
-    require 'edn-ruby-ext'
+    require 'edn_ext'
 
+    pp EDN_EXT.read("some_file.edn")
 ```
