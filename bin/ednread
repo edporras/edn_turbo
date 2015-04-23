@@ -4,7 +4,6 @@
 $LOAD_PATH << File.expand_path( File.dirname(__FILE__) + '/../lib' )
 require 'edn'
 require 'pp'
-require 'optparse'
 
 if ARGV.size == 0
   $stderr.puts "invalid arg count"
