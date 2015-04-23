@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include <strstream>
 
 #include <ruby/ruby.h>
 #include <ruby/encoding.h>
@@ -12,7 +11,7 @@
 #include "edn_parser.h"
 
 //
-// based on https://github.com/edn-format/edn
+// spec at: https://github.com/edn-format/edn
 //
 
 %%{
@@ -20,21 +19,21 @@
 
         cr             = '\n';
         cr_neg         = [^\n];
-        ws             = [ ,\t\r\n];
+        ws             = space | ',';
         comment        = ';' cr_neg* cr;
         ignore         = ws | comment;
-        begin_keyword  = ':';
         k_nil          = 'nil';
         k_true         = 'true';
         k_false        = 'false';
-        begin_value    = [:nft\"\-\{\[\\#] | digit;
+        begin_keyword  = ':';
+        begin_value    = digit | [:nft\"\-\{\[\\#];
         begin_dispatch = '#';
         begin_vector   = '[';
         end_vector     = ']';
-        begin_list     = '(';
-        end_list       = ')';
         begin_map      = '{';
         end_map        = '}';
+        begin_set      = '(';
+        end_set        = ')';
         string_delim   = '"';
         begin_number   = digit | '-';
 
@@ -48,7 +47,7 @@
     machine EDN_value;
     include EDN_common;
 
-    write data noerror;
+    write data;
 
     action parse_nil {
         o = Qnil;
@@ -99,8 +98,8 @@
               k_nil @parse_nil |
               k_false @parse_false |
               k_true @parse_true |
-              begin_keyword >parse_keyword |
               string_delim >parse_string |
+              begin_keyword >parse_keyword |
               begin_number >parse_number |
               begin_vector >parse_vector |
               begin_map >parse_map
@@ -110,8 +109,6 @@
 
 const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Object& o)
 {
-    std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
-
     int cs;
 
     %% write init;
@@ -120,7 +117,9 @@ const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Ob
     if (cs >= EDN_value_first_final) {
         return p;
     }
-
+    else if (cs == EDN_value_error) {
+        std::cerr << "Error parsing value" << std::endl;
+    }
     return NULL;
 }
 
@@ -132,30 +131,34 @@ const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Ob
     machine EDN_keyword;
     include EDN_common;
 
-    write data noerror;
+    write data;
 
     action exit { fhold; fbreak; }
 
-    main := begin_keyword [a-zA-Z_][a-zA-Z_0-9\-]* ('/' [a-zA-Z_][a-zA-Z_0-9\-]*)? (^[a-zA-Z_0-9\-'/']? @exit);
+    main := begin_keyword
+             ([a-zA-Z_][a-zA-Z_0-9\-]* ('/' [a-zA-Z_][a-zA-Z_0-9\-]*)?)
+            (^[a-zA-Z_0-9\-'/']? @exit);
 }%%
 
 
 const char* edn::Parser::EDN_parse_keyword(const char *p, const char *pe, Rice::Object& o)
 {
-    std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
     int cs;
 
     %% write init;
-    p_save = p + 1;
+    p_save = p;
     %% write exec;
 
     if (cs >= EDN_keyword_first_final) {
+        uint32_t len = p - p_save - 1; // don't include leading ':' because Rice::Symbol will handle it
         std::string buf;
-        buf.append(p_save, p - p_save);
+        buf.append(p_save + 1, len);
         o = Rice::Symbol(buf);
-        return p + 1;
+        return p;
     }
-
+    else if (cs == EDN_keyword_error) {
+        std::cerr << "Error parsing keyword" << std::endl;
+    }
     return NULL;
 }
 
@@ -168,7 +171,7 @@ const char* edn::Parser::EDN_parse_keyword(const char *p, const char *pe, Rice::
     machine EDN_string;
     include EDN_common;
 
-    write data noerror;
+    write data;
 
     action parse_string {
         if (!EDN_parse_byte_stream(p_save + 1, p, s)) {
@@ -189,8 +192,6 @@ bool edn::Parser::EDN_parse_byte_stream(const char *p, const char *pe, Rice::Str
 {
     long len = pe - p;
 
-    std::cerr << "+ == " << __FUNCTION__ << " - len: " << len << " == +" << std::endl;
-
     if (len > 0) {
         std::string buf;
         buf.append(p, len);
@@ -208,7 +209,6 @@ bool edn::Parser::EDN_parse_byte_stream(const char *p, const char *pe, Rice::Str
 
 const char* edn::Parser::EDN_parse_string(const char *p, const char *pe, Rice::Object& o)
 {
-    std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
     int cs;
 
     Rice::String s;
@@ -220,6 +220,9 @@ const char* edn::Parser::EDN_parse_string(const char *p, const char *pe, Rice::O
         o = s;
         return p + 1;
     }
+    else if (cs == EDN_string_error) {
+        std::cerr << "Error parsing string" << std::endl;
+    }
     return NULL;
 }
 
@@ -230,7 +233,7 @@ const char* edn::Parser::EDN_parse_string(const char *p, const char *pe, Rice::O
     machine EDN_decimal;
     include EDN_common;
 
-    write data noerror;
+    write data;
 
     action exit { fhold; fbreak; }
 
@@ -243,7 +246,6 @@ const char* edn::Parser::EDN_parse_string(const char *p, const char *pe, Rice::O
 
 const char* edn::Parser::EDN_parse_decimal(const char *p, const char *pe, Rice::Object& o)
 {
-    std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
     int cs;
 
     %% write init;
@@ -254,6 +256,11 @@ const char* edn::Parser::EDN_parse_decimal(const char *p, const char *pe, Rice::
         double value;
         o = Parser::buftotype<double>(p_save, p - p_save, value);
         return p + 1;
+    }
+    else if (cs == EDN_decimal_error) {
+        //        std::string b;
+        //        b.append(p_save, p - p_save);
+        //        std::cerr << "Error parsing decimal: " << b << std::endl;
     }
 
     return NULL;
@@ -266,7 +273,7 @@ const char* edn::Parser::EDN_parse_decimal(const char *p, const char *pe, Rice::
 %%{
     machine EDN_integer;
 
-    write data noerror;
+    write data;
 
     action exit { fhold; fbreak; }
 
@@ -275,7 +282,6 @@ const char* edn::Parser::EDN_parse_decimal(const char *p, const char *pe, Rice::
 
 const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::Object& o)
 {
-    std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
     int cs;
 
     %% write init;
@@ -286,6 +292,9 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
         int value;
         o = Parser::buftotype<int>(p_save, p - p_save, value);
         return p + 1;
+    }
+    else if (cs == EDN_integer_error) {
+        std::cerr << "Error parsing integer" << std::endl;
     }
 
     return NULL;
@@ -299,7 +308,7 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
     machine EDN_vector;
     include EDN_common;
 
-    write data noerror;
+    write data;
 
     action parse_value {
         Rice::Object v;
@@ -327,7 +336,6 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
 //
 const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::Object& o)
 {
-    std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
     int cs;
     Rice::Array arr;
 
@@ -337,6 +345,9 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
     if (cs >= EDN_vector_first_final) {
         o = arr;
         return p + 1;
+    }
+    else if (cs == EDN_vector_error) {
+        std::cerr << "Error parsing vector" << std::endl;
     }
 
     return NULL;
@@ -352,7 +363,7 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
     machine EDN_map;
     include EDN_common;
 
-    write data noerror;
+    write data;
 
     action parse_key {
         const char *np = EDN_parse_value(fpc, pe, k);
@@ -389,20 +400,23 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
 const char* edn::Parser::EDN_parse_map(const char *p, const char *pe, Rice::Object& o)
 {
     int cs;
-
-    std::cerr << "+ == " << __FUNCTION__ << " == +" << std::endl;
-
     Rice::Hash map;
     Rice::Object k, v;
 
     %% write init;
+    p_save = p;
     %% write exec;
 
     if (cs >= EDN_map_first_final) {
         o = map;
         return p + 1;
     }
+    else if (cs == EDN_map_error) {
+        std::string b;
+        b.append(p_save, p - p_save);
 
+        std::cerr << "Error parsing map: \'" << b << "\'" << std::endl;
+    }
     return NULL;
 }
 
