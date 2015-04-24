@@ -234,6 +234,9 @@ bool edn::Parser::EDN_parse_byte_stream(const char *p, const char *pe, Rice::Str
               case '\\':
                   replacement = '\\';
                   break;
+              case '0':
+                  replacement = '\0';
+                  break;
               default:
                   std::cerr << "value must be unescaped but case is unhandled: '" << *cp << "'" << std::endl;
                   break;
