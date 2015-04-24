@@ -188,14 +188,61 @@ const char* edn::Parser::EDN_parse_keyword(const char *p, const char *pe, Rice::
 }%%
 
 
+//
+// copies the string data, unescaping any present values that need to be replaced
+//
 bool edn::Parser::EDN_parse_byte_stream(const char *p, const char *pe, Rice::String& s)
 {
-    long len = pe - p;
-
-    if (len > 0) {
+    if (pe > p) {
         std::string buf;
-        buf.append(p, len);
+        std::size_t len = pe - p;
 
+        // pre-allocate storage needed
+        buf.reserve(len);
+
+        const char* cp = p;
+        std::size_t pos = 0;
+        char replacement = '?';
+
+        while (cp < pe)
+        {
+            // append any other character that is not the escaping slash
+            if (*cp != '\\') {
+                buf.replace(pos++, 1, 1, *cp++);
+                continue;
+            }
+
+            // looking at a '\' - check what it escapes if there's a
+            // following character
+            if (++cp == pe)
+                break;
+
+            switch (*cp++)
+            {
+              case 't':
+                  replacement = '\t';
+                  break;
+              case 'n':
+                  replacement = '\n';
+                  break;
+              case 'r':
+                  replacement = '\r';
+                  break;
+              case '\"':
+                  replacement = '\"';
+                  break;
+              case '\\':
+                  replacement = '\\';
+                  break;
+              default:
+                  std::cerr << "value must be unescaped but case is unhandled: '" << *cp << "'" << std::endl;
+                  break;
+            }
+            // substitute the escaped walue
+            buf.replace(pos++, 1, 1, replacement);
+        }
+
+        // utf-8 encode
         VALUE vs = Rice::protect( rb_str_new2, buf.c_str() );
         VALUE s_utf8 = Rice::protect( rb_enc_associate, vs, rb_utf8_encoding() );
         s = Rice::String(s_utf8);
@@ -204,7 +251,6 @@ bool edn::Parser::EDN_parse_byte_stream(const char *p, const char *pe, Rice::Str
 
     return false;
 }
-
 
 
 const char* edn::Parser::EDN_parse_string(const char *p, const char *pe, Rice::Object& o)
