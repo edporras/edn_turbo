@@ -11,16 +11,17 @@
 #include "edn_parser.h"
 
 //
-// spec at: https://github.com/edn-format/edn
+// EDN spec at: https://github.com/edn-format/edn
 //
 
 %%{
         machine EDN_common;
 
         cr             = '\n';
+        counter        = ( cr @{ line_number++; } );
         cr_neg         = [^\n];
-        ws             = space | ',';
-        comment        = ';' cr_neg* cr;
+        ws             = [\t\v\f\r ] | ',' | counter;
+        comment        = ';' cr_neg* counter;
         ignore         = ws | comment;
         k_nil          = 'nil';
         k_true         = 'true';
@@ -70,16 +71,19 @@
     }
 
     action parse_number {
-        const char *np;
-
-        np = EDN_parse_decimal(fpc, pe, o);
-        if (np != NULL)
-            fexec np;
-        else {
+        const char *np = EDN_parse_decimal(fpc, pe, o);
+        if (np == NULL)
             np = EDN_parse_integer(fpc, pe, o);
-            if (np != NULL) fexec np;
+
+        if (np) {
+            fexec np;
+            fhold;
+            fbreak;
         }
-        fhold; fbreak;
+        else {
+            error(*p);
+            fexec pe;
+        }
     }
 
     action parse_vector {
@@ -95,15 +99,15 @@
     action exit { fhold; fbreak; }
 
     main := (
-              k_nil @parse_nil |
-              k_false @parse_false |
-              k_true @parse_true |
-              string_delim >parse_string |
-              begin_keyword >parse_keyword |
-              begin_number >parse_number |
-              begin_vector >parse_vector |
-              begin_map >parse_map
-        ) %*exit;
+             k_nil @parse_nil |
+             k_false @parse_false |
+             k_true @parse_true |
+             string_delim >parse_string |
+             begin_keyword >parse_keyword |
+             begin_number >parse_number |
+             begin_vector >parse_vector |
+             begin_map >parse_map
+             ) %*exit;
 }%%
 
 
@@ -118,7 +122,8 @@ const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Ob
         return p;
     }
     else if (cs == EDN_value_error) {
-        std::cerr << "Error parsing value" << std::endl;
+        error(*p);
+        return pe;
     }
     return NULL;
 }
@@ -157,7 +162,8 @@ const char* edn::Parser::EDN_parse_keyword(const char *p, const char *pe, Rice::
         return p;
     }
     else if (cs == EDN_keyword_error) {
-        std::cerr << "Error parsing keyword" << std::endl;
+        error(*p);
+        return pe;
     }
     return NULL;
 }
@@ -270,7 +276,8 @@ const char* edn::Parser::EDN_parse_string(const char *p, const char *pe, Rice::O
         return p + 1;
     }
     else if (cs == EDN_string_error) {
-        std::cerr << "Error parsing string" << std::endl;
+        error(*p);
+        return pe;
     }
     return NULL;
 }
@@ -282,7 +289,7 @@ const char* edn::Parser::EDN_parse_string(const char *p, const char *pe, Rice::O
     machine EDN_decimal;
     include EDN_common;
 
-    write data;
+    write data noerror;
 
     action exit { fhold; fbreak; }
 
@@ -306,11 +313,6 @@ const char* edn::Parser::EDN_parse_decimal(const char *p, const char *pe, Rice::
         o = Parser::buftotype<double>(p_save, p - p_save, value);
         return p + 1;
     }
-    else if (cs == EDN_decimal_error) {
-        //        std::string b;
-        //        b.append(p_save, p - p_save);
-        //        std::cerr << "Error parsing decimal: " << b << std::endl;
-    }
 
     return NULL;
 }
@@ -322,7 +324,7 @@ const char* edn::Parser::EDN_parse_decimal(const char *p, const char *pe, Rice::
 %%{
     machine EDN_integer;
 
-    write data;
+    write data noerror;
 
     action exit { fhold; fbreak; }
 
@@ -342,10 +344,6 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
         o = Parser::buftotype<int>(p_save, p - p_save, value);
         return p + 1;
     }
-    else if (cs == EDN_integer_error) {
-        std::cerr << "Error parsing integer" << std::endl;
-    }
-
     return NULL;
 }
 
@@ -370,14 +368,20 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
         }
     }
 
+    action end_vec_err {
+        error("closing ']' not found");
+        fexec pe;
+    }
+
     action exit { fhold; fbreak; }
 
     next_element  = ignore* begin_value >parse_value;
 
     main := begin_vector ignore*
-            ((begin_value >parse_value ignore*)
-             (ignore* next_element ignore*)*)?
-            end_vector @exit;
+             ((begin_value >parse_value ignore*)
+              (ignore* next_element ignore*)*)?
+            end_vector @err(end_vec_err)
+            @exit;
 }%%
 
 //
@@ -387,6 +391,7 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
 {
     int cs;
     Rice::Array arr;
+    const char *eof = pe;
 
     %% write init;
     %% write exec;
@@ -396,7 +401,8 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
         return p + 1;
     }
     else if (cs == EDN_vector_error) {
-        std::cerr << "Error parsing vector" << std::endl;
+        error(*p);
+        return pe;
     }
 
     return NULL;
@@ -433,15 +439,25 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
         }
     }
 
+    action pair_err {
+        error("map pair not found");
+        fexec pe;
+    }
+
+    action end_map_err {
+        error("closing '}' not found");
+        fexec pe;
+    }
+
     action exit { fhold; fbreak; }
 
-    pair        = ignore* begin_value >parse_key ignore* begin_value >parse_value;
+    pair        = ignore* begin_value >parse_key ignore* begin_value >parse_value @err(pair_err);
     next_pair   = ignore* pair;
 
     main := (
       begin_map
       (pair (next_pair)*)? ignore*
-      end_map
+      end_map @err(end_map_err)
     ) @exit;
 }%%
 
@@ -449,6 +465,7 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
 const char* edn::Parser::EDN_parse_map(const char *p, const char *pe, Rice::Object& o)
 {
     int cs;
+    const char *eof = pe;
     Rice::Hash map;
     Rice::Object k, v;
 
@@ -461,10 +478,7 @@ const char* edn::Parser::EDN_parse_map(const char *p, const char *pe, Rice::Obje
         return p + 1;
     }
     else if (cs == EDN_map_error) {
-        std::string b;
-        b.append(p_save, p - p_save);
-
-        std::cerr << "Error parsing map: \'" << b << "\'" << std::endl;
+        return pe;
     }
     return NULL;
 }
@@ -476,8 +490,9 @@ const char* edn::Parser::EDN_parse_map(const char *p, const char *pe, Rice::Obje
 //
 %%{
     machine EDN;
-    write data nofinal;
     include EDN_common;
+
+    write data nofinal;
 
     action parse_vector {
         const char* np = EDN_parse_vector(fpc, pe, result);
@@ -513,7 +528,7 @@ Rice::Object edn::Parser::process(const char* buf, long len)
     %% write exec;
 
     if (cs == EDN_error) {
-        std::cerr << "Parse error: unexpected value '" << *p << "'" << std::endl;
+        error(*p);
         return Qnil;
     }
 

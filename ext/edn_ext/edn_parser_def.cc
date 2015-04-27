@@ -1,6 +1,8 @@
+#include <iostream>
 #include <string>
 #include <fstream>
 #include <rice/Object.hpp>
+
 #include "edn_parser.h"
 
 namespace edn
@@ -34,4 +36,16 @@ namespace edn
         return rslt;
     }
 
+
+    //
+    // error reporting
+    void Parser::error(const std::string& err, char c) const
+    {
+        std::cerr << "Parse error ";
+        if (err.length() > 0)
+            std::cerr << "(" << err << ") ";
+        if (c != '\0')
+            std::cerr << "at '" << c << "' ";
+        std::cerr << "on line " << line_number << std::endl;
+    }
 }

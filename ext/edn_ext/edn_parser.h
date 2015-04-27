@@ -15,6 +15,7 @@ namespace edn
     class Parser
     {
     private:
+        std::size_t line_number;
         const char* p_save;
 
         Rice::Object process(const char* b, long len);
@@ -27,6 +28,10 @@ namespace edn
         const char* EDN_parse_vector (const char *p, const char *pe, Rice::Object& o);
         const char* EDN_parse_map    (const char *p, const char *pe, Rice::Object& o);
 
+        void error(const std::string& err, char c) const;
+        void error(char err_c) const { error("", err_c); }
+        void error(const std::string& err_msg) const { error(err_msg, '\0'); }
+
         // utility method to convert a primitive in string form to a
         // ruby type
         template <class T>
@@ -38,7 +43,7 @@ namespace edn
         }
 
     public:
-        Parser() : p_save(NULL) { }
+        Parser() : line_number(1), p_save(NULL) { }
 
         Rice::Object parse(const std::string& file);
 
