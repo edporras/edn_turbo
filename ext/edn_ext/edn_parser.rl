@@ -294,9 +294,12 @@ const char* edn::Parser::EDN_parse_string(const char *p, const char *pe, Rice::O
     action exit { fhold; fbreak; }
 
     main := '-'? (
-              (('0' | [1-9][0-9]*) '.' [0-9]+ ([Ee] [+\-]?[0-9]+)?)
-              | (('0' | [1-9][0-9]*) ([Ee] [+\-]?[0-9]+))
-             )  (^[0-9Ee.\-]? @exit );
+                  (('0' |
+                    [1-9][0-9]*) '.' [0-9]+ ((([Ee] [+\-]?[0-9]+)?) | ([M]?))
+                   ) |
+                  (('0' | [1-9][0-9]*) ([Ee] [+\-]?[0-9]+))
+                  )
+        (^[0-9Ee.\-M]? @exit );
 }%%
 
 
@@ -328,7 +331,7 @@ const char* edn::Parser::EDN_parse_decimal(const char *p, const char *pe, Rice::
 
     action exit { fhold; fbreak; }
 
-    main := '-'? ('0' | [1-9][0-9]*) (^[0-9]? @exit);
+    main := '-'? ('0' | [1-9][0-9]* [M]?) (^[0-9M]? @exit);
 }%%
 
 const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::Object& o)
