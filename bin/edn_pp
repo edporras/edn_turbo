@@ -16,4 +16,6 @@ if !File.exist? filename
   exit 1
 end
 
-pp EDN_EXT.read(filename)
+output = EDN_EXT.read(filename)
+
+pp output if output != nil
