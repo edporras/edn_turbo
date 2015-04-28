@@ -33,8 +33,8 @@
         end_vector     = ']';
         begin_map      = '{';
         end_map        = '}';
-        begin_set      = '(';
-        end_set        = ')';
+        begin_list     = '(';
+        end_list       = ')';
         string_delim   = '"';
         begin_number   = digit | '-';
 
@@ -402,6 +402,7 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
             @exit;
 }%%
 
+
 //
 // vector parsing
 //
@@ -426,6 +427,68 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
     return NULL;
 }
 
+
+
+// ============================================================
+// list parsing machine
+//
+%%{
+    machine EDN_list;
+    include EDN_common;
+
+    write data;
+
+    action parse_value {
+        Rice::Object v;
+        const char *np = EDN_parse_value(fpc, pe, v);
+        if (np == NULL) {
+            fhold; fbreak;
+        } else {
+            arr.push(v);
+            fexec np;
+        }
+    }
+
+    # action to report missing closing bracket
+    action end_list_err {
+        error("closing ')' not found");
+        fexec pe;
+    }
+
+    action exit { fhold; fbreak; }
+
+    next_element  = ignore* begin_value >parse_value;
+
+    main := begin_list ignore*
+             ((begin_value >parse_value ignore*)
+              (ignore* next_element ignore*)*)?
+            end_list @err(end_list_err)
+            @exit;
+}%%
+
+//
+// list parsing
+//
+const char* edn::Parser::EDN_parse_list(const char *p, const char *pe, Rice::Object& o)
+{
+    int cs;
+    Rice::Array arr;
+    const char *eof = pe;
+
+    %% write init;
+    %% write exec;
+
+    if (cs >= EDN_list_first_final) {
+        o = arr;
+        return p + 1;
+    }
+    else if (cs == EDN_list_error) {
+        error(*p);
+        return pe;
+    }
+
+    return NULL;
+}
 
 
 
@@ -524,9 +587,15 @@ const char* edn::Parser::EDN_parse_map(const char *p, const char *pe, Rice::Obje
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
+    action parse_list {
+        const char *np = EDN_parse_list(fpc, pe, result);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
     main := ignore* (
                  begin_vector >parse_vector |
-                 begin_map >parse_map
+                 begin_map >parse_map |
+                 begin_list >parse_list
                  ) ignore*;
 }%%
 

@@ -27,6 +27,7 @@ namespace edn
         const char* EDN_parse_value  (const char *p, const char *pe, Rice::Object& o);
         const char* EDN_parse_vector (const char *p, const char *pe, Rice::Object& o);
         const char* EDN_parse_map    (const char *p, const char *pe, Rice::Object& o);
+        const char* EDN_parse_list   (const char *p, const char *pe, Rice::Object& o);
 
         void error(const std::string& err, char c) const;
         void error(char err_c) const { error("", err_c); }
