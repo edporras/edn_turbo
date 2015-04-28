@@ -368,13 +368,12 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
 
 
 // ============================================================
-// vector parsing machine
+// vector parsing machine. EDN_vector_common is used to parse EDN
+// vectors and lists since they're both represented as vecotrs in ruby
 //
 %%{
-    machine EDN_vector;
+    machine EDN_vector_common;
     include EDN_common;
-
-    write data;
 
     action parse_value {
         Rice::Object v;
@@ -390,6 +389,13 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
     action exit { fhold; fbreak; }
 
     next_element  = ignore* begin_value >parse_value;
+}%%
+
+%%{
+    machine EDN_vector;
+    include EDN_vector_common;
+
+    write data;
 
     main := begin_vector ignore*
              ((begin_value >parse_value ignore*)
@@ -431,24 +437,9 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
 //
 %%{
     machine EDN_list;
-    include EDN_common;
+    include EDN_vector_common;
 
     write data;
-
-    action parse_value {
-        Rice::Object v;
-        const char *np = EDN_parse_value(fpc, pe, v);
-        if (np == NULL) {
-            fhold; fbreak;
-        } else {
-            arr.push(v);
-            fexec np;
-        }
-    }
-
-    action exit { fhold; fbreak; }
-
-    next_element  = ignore* begin_value >parse_value;
 
     main := begin_list ignore*
              ((begin_value >parse_value ignore*)
