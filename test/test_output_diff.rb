@@ -3,6 +3,7 @@
 $LOAD_PATH << File.expand_path( File.dirname(__FILE__) + '/../lib' )
 require 'test/unit'
 require 'edn_ext'
+require 'colorize'
 
 class EDN_EXT_Test < Test::Unit::TestCase
 
@@ -27,6 +28,11 @@ class EDN_EXT_Test < Test::Unit::TestCase
     assert(
       EDN_EXT.read('test/vector_1.edn') ==
       [true, true, 34, [true, nil, "añ", "", :test, [3213.23]]]
+    )
+
+    assert(
+      EDN_EXT.read('test/list_1.edn') ==
+      [22, 3312, "dss", {:powerpuff=>[:buttercup, :bubbles, :blossom]}]
     )
 
     assert(
@@ -172,7 +178,7 @@ class EDN_EXT_Test < Test::Unit::TestCase
          :links=>[]}]}
     )
 
-    puts "All tests passed"
+    puts "All tests passed".green
 
   end
 end
