@@ -16,6 +16,6 @@ if !File.exist? filename
   exit 1
 end
 
-output = EDN_EXT.read(filename)
+output = EDN_EXT.read(filename, { :silent => true })
 
 pp output if output != nil
