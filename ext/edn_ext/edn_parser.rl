@@ -38,6 +38,12 @@
         string_delim   = '"';
         begin_number   = digit | '-';
 
+        action close_err {
+            std::stringstream s;
+            s << "unterminated " << EDN_TYPE;
+            error(s.str());
+            fexec pe;
+        }
 }%%
 
 // ============================================================
@@ -191,11 +197,6 @@ const char* edn::Parser::EDN_parse_keyword(const char *p, const char *pe, Rice::
         }
     }
 
-    # report when string is not terminated
-    action str_end_err {
-        error("unterminated string");
-        fexec pe;
-    }
     action exit { fhold; fbreak; }
 
     main := string_delim (
@@ -203,7 +204,7 @@ const char* edn::Parser::EDN_parse_keyword(const char *p, const char *pe, Rice::
                            '\\'[\"\\/bfnrt] |
                            '\\u'[0-9a-fA-F]{4} |
                            '\\'^([\"\\/bfnrtu]|0..0x1f))* %parse_string)
-        string_delim @err(str_end_err)
+        string_delim @err(close_err)
         @exit;
 }%%
 
@@ -278,6 +279,7 @@ bool edn::Parser::EDN_parse_byte_stream(const char *p, const char *pe, Rice::Str
 
 const char* edn::Parser::EDN_parse_string(const char *p, const char *pe, Rice::Object& o)
 {
+    static const char* EDN_TYPE = "string";
     int cs;
     const char *eof = pe;
 
@@ -385,12 +387,6 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
         }
     }
 
-    # action to report missing closing bracket
-    action end_vec_err {
-        error("closing ']' not found");
-        fexec pe;
-    }
-
     action exit { fhold; fbreak; }
 
     next_element  = ignore* begin_value >parse_value;
@@ -398,7 +394,7 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
     main := begin_vector ignore*
              ((begin_value >parse_value ignore*)
               (ignore* next_element ignore*)*)?
-            end_vector @err(end_vec_err)
+            end_vector @err(close_err)
             @exit;
 }%%
 
@@ -408,6 +404,8 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
 //
 const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::Object& o)
 {
+    static const char* EDN_TYPE = "vector";
+
     int cs;
     Rice::Array arr;
     const char *eof = pe;
@@ -449,12 +447,6 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
         }
     }
 
-    # action to report missing closing bracket
-    action end_list_err {
-        error("closing ')' not found");
-        fexec pe;
-    }
-
     action exit { fhold; fbreak; }
 
     next_element  = ignore* begin_value >parse_value;
@@ -462,7 +454,7 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
     main := begin_list ignore*
              ((begin_value >parse_value ignore*)
               (ignore* next_element ignore*)*)?
-            end_list @err(end_list_err)
+            end_list @err(close_err)
             @exit;
 }%%
 
@@ -471,6 +463,8 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
 //
 const char* edn::Parser::EDN_parse_list(const char *p, const char *pe, Rice::Object& o)
 {
+    static const char* EDN_TYPE = "list";
+
     int cs;
     Rice::Array arr;
     const char *eof = pe;
@@ -526,12 +520,6 @@ const char* edn::Parser::EDN_parse_list(const char *p, const char *pe, Rice::Obj
         fexec pe;
     }
 
-    # action to report missing closed bracket
-    action end_map_err {
-        error("closing '}' not found");
-        fexec pe;
-    }
-
     action exit { fhold; fbreak; }
 
     pair        = ignore* begin_value >parse_key ignore* begin_value >parse_value @err(pair_err);
@@ -540,13 +528,15 @@ const char* edn::Parser::EDN_parse_list(const char *p, const char *pe, Rice::Obj
     main := (
              begin_map
              (pair (next_pair)*)? ignore*
-             end_map @err(end_map_err)
+             end_map @err(close_err)
              ) @exit;
 }%%
 
 
 const char* edn::Parser::EDN_parse_map(const char *p, const char *pe, Rice::Object& o)
 {
+    static const char* EDN_TYPE = "map";
+
     int cs;
     const char *eof = pe;
     Rice::Hash map;
