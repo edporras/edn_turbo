@@ -27,7 +27,7 @@
         k_true         = 'true';
         k_false        = 'false';
         begin_keyword  = ':';
-        begin_value    = digit | [:nft\"\-\{\[\\#];
+        begin_value    = digit | [:nft\"\-\{\[\(\\#];
         begin_dispatch = '#';
         begin_vector   = '[';
         end_vector     = ']';
@@ -100,6 +100,11 @@
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
+    action parse_list {
+        const char *np = EDN_parse_list(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
     action parse_map {
         const char *np = EDN_parse_map(fpc, pe, o);
         if (np == NULL) { fhold; fbreak; } else fexec np;
@@ -115,6 +120,7 @@
              begin_keyword >parse_keyword |
              begin_number >parse_number |
              begin_vector >parse_vector |
+             begin_list >parse_list |
              begin_map >parse_map
              ) %*exit;
 }%%
