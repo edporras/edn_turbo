@@ -71,9 +71,12 @@
     }
 
     action parse_number {
+        // try to parse a decimal first
         const char *np = EDN_parse_decimal(fpc, pe, o);
-        if (np == NULL)
+        if (np == NULL) {
+            // if we can't, try to parse it as an int
             np = EDN_parse_integer(fpc, pe, o);
+        }
 
         if (np) {
             fexec np;
@@ -141,8 +144,8 @@ const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Ob
     action exit { fhold; fbreak; }
 
     main := begin_keyword
-             ([a-zA-Z_][a-zA-Z_0-9\-]* ('/' [a-zA-Z_][a-zA-Z_0-9\-]*)?)
-            (^[a-zA-Z_0-9\-'/']? @exit);
+        ([a-zA-Z_][a-zA-Z_0-9\-]* ('/' [a-zA-Z_][a-zA-Z_0-9\-]*)?)
+        (^[a-zA-Z_0-9\-'/']? @exit);
 }%%
 
 
@@ -371,6 +374,7 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
         }
     }
 
+    # action to report missing closing bracket
     action end_vec_err {
         error("closing ']' not found");
         fexec pe;
@@ -388,7 +392,7 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
 }%%
 
 //
-//
+// vector parsing
 //
 const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::Object& o)
 {
@@ -442,11 +446,13 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
         }
     }
 
+    # action to report missing value in k/v pair
     action pair_err {
         error("map pair not found");
         fexec pe;
     }
 
+    # action to report missing closed bracket
     action end_map_err {
         error("closing '}' not found");
         fexec pe;
@@ -458,10 +464,10 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
     next_pair   = ignore* pair;
 
     main := (
-      begin_map
-      (pair (next_pair)*)? ignore*
-      end_map @err(end_map_err)
-    ) @exit;
+             begin_map
+             (pair (next_pair)*)? ignore*
+             end_map @err(end_map_err)
+             ) @exit;
 }%%
 
 
