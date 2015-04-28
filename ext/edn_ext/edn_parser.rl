@@ -191,9 +191,20 @@ const char* edn::Parser::EDN_parse_keyword(const char *p, const char *pe, Rice::
         }
     }
 
+    # report when string is not terminated
+    action str_end_err {
+        error("unterminated string");
+        fexec pe;
+    }
     action exit { fhold; fbreak; }
 
-    main := string_delim ((^([\"\\] | 0..0x1f) | '\\'[\"\\/bfnrt] | '\\u'[0-9a-fA-F]{4} | '\\'^([\"\\/bfnrtu]|0..0x1f))* %parse_string) string_delim @exit;
+    main := string_delim (
+                          (^([\"\\] | 0..0x1f) |
+                           '\\'[\"\\/bfnrt] |
+                           '\\u'[0-9a-fA-F]{4} |
+                           '\\'^([\"\\/bfnrtu]|0..0x1f))* %parse_string)
+        string_delim @err(str_end_err)
+        @exit;
 }%%
 
 
@@ -268,6 +279,7 @@ bool edn::Parser::EDN_parse_byte_stream(const char *p, const char *pe, Rice::Str
 const char* edn::Parser::EDN_parse_string(const char *p, const char *pe, Rice::Object& o)
 {
     int cs;
+    const char *eof = pe;
 
     Rice::String s;
     %% write init;
@@ -279,7 +291,6 @@ const char* edn::Parser::EDN_parse_string(const char *p, const char *pe, Rice::O
         return p + 1;
     }
     else if (cs == EDN_string_error) {
-        error(*p);
         return pe;
     }
     return NULL;
