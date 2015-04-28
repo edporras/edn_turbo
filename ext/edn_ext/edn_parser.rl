@@ -408,7 +408,6 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
 
     int cs;
     Rice::Array arr;
-    const char *eof = pe;
 
     %% write init;
     %% write exec;
@@ -467,7 +466,6 @@ const char* edn::Parser::EDN_parse_list(const char *p, const char *pe, Rice::Obj
 
     int cs;
     Rice::Array arr;
-    const char *eof = pe;
 
     %% write init;
     %% write exec;
@@ -538,7 +536,6 @@ const char* edn::Parser::EDN_parse_map(const char *p, const char *pe, Rice::Obje
     static const char* EDN_TYPE = "map";
 
     int cs;
-    const char *eof = pe;
     Rice::Hash map;
     Rice::Object k, v;
 
@@ -597,13 +594,14 @@ Rice::Object edn::Parser::process(const char* buf, long len)
     int cs;
     const char *p;
     const char *pe;
-    const char *eof;
     Rice::Object result;
+
+    line_number = 1;
 
     %% write init;
     p = &buf[0];
     pe = buf + len;
-    eof = pe;
+    eof = pe; // eof defined in Parser class
     %% write exec;
 
     if (cs == EDN_error) {

@@ -17,6 +17,7 @@ namespace edn
     private:
         std::size_t line_number;
         const char* p_save;
+        const char* eof;
 
         Rice::Object process(const char* b, long len);
         bool EDN_parse_byte_stream   (const char *p, const char *pe, Rice::String& s);
@@ -44,7 +45,7 @@ namespace edn
         }
 
     public:
-        Parser() : line_number(1), p_save(NULL) { }
+        Parser() : line_number(1), p_save(NULL), eof(NULL) { }
 
         Rice::Object parse(const std::string& file);
 
