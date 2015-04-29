@@ -27,7 +27,7 @@
         k_true         = 'true';
         k_false        = 'false';
         begin_keyword  = ':';
-        begin_value    = digit | [:nft\"\-\{\[\(\\#];
+        begin_value    = digit | [:nft\"\-\{\[\(\\];
         begin_dispatch = '#';
         begin_vector   = '[';
         end_vector     = ']';
@@ -142,6 +142,80 @@ const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Ob
     }
     return NULL;
 }
+
+
+// ============================================================
+// tagged element parsing - any of #uuid, #inst, #{, #(some symbol)
+// discard (#_ <ident>) is handled by the top-level machine
+//
+%%{
+    machine EDN_dispatch;
+    include EDN_common;
+
+    begin_discard  = '_';
+    begin_set      = '{';
+    end_set        = '}';
+
+    write data;
+
+    action exit { fhold; fbreak; }
+
+    main := begin_dispatch (
+                            (begin_discard (space)? ([a-zA-Z0-9\-\.]*)) |
+                            ('inst ' string_delim ([0-9\-+:\.TZ])* string_delim) |
+                            ('uuid ' string_delim ([a-f0-9\-]* string_delim))
+                            )
+        (^[a-zA-Z0-9:\.\-+ ]* @exit);
+}%%
+
+
+const char* edn::Parser::EDN_parse_tagged(const char *p, const char *pe, Rice::Object& o, bool& discard)
+{
+    int cs;
+    Rice::String str;
+
+    %% write init;
+    p_save = p;
+    %% write exec;
+
+    if (cs >= EDN_dispatch_first_final) {
+
+        //is it a discard? if so, just drop the following token
+        if (*(p_save + 1) == '_')
+        {
+            discard = true;
+            return p + 1;
+        }
+
+        std::size_t len = p - p_save;
+        std::string buf;
+        buf.reserve(len);
+
+        if (len > 10)
+        {
+            // there's enough room to be #inst or #uuid, copy the
+            // string portion
+            if (std::strncmp(p_save + 1, "inst", 4) == 0) {
+                buf.append(p_save + 7, len - 8);
+            } else if (std::strncmp(p_save + 1, "uuid", 4) == 0) {
+                buf.append(p_save + 7, len - 8);
+            }
+
+            o = Rice::String(buf);
+            return p;
+        }
+
+        // tagged element
+        o = Rice::String(buf);
+        return p;
+    }
+    else if (cs == EDN_dispatch_error) {
+        error(*p);
+        return pe;
+    }
+    return NULL;
+}
+
 
 
 // ============================================================
@@ -392,9 +466,28 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
         }
     }
 
+    action parse_dispatch {
+        bool discard = false;
+        Rice::Object v;
+        const char *np = EDN_parse_tagged(fpc, pe, v, discard);
+        if (np == NULL) {
+            fhold; fbreak;
+        } else {
+            if (!discard) {
+                arr.push(v);
+            }
+            fexec np;
+        }
+    }
+
     action exit { fhold; fbreak; }
 
-    next_element  = ignore* begin_value >parse_value;
+    element        = (
+                      begin_value >parse_value |
+                      begin_dispatch >parse_dispatch
+                      );
+
+    next_element  = ignore* element;
 }%%
 
 %%{
@@ -403,9 +496,8 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
 
     write data;
 
-    main := begin_vector ignore*
-             ((begin_value >parse_value ignore*)
-              (ignore* next_element ignore*)*)?
+    main := begin_vector ignore* ((element ignore*)
+                                  (ignore* next_element ignore*)*)?
             end_vector @err(close_err)
             @exit;
 }%%
