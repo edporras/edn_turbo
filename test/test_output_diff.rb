@@ -1,65 +1,93 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 $LOAD_PATH << File.expand_path( File.dirname(__FILE__) + '/../lib' )
-require 'test/unit'
+require 'minitest/autorun'
 require 'edn_ext'
-require 'colorize'
 
-class EDN_EXT_Test < Test::Unit::TestCase
+class EDN_EXT_Test < Minitest::Test
 
-  def test_file(file, expected_output)
-    File.open(file) { |f|
-      assert(EDN_EXT.read(f) == expected_output)
+  def setup
+    @parser = EDN_EXT::Parser.new
+  end
+
+  def check_file(file, expected_output)
+    File.open(file) { |file|
+      assert_equal(@parser.read(file.read), expected_output)
     }
   end
 
+  def test_number
 
-  def test_output_diff
+    check_file('test/number.edn',
+               [0, 0, 5, 12, 232, -98798, 13213, 0.11, 231.312, -2321.0, 11.22]
+              )
+  end
 
-    test_file('test/number.edn',
-              [0, 0, 5, 12, 232, -98798, 13213, 0.11, 231.312, -2321.0, 11.22]
-             )
+  def test_keyword
 
-    test_file('test/keyword.edn',
-              [:key1, :"key_2/adsd2", :key_3, :"key-4", :"key_5/asd-32_ee"]
-             )
+    check_file('test/keyword.edn',
+               [:key1, :"key_2/adsd2", :key_3, :"key-4", :"key_5/asd-32_ee"]
+              )
+  end
 
-    test_file('test/values.edn',
-              [false, true, nil, "this is a test", "this\tis\\only\ta\ttest\rof\"various\nescaped\\values",
-               "this is a third test", "123➪456®789"]
-             )
+  def test_values
 
-    test_file('test/vector_1.edn',
-              [true, true, 34, [true, nil, "añ", "", :test, [3213.23]]]
-             )
+    check_file('test/values.edn',
+               [false, true, nil, "this is a test", "this\tis\\only\ta\ttest\rof\"various\nescaped\\values",
+                "this is a third test", "123➪456®789"]
+              )
+  end
 
-    test_file('test/list_1.edn',
-              [22, 3312, "dss", {:powerpuff=>[:buttercup, :bubbles, :blossom]}]
-             )
+  def test_vector
 
-    test_file('test/map_1.edn',
-              {:key_a1=>true,:key_a2=>false,:key_a3=>[1, 2, 3, "test string", nil, {1=>2}],
-               :key_a4=>{:key_a31=>23, :key_a32=>24.4},"string_key"=>:kval,
-               :embedded=>[true, {:c2g_md5=>"2bbee1cd3045710db6fec432b00d1e0c"}],
-               2=>{:a=>:b}}
-             )
+    check_file('test/vector_1.edn',
+               [true, true, 34, [true, nil, "añ", "", :test, [3213.23]]]
+              )
+  end
 
-    test_file('test/map_2.edn',
-              {:int=>1, :string=>"hello", :char=>"a", :array=>[0, 1], :hash=>{:key=>"value"}}
-             )
+  def test_read
 
-    test_file('test/map_3.edn',
-              {:meta=>{:data_format_version=>304,
-                       :filename=>"test/colorspan.pdf",
-                       :is_ok=>true,
-                       :font_engine_ok=>true,
-                       :pdf_ver_major=>1,
-                       :pdf_ver_minor=>3,
-                       :num_pages=>1,
-                       :outline=>[],
-                       :font_size_list=>[12.0],
-                       :lib_versions=>
-                       {:edsel=>"0.20.3",:poppler=>"0.29.0",:libpng=>"1.6.16",:openjpeg=>"1.5.0",:boost=>"1.57",:fontconfig=>"2.11.1",:freetype=>"2.5.5",:leptonica=>"1.71"}},
+    # check read for using string
+    assert_equal(@parser.read('{:a 1 :b 2}'), {:a=>1, :b=>2})
+
+  end
+
+  def test_list
+
+    check_file('test/list_1.edn',
+               [22, 3312, "dss", {:powerpuff=>[:buttercup, :bubbles, :blossom]}]
+              )
+
+  end
+
+  def test_map
+
+    check_file('test/map_1.edn',
+               {:key_a1=>true,:key_a2=>false,:key_a3=>[1, 2, 3, "test string", nil, {1=>2}],
+                :key_a4=>{:key_a31=>23, :key_a32=>24.4},"string_key"=>:kval,
+                :embedded=>[true, {:c2g_md5=>"2bbee1cd3045710db6fec432b00d1e0c"}],
+                2=>{:a=>:b}}
+              )
+
+    check_file('test/map_2.edn',
+               {:int=>1, :string=>"hello", :char=>"a", :array=>[0, 1], :hash=>{:key=>"value"}}
+              )
+  end
+
+  def test_packard
+
+    check_file('test/map_3.edn',
+               {:meta=>{:data_format_version=>304,
+                        :filename=>"test/colorspan.pdf",
+                        :is_ok=>true,
+                        :font_engine_ok=>true,
+                        :pdf_ver_major=>1,
+                        :pdf_ver_minor=>3,
+                        :num_pages=>1,
+                        :outline=>[],
+                        :font_size_list=>[12.0],
+                        :lib_versions=>
+                        {:edsel=>"0.20.3",:poppler=>"0.29.0",:libpng=>"1.6.16",:openjpeg=>"1.5.0",:boost=>"1.57",:fontconfig=>"2.11.1",:freetype=>"2.5.5",:leptonica=>"1.71"}},
                :pages=>
                [{:data_format_version=>304,
                  :pgnum=>1,
