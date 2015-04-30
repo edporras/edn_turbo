@@ -19,8 +19,8 @@ namespace edn
         const char* p_save;
         const char* eof;
 
-        Rice::Object process(const char* b, long len);
-        bool EDN_parse_byte_stream   (const char *p, const char *pe, Rice::String& s);
+        Rice::Object parse(const char* s, std::size_t len);
+
         const char* EDN_parse_decimal(const char *p, const char *pe, Rice::Object& o);
         const char* EDN_parse_integer(const char *p, const char *pe, Rice::Object& o);
         const char* EDN_parse_keyword(const char *p, const char *pe, Rice::Object& o);
@@ -30,6 +30,8 @@ namespace edn
         const char* EDN_parse_vector (const char *p, const char *pe, Rice::Object& o);
         const char* EDN_parse_map    (const char *p, const char *pe, Rice::Object& o);
         const char* EDN_parse_list   (const char *p, const char *pe, Rice::Object& o);
+
+        bool EDN_parse_byte_stream   (const char *p, const char *pe, Rice::String& s);
 
         void error(const std::string& err, char c) const;
         void error(char err_c) const { error("", err_c); }
@@ -48,7 +50,10 @@ namespace edn
     public:
         Parser() : line_number(1), p_save(NULL), eof(NULL) { }
 
-        Rice::Object parse(const std::string& file);
+        Rice::Object process(const std::string& data) { return parse(data.c_str(), data.length()); }
+
+        // handle file read from the c-side
+        Rice::Object open(const std::string& file);
 
     }; // Engine
 

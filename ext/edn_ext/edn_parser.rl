@@ -140,6 +140,7 @@ const char *edn::Parser::EDN_parse_value(const char *p, const char *pe, Rice::Ob
         error(*p);
         return pe;
     }
+    else if (cs == EDN_value_en_main) {} // silence ragel warning
     return NULL;
 }
 
@@ -213,6 +214,7 @@ const char* edn::Parser::EDN_parse_tagged(const char *p, const char *pe, Rice::O
         error(*p);
         return pe;
     }
+    else if (cs == EDN_dispatch_en_main) {} // silence ragel warning
     return NULL;
 }
 
@@ -254,6 +256,7 @@ const char* edn::Parser::EDN_parse_keyword(const char *p, const char *pe, Rice::
         error(*p);
         return pe;
     }
+    else if (cs == EDN_keyword_en_main) {} // silence ragel warning
     return NULL;
 }
 
@@ -375,6 +378,7 @@ const char* edn::Parser::EDN_parse_string(const char *p, const char *pe, Rice::O
     else if (cs == EDN_string_error) {
         return pe;
     }
+    else if (cs == EDN_string_en_main) {} // silence ragel warning
     return NULL;
 }
 
@@ -412,7 +416,7 @@ const char* edn::Parser::EDN_parse_decimal(const char *p, const char *pe, Rice::
         o = Parser::buftotype<double>(p_save, p - p_save, value);
         return p + 1;
     }
-
+    else if (cs == EDN_decimal_en_main) {} // silence ragel warning
     return NULL;
 }
 
@@ -443,6 +447,7 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
         o = Parser::buftotype<int>(p_save, p - p_save, value);
         return p + 1;
     }
+    else if (cs == EDN_integer_en_main) {} // silence ragel warning
     return NULL;
 }
 
@@ -524,7 +529,7 @@ const char* edn::Parser::EDN_parse_vector(const char *p, const char *pe, Rice::O
         error(*p);
         return pe;
     }
-
+    else if (cs == EDN_vector_en_main) {} // silence ragel warning
     return NULL;
 }
 
@@ -567,7 +572,7 @@ const char* edn::Parser::EDN_parse_list(const char *p, const char *pe, Rice::Obj
         error(*p);
         return pe;
     }
-
+    else if (cs == EDN_list_en_main) {} // silence ragel warning
     return NULL;
 }
 
@@ -639,6 +644,7 @@ const char* edn::Parser::EDN_parse_map(const char *p, const char *pe, Rice::Obje
     else if (cs == EDN_map_error) {
         return pe;
     }
+    else if (cs == EDN_map_en_main) {} // silence ragel warning
     return NULL;
 }
 
@@ -678,7 +684,7 @@ const char* edn::Parser::EDN_parse_map(const char *p, const char *pe, Rice::Obje
 //
 //
 //
-Rice::Object edn::Parser::process(const char* buf, long len)
+Rice::Object edn::Parser::parse(const char* buf, std::size_t len)
 {
     int cs;
     const char *p;
@@ -689,7 +695,7 @@ Rice::Object edn::Parser::process(const char* buf, long len)
 
     %% write init;
     p = &buf[0];
-    pe = buf + len;
+    pe = p + len;
     eof = pe; // eof defined in Parser class
     %% write exec;
 
@@ -697,7 +703,7 @@ Rice::Object edn::Parser::process(const char* buf, long len)
         error(*p);
         return Qnil;
     }
-
+    else if (cs == EDN_en_main) {} // silence ragel warning
     return result;
 }
 

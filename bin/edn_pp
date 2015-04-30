@@ -16,6 +16,10 @@ if !File.exist? filename
   exit 1
 end
 
-output = EDN_EXT.read(filename, { :silent => true })
+# mimic edn-ruby usage
+File.open(filename) do |file|
+  output = EDN_EXT.read(file)
+  pp output if output != nil
+end
 
-pp output if output != nil
+
