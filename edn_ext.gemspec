@@ -11,9 +11,9 @@ Gem::Specification.new do |s|
 
   s.authors = ["Ed Porras"]
   s.email = %q{ed@motologic.com}
-  s.date = %q{2014-12-15}
-  s.summary = %q{RW EDN files and do it fast}
-  s.description = %q{Optimization for read and write of EDN files}
+  s.date = %q{2015-04-30}
+  s.summary = %q{Read EDN files}
+  s.description = %q{Optimization for parsing of EDN files using ragel in a c++ extension}
   s.license = ''
 
   s.files = `git ls-files`.split("\n").
@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
 
   s.extensions = ['ext/edn_ext/extconf.rb']
   s.executables = ['edn_pp']
-  s.test_files = ["test/test_version.rb"]
+  s.test_files = ["test/test_output_diff.rb"]
   s.homepage = %q{http://rubygems.org/gems/edn_ext}
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.6.2}
