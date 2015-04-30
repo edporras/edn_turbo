@@ -2,11 +2,29 @@
 # -*- coding: utf-8 -*-
 
 $LOAD_PATH << File.expand_path( File.dirname(__FILE__) + '/../lib' )
+
+require 'optparse'
 require 'edn_ext'
 require 'pp'
 
+options = {}
+optparse = OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options] filename"
+
+  opts.on( '-v', '--version', 'Display version information and exit' ) do
+    $stderr.puts "EDN parsing C++-extension version #{EDN_EXT::VERSION}"
+    exit
+  end
+
+  opts.on( '-h', '--help', 'Display this screen' ) do
+    $stderr.puts opts
+    exit
+  end
+end
+optparse.parse!
+
 if ARGV.size == 0
-  $stderr.puts "invalid arg count"
+  $stderr.puts optparse
   exit 1
 end
 
@@ -21,5 +39,3 @@ File.open(filename) do |file|
   output = EDN_EXT.read(file)
   pp output if output != nil
 end
-
-
