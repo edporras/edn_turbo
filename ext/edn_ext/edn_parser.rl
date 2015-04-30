@@ -306,7 +306,7 @@ bool edn::Parser::EDN_parse_byte_stream(const char *p, const char *pe, Rice::Str
 
         const char* cp = p;
         std::size_t pos = 0;
-        char replacement = '?';
+        char c, replacement;
 
         while (cp < pe)
         {
@@ -321,7 +321,10 @@ bool edn::Parser::EDN_parse_byte_stream(const char *p, const char *pe, Rice::Str
             if (++cp == pe)
                 break;
 
-            switch (*cp++)
+            c = *cp++;
+            replacement = '?';
+
+            switch (c)
             {
               case 't':
                   replacement = '\t';
@@ -338,15 +341,19 @@ bool edn::Parser::EDN_parse_byte_stream(const char *p, const char *pe, Rice::Str
               case '\\':
                   replacement = '\\';
                   break;
-              case '0':
-                  replacement = '\0';
+                  /* TODO: add support for this!
+              case 'u':
+                  replacement = '\u';
                   break;
+                  */
               default:
-                  std::cerr << "value must be unescaped but case is unhandled: '" << *cp << "'" << std::endl;
+                  std::cerr << "value must be unescaped but case is unhandled: '" << c << "'" << std::endl;
                   break;
             }
+
             // substitute the escaped walue
-            buf.replace(pos++, 1, 1, replacement);
+            if (replacement != '?')
+                buf.replace(pos++, 1, 1, replacement);
         }
 
         // utf-8 encode
@@ -454,7 +461,7 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
 
 // ============================================================
 // vector parsing machine. EDN_vector_common is used to parse EDN
-// vectors and lists since they're both represented as vecotrs in ruby
+// vectors and lists since they're both represented as vectors in ruby
 //
 %%{
     machine EDN_vector_common;
@@ -495,6 +502,8 @@ const char* edn::Parser::EDN_parse_integer(const char *p, const char *pe, Rice::
     next_element  = ignore* element;
 }%%
 
+//
+// vector-specific machine
 %%{
     machine EDN_vector;
     include EDN_vector_common;
