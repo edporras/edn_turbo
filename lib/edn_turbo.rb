@@ -1,8 +1,8 @@
-require_relative 'edn_ext/edn_parser'
-require_relative 'edn_ext/version'
-require_relative 'edn_ext/edn_ext'
+require_relative 'edn_turbo/edn_parser'
+require_relative 'edn_turbo/version'
+require_relative 'edn_turbo/edn_turbo'
 
-module EDN_EXT
+module EDNT
 
   # ----------------------------------------------------------------------------
   # instantiate a parser (defined in the C-side) and parse the file

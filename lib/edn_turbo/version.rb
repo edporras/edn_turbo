@@ -1,3 +1,3 @@
-module EDN_EXT
+module EDNT
   VERSION = '0.1.0'
 end

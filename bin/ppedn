@@ -4,7 +4,7 @@
 $LOAD_PATH << File.expand_path( File.dirname(__FILE__) + '/../lib' )
 
 require 'optparse'
-require 'edn_ext'
+require 'edn_turbo'
 require 'pp'
 
 options = {}
@@ -12,7 +12,7 @@ optparse = OptionParser.new do |opts|
   opts.banner = "Usage: #{$0} [options] filename"
 
   opts.on( '-v', '--version', 'Display version information and exit' ) do
-    $stderr.puts "EDN parsing C++-extension version #{EDN_EXT::VERSION}"
+    $stderr.puts "EDN parsing C++-extension version #{EDNt::VERSION}"
     exit
   end
 
@@ -36,6 +36,6 @@ end
 
 # mimic edn-ruby usage
 File.open(filename) do |file|
-  output = EDN_EXT.read(file)
+  output = EDNT.read(file)
   pp output if output != nil
 end

@@ -1,4 +1,4 @@
-module EDN_EXT
+module EDNT
 
   class Parser
     def read(data)

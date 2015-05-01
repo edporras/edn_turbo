@@ -3,7 +3,9 @@ require 'rake/extensiontask'
 require 'rake/clean'
 require 'rbconfig'
 
-NAME = 'edn_ext'
+NAME = 'edn_turbo'
+LIB_DIR = "lib/#{NAME}"
+EXT_BUNDLE = "#{LIB_DIR}/#{NAME}.#{RbConfig::CONFIG['DLEXT']}"
 
 
 EXT_PATH               = "ext/#{NAME}"
@@ -13,12 +15,12 @@ GEN_CC_PARSER_SRC      = "edn_parser.cc"
 GEN_CC_PARSER_SRC_PATH = "#{EXT_PATH}/#{GEN_CC_PARSER_SRC}"
 
 Rake::ExtensionTask.new("#{NAME}") do |extension|
-  extension.lib_dir = "lib/#{NAME}"
+  extension.lib_dir = LIB_DIR
   extension.source_pattern = "*.{cc,h}"
 end
 
 task :chmod do
-  File.chmod(0775, "lib/#{NAME}/#{NAME}.#{RbConfig::CONFIG['DLEXT']}")
+  File.chmod(0775, EXT_BUNDLE)
 end
 
 task :ragel => GEN_CC_PARSER_SRC_PATH
@@ -35,7 +37,7 @@ end
 task :build => [:clean, :ragel, :compile, :chmod]
 
 # add dependency to test task
-task :test => "lib/#{NAME}/#{NAME}.#{RbConfig::CONFIG['DLEXT']}"
+task :test => EXT_BUNDLE
 
 Rake::TestTask.new do |t|
   t.libs << 'test'
