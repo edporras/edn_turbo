@@ -14,7 +14,9 @@ Some quick sample runs comparing time output of file reads using `edn`
 and `edn_turbo`:
 
 1. 792K data file:
-```        with edn
+
+```
+        with edn
 
 real    0m1.022s
 user    0m0.960s
@@ -24,11 +26,13 @@ sys     0m0.047s
 
 real    0m0.132s
 user    0m0.091s
-sys     0m0.038s```
+sys     0m0.038s
+```
 
 2. 43M data file:
 
-```        with edn-ruby
+```
+        with edn
 
 real    0m55.922s
 user    0m55.155s
@@ -40,7 +44,6 @@ real    0m1.976s
 user    0m1.844s
 sys     0m0.111s
 ```
-
 
 Dependencies
 ============
