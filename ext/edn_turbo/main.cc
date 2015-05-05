@@ -41,7 +41,6 @@ void Init_edn_turbo(void)
         Rice::define_class_under<edn::Parser>(rb_mEDNT, "Parser")
         .define_constructor(Rice::Constructor<edn::Parser>())
         .define_method("ext_read", &edn::Parser::process, (Rice::Arg("data")))
-        .define_method("ext_open", &edn::Parser::open, (Rice::Arg("file")))
         ;
 
     // import whatever else we've defined in the ruby side
