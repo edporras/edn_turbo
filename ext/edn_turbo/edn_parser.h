@@ -32,6 +32,7 @@ namespace edn
         const char* parse_list   (const char *p, const char *pe, Rice::Object& o);
 
         static bool parse_byte_stream(const char *p, const char *pe, Rice::String& s);
+        static bool unicode_to_utf8(const char *s, std::size_t len, std::string& rslt);
 
         void error(const std::string& err, char c) const;
         void error(char err_c) const { error("", err_c); }

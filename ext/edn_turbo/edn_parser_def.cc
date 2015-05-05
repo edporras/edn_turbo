@@ -14,72 +14,20 @@ namespace edn
     //
     // copies the string data, unescaping any present values that need to be replaced
     //
-    bool Parser::parse_byte_stream(const char *p, const char *pe, Rice::String& s)
+    bool Parser::parse_byte_stream(const char *p_start, const char *p_end, Rice::String& s)
     {
-        if (pe > p) {
+        if (p_end > p_start) {
             std::string buf;
-            std::size_t len = pe - p;
+            std::size_t len = p_end - p_start;
 
-            // pre-allocate storage needed
-            buf.reserve(len);
-
-            const char* cp = p;
-            std::size_t pos = 0;
-            char c, replacement;
-
-            while (cp < pe)
+            if (unicode_to_utf8(p_start, len, buf))
             {
-                // append any other character that is not the escaping slash
-                if (*cp != '\\') {
-                    buf.replace(pos++, 1, 1, *cp++);
-                    continue;
-                }
-
-                // looking at a '\' - check what it escapes if there's a
-                // following character
-                if (++cp == pe)
-                    break;
-
-                c = *cp++;
-                replacement = '?';
-
-                switch (c)
-                {
-                  case 't':
-                      replacement = '\t';
-                      break;
-                  case 'n':
-                      replacement = '\n';
-                      break;
-                  case 'r':
-                      replacement = '\r';
-                      break;
-                  case '\"':
-                      replacement = '\"';
-                      break;
-                  case '\\':
-                      replacement = '\\';
-                      break;
-                      /* TODO: add support for this!
-                         case 'u':
-                         replacement = '\u';
-                         break;
-                      */
-                  default:
-                      std::cerr << "value must be unescaped but case is unhandled: '" << c << "'" << std::endl;
-                      break;
-                }
-
-                // substitute the escaped walue
-                if (replacement != '?')
-                    buf.replace(pos++, 1, 1, replacement);
+                // utf-8 encode
+                VALUE vs = Rice::protect( rb_str_new2, buf.c_str() );
+                VALUE s_utf8 = Rice::protect( rb_enc_associate, vs, rb_utf8_encoding() );
+                s = Rice::String(s_utf8);
+                return true;
             }
-
-            // utf-8 encode
-            VALUE vs = Rice::protect( rb_str_new2, buf.c_str() );
-            VALUE s_utf8 = Rice::protect( rb_enc_associate, vs, rb_utf8_encoding() );
-            s = Rice::String(s_utf8);
-            return true;
         }
 
         return false;

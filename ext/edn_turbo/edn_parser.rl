@@ -10,6 +10,10 @@
 //
 // EDN spec at: https://github.com/edn-format/edn
 //
+//
+// many thanks to Florian Frank for json-ruby which was essential in
+// helping me learn about ragel
+//
 
 %%{
         machine EDN_common;

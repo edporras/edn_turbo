@@ -38,6 +38,15 @@ class EDNT_Test < Minitest::Test
               )
   end
 
+  def test_unicode
+
+    check_file('test/unicode.edn',
+               [:text,
+                "Page \u0018, October 2009 TechTIPS",
+                "This should be an unfilled star: ☆"]
+              )
+  end
+
   def test_vector
 
     check_file('test/vector_1.edn',
