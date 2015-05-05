@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
 
   s.authors = ["Ed Porras"]
   s.email = %q{ed@motologic.com}
-  s.date = %q{2015-04-30}
+  s.date = EDNT::RELEASE_DATE
   s.summary = %q{Read EDN files}
   s.description = %q{Optimization for parsing of EDN files using ragel in a c++ extension}
   s.license = ''
