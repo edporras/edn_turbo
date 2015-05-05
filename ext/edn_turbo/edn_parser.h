@@ -2,7 +2,7 @@
 #define EDN_RUBY_EXT_PARSER_H
 
 #include <string>
-#include <strstream>
+#include <sstream>
 #include <rice/Object.hpp>
 #include <rice/to_from_ruby.hpp>
 
