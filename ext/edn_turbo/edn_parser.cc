@@ -518,9 +518,9 @@ case 14:
         {
             // there's enough room to be #inst or #uuid, copy the
             // string portion
-            if (std::strncmp(p_save + 1, "inst", 4) == 0) {
+            if (strncmp(p_save + 1, "inst", 4) == 0) {
                 buf.append(p_save + 7, len - 8);
-            } else if (std::strncmp(p_save + 1, "uuid", 4) == 0) {
+            } else if (strncmp(p_save + 1, "uuid", 4) == 0) {
                 buf.append(p_save + 7, len - 8);
             }
 
