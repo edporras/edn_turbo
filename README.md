@@ -48,11 +48,11 @@ sys     0m0.111s
 Dependencies
 ============
 
-Minimum required versions shown of the following:
 - ruby gems:
   - [rake 10.3.2](http://rake.rubyforge.org)
   - [rake-compiler 0.9.2](http://rake-compiler.rubyforge.org)
   - [rice 1.7.0](http://rice.rubyforge.org)
+- [icu4c](http://icu-project.org/apiref/icu4c/)
 
 `edn_turbo` uses a ragel-based parser but the generated .cc file is
 bundled so ragel should not need to be installed.
