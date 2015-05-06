@@ -16,6 +16,15 @@ class EDNT_Test < Minitest::Test
     }
   end
 
+  def test_basic
+
+    assert_equal(@parser.read('false'), false)
+    assert_equal(@parser.read('true'), true)
+    assert_equal(@parser.read('"a string"'), "a string")
+    assert_equal(@parser.read(':namespace.of.some.length/keyword-name'), :"namespace.of.some.length/keyword-name")
+    assert_equal(@parser.read(':/'), :'/')
+  end
+
   def test_number
 
     check_file('test/number.edn',

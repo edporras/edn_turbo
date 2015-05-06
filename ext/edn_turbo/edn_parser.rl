@@ -39,6 +39,15 @@
         string_delim   = '"';
         begin_number   = digit | '-';
 
+        # symbol naming rules to match EDN spec
+        symbol_chars   = [a-zA-Z0-9\*\-\+!_\?$%&=<>'.'/\#:];
+        symbol_start   = [a-zA-Z\*\-\+!_\?$%&=<>'.'\#:];
+        symbol_follow  = symbol_chars;
+        symbol_name    = [\-+'.']? symbol_start (symbol_follow)*;
+
+        symbol         = '/' | (symbol_name ('/' symbol_name)?);
+
+
         action close_err {
             std::stringstream s;
             s << "unterminated " << EDN_TYPE;
@@ -158,9 +167,7 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object
 
     action exit { fhold; fbreak; }
 
-    main := begin_keyword
-        ([a-zA-Z_][a-zA-Z_0-9\-]* ('/' [a-zA-Z_][a-zA-Z_0-9\-]*)?)
-        (^[a-zA-Z_0-9\-'/']? @exit);
+    main := begin_keyword symbol (^symbol_chars? @exit);
 }%%
 
 
@@ -596,26 +603,14 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
 
     write data nofinal;
 
-    action parse_vector {
-        const char* np = parse_vector(fpc, pe, result);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
-    }
-
-    action parse_map {
-        const char *np = parse_map(fpc, pe, result);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
-    }
-
-    action parse_list {
-        const char *np = parse_list(fpc, pe, result);
+    action parse_value {
+        const char* np = parse_value(fpc, pe, result);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     main := ignore* (
-                 begin_vector >parse_vector |
-                 begin_map >parse_map |
-                 begin_list >parse_list
-                 ) ignore*;
+                     begin_value >parse_value
+                     ) ignore*;
 }%%
 
 //
