@@ -17,11 +17,4 @@ module EDNT
 
   end
 
-
-  # ----------------------------------------------------------------------------
-  # handle file-open from the c-side and then parse
-  #
-  def self.open(filename)
-    Parser.new.ext_open(filename)
-  end
 end # EDN namespace
