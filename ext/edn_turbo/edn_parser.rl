@@ -41,9 +41,8 @@
 
         # symbol naming rules to match EDN spec
         symbol_chars   = [a-zA-Z0-9\*\-\+!_\?$%&=<>'.'/\#:];
-        symbol_start   = [a-zA-Z\*\-\+!_\?$%&=<>'.'\#:];
-        symbol_follow  = symbol_chars;
-        symbol_name    = [\-+'.']? symbol_start (symbol_follow)*;
+        symbol_first_c = symbol_chars - [0-9]; # non-numeric
+        symbol_name    = [\-+'.']? symbol_first_c (symbol_chars)*;
 
         symbol         = '/' | (symbol_name ('/' symbol_name)?);
 
