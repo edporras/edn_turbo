@@ -37,7 +37,10 @@ namespace edn
         const char* parse_vector (const char *p, const char *pe, Rice::Object& o);
         const char* parse_map    (const char *p, const char *pe, Rice::Object& o);
         const char* parse_list   (const char *p, const char *pe, Rice::Object& o);
+        const char* parse_set    (const char *p, const char *pe, Rice::Object& o);
+        const char* parse_tagged (const char *p, const char *pe, Rice::Object& o);
         const char* parse_builtin_tagged(const char *p, const char *pe, Rice::Object& o, TaggedType type);
+        const char* parse_discard(const char *p, const char *pe, Rice::Object& o);
 
         static bool parse_byte_stream(const char *p, const char *pe, Rice::String& s);
         static bool unicode_to_utf8(const char *s, std::size_t len, std::string& rslt);

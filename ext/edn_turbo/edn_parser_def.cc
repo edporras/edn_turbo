@@ -37,7 +37,9 @@ namespace edn
     // error reporting
     void Parser::error(const std::string& func, const std::string& err, char c) const
     {
-        std::cerr << "Parse error ";//from " << func << "() ";
+        std::cerr << "Parse error "
+            //            "from " << func << "() "
+            ;
         if (err.length() > 0)
             std::cerr << "(" << err << ") ";
         if (c != '\0')

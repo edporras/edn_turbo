@@ -27,8 +27,7 @@
         k_nil          = 'nil';
         k_true         = 'true';
         k_false        = 'false';
-        begin_uuid     = '#uuid ';
-        begin_inst     = '#inst ';
+        begin_dispatch = '#';
         begin_keyword  = ':';
         begin_value    = digit | [:nft\"\-\+\.\{\[\(\\\#];
         begin_vector   = '[';
@@ -76,14 +75,6 @@
         o = Qtrue;
     }
 
-    action parse_builtin_tagged_uuid {
-        const char *np = parse_builtin_tagged(fpc + 1, pe, o, TAGGED_UUID);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
-    }
-    action parse_builtin_tagged_inst {
-        const char *np = parse_builtin_tagged(fpc + 1, pe, o, TAGGED_INST);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
-    }
     action parse_keyword {
         const char *np = parse_keyword(fpc, pe, o);
         if (np == NULL) { fhold; fbreak; } else fexec np;
@@ -128,14 +119,18 @@
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
+    action parse_dispatch {
+        const char *np = parse_tagged(fpc + 1, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
     action exit { fhold; fbreak; }
 
     main := (
              k_nil @parse_nil |
              k_false @parse_false |
              k_true @parse_true |
-             begin_uuid @parse_builtin_tagged_uuid |
-             begin_inst @parse_builtin_tagged_inst |
+             begin_dispatch >parse_dispatch |
              string_delim >parse_string |
              begin_keyword >parse_keyword |
              begin_number >parse_number |
@@ -457,6 +452,53 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
 
 
 // ============================================================
+// set parsing machine
+//
+%%{
+    machine EDN_set;
+    include EDN_vector_common;
+
+    write data;
+
+    begin_set    = '{';
+    end_set      = '}';
+
+    main := begin_set ignore* (
+                                (element ignore*)
+                                (next_element ignore*)*
+                                )?
+            end_set @err(close_err)
+            @exit;
+}%%
+
+//
+// set parsing
+//
+const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& o)
+{
+    static const char* EDN_TYPE = "set";
+
+    int cs;
+    Rice::Array arr; // TODO: fix.. needs to be a Set
+
+    %% write init;
+    %% write exec;
+
+    if (cs >= EDN_set_first_final) {
+        o = arr;
+        return p + 1;
+    }
+    else if (cs == EDN_set_error) {
+        error(__FUNCTION__, *p);
+        return pe;
+    }
+    else if (cs == EDN_set_en_main) {} // silence ragel warning
+    return NULL;
+}
+
+
+
+// ============================================================
 // hash parsing
 //
 %%{
@@ -527,6 +569,71 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
 }
 
 
+// ============================================================
+// tagged element parsing - #uuid, #inst, #{, #_
+//
+%%{
+    machine EDN_tagged;
+    include EDN_common;
+
+    begin_uuid    = 'uuid ';
+    begin_inst    = 'inst ';
+    begin_set     = '{';
+    begin_discard = '_';
+
+    write data;
+
+    action parse_builtin_tagged_uuid {
+        const char *np = parse_builtin_tagged(fpc + 1, pe, o, TAGGED_UUID);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
+    action parse_builtin_tagged_inst {
+        const char *np = parse_builtin_tagged(fpc + 1, pe, o, TAGGED_INST);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
+    action parse_set {
+        const char *np = parse_set(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
+    action parse_discard {
+        const char *np = parse_discard(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
+    action exit { fhold; fbreak; }
+
+    main := (
+             begin_set >parse_set |
+             begin_uuid @parse_builtin_tagged_uuid |
+             begin_inst @parse_builtin_tagged_inst
+#             begin_discard >parse_discard
+# TODO: need to add symbol parsing for tagged elements
+             ) @exit;
+}%%
+
+
+const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Object& o)
+{
+    int cs;
+
+    %% write init;
+    p_save = p;
+
+    %% write exec;
+
+    if (cs >= EDN_tagged_first_final) {
+        return p + 1;
+    }
+    else if (cs == EDN_tagged_error) {
+        return pe;
+    }
+    else if (cs == EDN_tagged_en_main) {} // silence ragel warning
+    return NULL;
+}
+
 
 // ============================================================
 // built-in tagged element parsing - #uuid or #inst
@@ -540,10 +647,10 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
     action exit { fhold; fbreak; }
 
     main := (
-              ((string_delim [0-9\-\+:\.TZ]* string_delim) |
-               (string_delim [a-f0-9\-]* string_delim))
-              )
-            (^[a-fA-FTZ0-9:\.\-\+\"]* @exit);
+             (string_delim [0-9\-\+:\.TZ]* string_delim) |
+             (string_delim [a-f0-9\-]* string_delim)
+             )
+            (^[a-fA-FTZ0-9:\.\-\+\" ]* @exit);
 }%%
 
 
@@ -582,6 +689,61 @@ const char* edn::Parser::parse_builtin_tagged(const char *p, const char *pe, Ric
 
     return NULL;
 }
+
+
+// ============================================================
+// discard
+//
+%%{
+    machine EDN_discard;
+    include EDN_common;
+
+    write data;
+
+    action discard_value {
+        const char *np = parse_discard(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
+    action exit { fhold; fbreak; }
+
+    main := (
+             '_' ignore* begin_value >discard_value
+             ) @exit;
+}%%
+
+
+const char* edn::Parser::parse_discard(const char *p, const char *pe, Rice::Object& o)
+{
+    int cs;
+
+    %% write init;
+    p_save = p;
+    %% write exec;
+
+    if (cs >= EDN_discard_first_final) {
+        std::size_t len = p - p_save;
+
+        if (len > 2)
+        {
+            std::string buf;
+            buf.reserve(len);
+
+            // omit the quotes
+            buf.append(p_save + 1, len - 2);
+            std::cerr << "DISCARDING: '" << buf << "'" << std::endl;
+            return p + 1;
+        }
+    }
+    else if (cs == EDN_discard_error) {
+        error(__FUNCTION__, *p);
+        return pe;
+    }
+    else if (cs == EDN_discard_en_main) {} // silence ragel warning
+
+    return NULL;
+}
+
 
 
 // ============================================================
