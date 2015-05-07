@@ -27,9 +27,10 @@
         k_nil          = 'nil';
         k_true         = 'true';
         k_false        = 'false';
+        begin_uuid     = '#uuid ';
+        begin_inst     = '#inst ';
         begin_keyword  = ':';
-        begin_value    = digit | [:nft\"\-\{\[\(\\];
-        begin_dispatch = '#';
+        begin_value    = digit | [:nft\"\-\+\.\{\[\(\\\#];
         begin_vector   = '[';
         end_vector     = ']';
         begin_map      = '{';
@@ -40,9 +41,9 @@
         begin_number   = digit | '-';
 
         # symbol naming rules to match EDN spec
-        symbol_chars   = [a-zA-Z0-9\*\-\+!_\?$%&=<>'.'/\#:];
+        symbol_chars   = [a-zA-Z0-9\*\-\+!_\?$%&=<>\./\#:];
         symbol_first_c = symbol_chars - [0-9]; # non-numeric
-        symbol_name    = [\-+'.']? symbol_first_c (symbol_chars)*;
+        symbol_name    = [\-\+\.]? symbol_first_c (symbol_chars)*;
 
         symbol         = '/' | (symbol_name ('/' symbol_name)?);
 
@@ -50,7 +51,7 @@
         action close_err {
             std::stringstream s;
             s << "unterminated " << EDN_TYPE;
-            error(s.str());
+            error(__FUNCTION__, s.str());
             fexec pe;
         }
 }%%
@@ -75,6 +76,14 @@
         o = Qtrue;
     }
 
+    action parse_builtin_tagged_uuid {
+        const char *np = parse_builtin_tagged(fpc + 1, pe, o, TAGGED_UUID);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+    action parse_builtin_tagged_inst {
+        const char *np = parse_builtin_tagged(fpc + 1, pe, o, TAGGED_INST);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
     action parse_keyword {
         const char *np = parse_keyword(fpc, pe, o);
         if (np == NULL) { fhold; fbreak; } else fexec np;
@@ -99,7 +108,7 @@
             fbreak;
         }
         else {
-            error(*p);
+            error(__FUNCTION__, *p);
             fexec pe;
         }
     }
@@ -125,6 +134,8 @@
              k_nil @parse_nil |
              k_false @parse_false |
              k_true @parse_true |
+             begin_uuid @parse_builtin_tagged_uuid |
+             begin_inst @parse_builtin_tagged_inst |
              string_delim >parse_string |
              begin_keyword >parse_keyword |
              begin_number >parse_number |
@@ -146,7 +157,7 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object
         return p;
     }
     else if (cs == EDN_value_error) {
-        error(*p);
+        error(__FUNCTION__, *p);
         return pe;
     }
     else if (cs == EDN_value_en_main) {} // silence ragel warning
@@ -186,7 +197,7 @@ const char* edn::Parser::parse_keyword(const char *p, const char *pe, Rice::Obje
         return p;
     }
     else if (cs == EDN_keyword_error) {
-        error(*p);
+        error(__FUNCTION__, *p);
         return pe;
     }
     else if (cs == EDN_keyword_en_main) {} // silence ragel warning
@@ -352,10 +363,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
 
     action exit { fhold; fbreak; }
 
-    element        = (
-                      begin_value >parse_value |
-                      begin_dispatch >parse_dispatch
-                      );
+    element       = begin_value >parse_value;
 
     next_element  = ignore* element;
 }%%
@@ -368,8 +376,10 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
 
     write data;
 
-    main := begin_vector ignore* ((element ignore*)
-                                  (ignore* next_element ignore*)*)?
+    main := begin_vector ignore* (
+                                  (element ignore*)
+                                  (next_element ignore*)*
+                                  )?
             end_vector @err(close_err)
             @exit;
 }%%
@@ -393,7 +403,7 @@ const char* edn::Parser::parse_vector(const char *p, const char *pe, Rice::Objec
         return p + 1;
     }
     else if (cs == EDN_vector_error) {
-        error(*p);
+        error(__FUNCTION__, *p);
         return pe;
     }
     else if (cs == EDN_vector_en_main) {} // silence ragel warning
@@ -411,9 +421,10 @@ const char* edn::Parser::parse_vector(const char *p, const char *pe, Rice::Objec
 
     write data;
 
-    main := begin_list ignore*
-             ((begin_value >parse_value ignore*)
-              (ignore* next_element ignore*)*)?
+    main := begin_list ignore* (
+                                (element ignore*)
+                                (next_element ignore*)*
+                                )?
             end_list @err(close_err)
             @exit;
 }%%
@@ -436,7 +447,7 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
         return p + 1;
     }
     else if (cs == EDN_list_error) {
-        error(*p);
+        error(__FUNCTION__, *p);
         return pe;
     }
     else if (cs == EDN_list_en_main) {} // silence ragel warning
@@ -475,7 +486,7 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
 
     # action to report missing value in k/v pair
     action pair_err {
-        error("map pair not found");
+        error(__FUNCTION__, "map pair not found");
         fexec pe;
     }
 
@@ -518,77 +529,57 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
 
 
 // ============================================================
-// tagged element parsing - any of #uuid, #inst, #{, #(some symbol)
-// discard (#_ <ident>) is handled by the top-level machine
-//
-// NOTE: this is not fully implemented yet
+// built-in tagged element parsing - #uuid or #inst
 //
 %%{
-    machine EDN_dispatch;
+    machine EDN_builtin_tagged;
     include EDN_common;
-
-    begin_discard  = '_';
-    begin_set      = '{';
-    end_set        = '}';
 
     write data;
 
     action exit { fhold; fbreak; }
 
-    main := begin_dispatch (
-                            (begin_discard (space)? ([a-zA-Z0-9\-\.]*)) |
-                            ('inst ' string_delim ([0-9\-+:\.TZ])* string_delim) |
-                            ('uuid ' string_delim ([a-f0-9\-]* string_delim))
-                            )
-        (^[a-zA-Z0-9:\.\-+ ]* @exit);
+    main := (
+              ((string_delim [0-9\-\+:\.TZ]* string_delim) |
+               (string_delim [a-f0-9\-]* string_delim))
+              )
+            (^[a-fA-FTZ0-9:\.\-\+\"]* @exit);
 }%%
 
 
-const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Object& o, bool& discard)
+const char* edn::Parser::parse_builtin_tagged(const char *p, const char *pe, Rice::Object& o, TaggedType type)
 {
     int cs;
-    Rice::String str;
 
     %% write init;
     p_save = p;
     %% write exec;
 
-    if (cs >= EDN_dispatch_first_final) {
-
-        //is it a discard? if so, just drop the following token
-        if (*(p_save + 1) == '_')
-        {
-            discard = true;
-            return p + 1;
-        }
-
+    if (cs >= EDN_builtin_tagged_first_final) {
         std::size_t len = p - p_save;
-        std::string buf;
-        buf.reserve(len);
 
-        if (len > 10)
+        if (len > 2)
         {
-            // there's enough room to be #inst or #uuid, copy the
-            // string portion
-            if (std::strncmp(p_save + 1, "inst", 4) == 0) {
-                buf.append(p_save + 7, len - 8);
-            } else if (std::strncmp(p_save + 1, "uuid", 4) == 0) {
-                buf.append(p_save + 7, len - 8);
+            std::string buf;
+            buf.reserve(len);
+
+            // omit the quotes
+            buf.append(p_save + 1, len - 2);
+
+            if (type == TAGGED_INST) {
+                // TODO: check date format!
             }
 
             o = Rice::String(buf);
-            return p;
+            return p + 1;
         }
-
-        // tagged element
-        o = Rice::String(buf);
-        return p;
     }
-    else if (cs == EDN_dispatch_error) {
-        error(*p);
+    else if (cs == EDN_builtin_tagged_error) {
+        error(__FUNCTION__, *p);
         return pe;
     }
-    else if (cs == EDN_dispatch_en_main) {} // silence ragel warning
+    else if (cs == EDN_builtin_tagged_en_main) {} // silence ragel warning
+
     return NULL;
 }
 
@@ -631,7 +622,7 @@ Rice::Object edn::Parser::parse(const char* buf, std::size_t len)
     %% write exec;
 
     if (cs == EDN_error) {
-        error(*p);
+        error(__FUNCTION__, *p);
         return Qnil;
     }
     else if (cs == EDN_en_main) {} // silence ragel warning

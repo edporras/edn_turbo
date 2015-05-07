@@ -3,6 +3,7 @@
 $LOAD_PATH << File.expand_path( File.dirname(__FILE__) + '/../lib' )
 require 'minitest/autorun'
 require 'edn_turbo'
+require 'date'
 
 class EDNT_Test < Minitest::Test
 
@@ -12,17 +13,17 @@ class EDNT_Test < Minitest::Test
 
   def check_file(file, expected_output)
     File.open(file) { |file|
-      assert_equal(@parser.read(file.read), expected_output)
+      assert_equal(expected_output, @parser.read(file.read))
     }
   end
 
   def test_basic
 
-    assert_equal(@parser.read('false'), false)
-    assert_equal(@parser.read('true'), true)
-    assert_equal(@parser.read('"a string"'), "a string")
-    assert_equal(@parser.read(':namespace.of.some.length/keyword-name'), :"namespace.of.some.length/keyword-name")
-    assert_equal(@parser.read(':/'), :'/')
+    assert_equal(false, @parser.read('false'))
+    assert_equal(true, @parser.read('true'))
+    assert_equal("a string", @parser.read('"a string"'))
+    assert_equal(:"namespace.of.some.length/keyword-name", @parser.read(':namespace.of.some.length/keyword-name'))
+    assert_equal(:'/', @parser.read(':/'))
   end
 
   def test_number
@@ -47,6 +48,18 @@ class EDNT_Test < Minitest::Test
               )
   end
 
+  def test_builtin_tagged
+    # TODO: fix DateTime output
+    check_file('test/built_in_tagged.edn',
+               ["1985-04-12T23:20:50.52Z",
+                "1996-12-19T16:39:57-08:00",
+                "1990-12-31T23:59:60Z",
+                "1990-12-31T15:59:60-08:00",
+                "1937-01-01T12:00:27.87+00:20",
+                "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"]
+              )
+  end
+
   def test_unicode
 
     check_file('test/unicode.edn',
@@ -66,7 +79,7 @@ class EDNT_Test < Minitest::Test
   def test_read
 
     # check read for using string
-    assert_equal(@parser.read('{:a 1 :b 2}'), {:a=>1, :b=>2})
+    assert_equal({:a=>1, :b=>2}, @parser.read('{:a 1 :b 2}'))
 
   end
 

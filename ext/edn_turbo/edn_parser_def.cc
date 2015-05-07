@@ -1,8 +1,7 @@
 #include <iostream>
 #include <string>
-#include <fstream>
 
-#include <rice/Object.hpp>
+#include <rice/String.hpp>
 
 #include <ruby/ruby.h>
 #include <ruby/encoding.h>
@@ -36,9 +35,9 @@ namespace edn
 
     //
     // error reporting
-    void Parser::error(const std::string& err, char c) const
+    void Parser::error(const std::string& func, const std::string& err, char c) const
     {
-        std::cerr << "Parse error ";
+        std::cerr << "Parse error ";//from " << func << "() ";
         if (err.length() > 0)
             std::cerr << "(" << err << ") ";
         if (c != '\0')
