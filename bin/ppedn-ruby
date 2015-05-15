@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 require 'edn'
+require 'pp'
 
 if ARGV.size == 0
   $stderr.puts "no filename given"
@@ -25,3 +26,5 @@ rescue Exception => e
   $stderr.puts "Error reading file"
   abort
 end
+
+pp doc_data
