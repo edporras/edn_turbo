@@ -1,8 +1,9 @@
-#ifndef EDN_RUBY_EXT_PARSER_H
-#define EDN_RUBY_EXT_PARSER_H
+#ifndef EDN_TURBO_PARSER_H
+#define EDN_TURBO_PARSER_H
 
 #include <string>
 #include <sstream>
+#include <rice/Module.hpp>
 #include <rice/Object.hpp>
 #include <rice/String.hpp>
 #include <rice/to_from_ruby.hpp>
@@ -11,6 +12,8 @@ typedef unsigned char ui8;
 
 namespace edn
 {
+    extern Rice::Module rb_mEDNT;
+
     //
     // C-extension EDN Parser class representation
     class Parser
@@ -44,6 +47,8 @@ namespace edn
 
         static bool parse_byte_stream(const char *p, const char *pe, Rice::String& s);
         static bool unicode_to_utf8(const char *s, std::size_t len, std::string& rslt);
+
+        static Rice::Object get_rfc3339_date(const std::string& s);
 
         void error(const std::string& f, const std::string& err, char c) const;
         void error(const std::string& f, char err_c) const { error(f, "", err_c); }

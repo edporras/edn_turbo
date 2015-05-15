@@ -10,6 +10,9 @@
 
 
 namespace edn {
+
+    Rice::Module rb_mEDNT;
+
     void die(int sig)
     {
         exit(-1);
@@ -34,11 +37,11 @@ void Init_edn_turbo(void)
         return;
     }
 
-    Rice::Module rb_mEDNT = Rice::define_module("EDNT");
+    edn::rb_mEDNT = Rice::define_module("EDNT");
 
     // bind the ruby Parser class to the C++ one
     Rice::Data_Type<edn::Parser> rb_cParser =
-        Rice::define_class_under<edn::Parser>(rb_mEDNT, "Parser")
+        Rice::define_class_under<edn::Parser>(edn::rb_mEDNT, "Parser")
         .define_constructor(Rice::Constructor<edn::Parser>())
         .define_method("ext_read", &edn::Parser::process, (Rice::Arg("data")))
         ;

@@ -342,20 +342,6 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
         }
     }
 
-    action parse_dispatch {
-        bool discard = false;
-        Rice::Object v;
-        const char *np = parse_tagged(fpc, pe, v, discard);
-        if (np == NULL) {
-            fhold; fbreak;
-        } else {
-            if (!discard) {
-                arr.push(v);
-            }
-            fexec np;
-        }
-    }
-
     action exit { fhold; fbreak; }
 
     element       = begin_value >parse_value;
@@ -598,19 +584,14 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
-    action parse_discard {
-        const char *np = parse_discard(fpc, pe, o);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
-    }
-
     action exit { fhold; fbreak; }
 
     main := (
              begin_set >parse_set |
              begin_uuid @parse_builtin_tagged_uuid |
              begin_inst @parse_builtin_tagged_inst
-#             begin_discard >parse_discard
 # TODO: need to add symbol parsing for tagged elements
+#             begin_discard @parse_discard
              ) @exit;
 }%%
 
@@ -674,10 +655,16 @@ const char* edn::Parser::parse_builtin_tagged(const char *p, const char *pe, Ric
             buf.append(p_save + 1, len - 2);
 
             if (type == TAGGED_INST) {
-                // TODO: check date format!
-            }
+                o = get_rfc3339_date(buf);
 
-            o = Rice::String(buf);
+                if (o.is_nil()) {
+                    error(__FUNCTION__, "RFC3339 Date Format");
+                    return pe;
+                }
+            }
+            else {
+                o = Rice::String(buf);
+            }
             return p + 1;
         }
     }
@@ -689,61 +676,6 @@ const char* edn::Parser::parse_builtin_tagged(const char *p, const char *pe, Ric
 
     return NULL;
 }
-
-
-// ============================================================
-// discard
-//
-%%{
-    machine EDN_discard;
-    include EDN_common;
-
-    write data;
-
-    action discard_value {
-        const char *np = parse_discard(fpc, pe, o);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
-    }
-
-    action exit { fhold; fbreak; }
-
-    main := (
-             '_' ignore* begin_value >discard_value
-             ) @exit;
-}%%
-
-
-const char* edn::Parser::parse_discard(const char *p, const char *pe, Rice::Object& o)
-{
-    int cs;
-
-    %% write init;
-    p_save = p;
-    %% write exec;
-
-    if (cs >= EDN_discard_first_final) {
-        std::size_t len = p - p_save;
-
-        if (len > 2)
-        {
-            std::string buf;
-            buf.reserve(len);
-
-            // omit the quotes
-            buf.append(p_save + 1, len - 2);
-            std::cerr << "DISCARDING: '" << buf << "'" << std::endl;
-            return p + 1;
-        }
-    }
-    else if (cs == EDN_discard_error) {
-        error(__FUNCTION__, *p);
-        return pe;
-    }
-    else if (cs == EDN_discard_en_main) {} // silence ragel warning
-
-    return NULL;
-}
-
 
 
 // ============================================================

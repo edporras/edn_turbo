@@ -34,6 +34,15 @@ namespace edn
 
 
     //
+    // get the date representation from the ruby side. See edn_turbo.rb
+    Rice::Object Parser::get_rfc3339_date(const std::string& s)
+    {
+        VALUE rb_s = Rice::protect(rb_str_new2, s.c_str());
+        return Rice::protect(rb_funcall, rb_mEDNT, rb_intern("rfc3339_date"), 1, rb_s);
+    }
+
+
+    //
     // error reporting
     void Parser::error(const std::string& func, const std::string& err, char c) const
     {
