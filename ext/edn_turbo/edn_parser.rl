@@ -471,7 +471,7 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& 
     %% write exec;
 
     if (cs >= EDN_set_first_final) {
-        o = arr;
+        o = make_ruby_set(arr);
         return p + 1;
     }
     else if (cs == EDN_set_error) {
@@ -655,7 +655,7 @@ const char* edn::Parser::parse_builtin_tagged(const char *p, const char *pe, Ric
             buf.append(p_save + 1, len - 2);
 
             if (type == TAGGED_INST) {
-                o = get_rfc3339_date(buf);
+                o = make_ruby_date(buf);
 
                 if (o.is_nil()) {
                     error(__FUNCTION__, "RFC3339 Date Format");

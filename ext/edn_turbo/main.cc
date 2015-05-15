@@ -13,6 +13,11 @@ namespace edn {
 
     Rice::Module rb_mEDNT;
 
+    // methods on the ruby side we'll call from here
+    VALUE EDNT_RFC3339_DATE_METHOD = Qnil;
+    VALUE EDNT_MAKE_SET_METHOD = Qnil;
+
+
     void die(int sig)
     {
         exit(-1);
@@ -38,6 +43,10 @@ void Init_edn_turbo(void)
     }
 
     edn::rb_mEDNT = Rice::define_module("EDNT");
+
+    // bind methods we'll call - these should be defined in edn_turbo.rb
+    edn::EDNT_RFC3339_DATE_METHOD = rb_intern("rfc3339_date");
+    edn::EDNT_MAKE_SET_METHOD = rb_intern("make_set");
 
     // bind the ruby Parser class to the C++ one
     Rice::Data_Type<edn::Parser> rb_cParser =

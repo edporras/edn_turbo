@@ -48,16 +48,36 @@ class EDNT_Test < Minitest::Test
               )
   end
 
-  def test_builtin_tagged
+  def test_builtin_tagged_inst
 
-    check_file('test/built_in_tagged.edn',
-               [ DateTime.rfc3339("1985-04-12T23:20:50.52Z"),
+    check_file('test/inst.edn',
+               [
+                 DateTime.rfc3339("1985-04-12T23:20:50.52Z"),
                  DateTime.rfc3339("1996-12-19T16:39:57-08:00"),
                  DateTime.rfc3339("1990-12-31T23:59:60Z"),
                  DateTime.rfc3339("1990-12-31T15:59:60-08:00"),
-                 DateTime.rfc3339("1937-01-01T12:00:27.87+00:20"),
-                 "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"]
+                 DateTime.rfc3339("1937-01-01T12:00:27.87+00:20")
+               ]
               )
+  end
+
+  def test_builtin_tagged_uuid
+
+    check_file('test/uuid.edn', "f81d4fae-7dec-11d0-a765-00a0c91e6bf6")
+
+  end
+
+  def test_sets
+
+    check_file('test/set.edn',
+               [ Set.new(),
+                 Set.new([1, Set.new([:abc])]),
+                 Set.new([1]),
+                 Set.new([1, "abc" ]),
+                 Set.new([1, 2, 3, [4, 5], "abc", 23.3])
+               ]
+              )
+
   end
 
   def test_unicode

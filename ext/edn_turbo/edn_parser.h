@@ -5,14 +5,18 @@
 #include <sstream>
 #include <rice/Module.hpp>
 #include <rice/Object.hpp>
+#include <rice/Array.hpp>
 #include <rice/String.hpp>
 #include <rice/to_from_ruby.hpp>
 
 typedef unsigned char ui8;
 
+
 namespace edn
 {
     extern Rice::Module rb_mEDNT;
+    extern VALUE EDNT_RFC3339_DATE_METHOD;
+    extern VALUE EDNT_MAKE_SET_METHOD;
 
     //
     // C-extension EDN Parser class representation
@@ -48,7 +52,8 @@ namespace edn
         static bool parse_byte_stream(const char *p, const char *pe, Rice::String& s);
         static bool unicode_to_utf8(const char *s, std::size_t len, std::string& rslt);
 
-        static Rice::Object get_rfc3339_date(const std::string& s);
+        static Rice::Object make_ruby_date(const std::string& s);
+        static Rice::Object make_ruby_set(const Rice::Array& elems);
 
         void error(const std::string& f, const std::string& err, char c) const;
         void error(const std::string& f, char err_c) const { error(f, "", err_c); }

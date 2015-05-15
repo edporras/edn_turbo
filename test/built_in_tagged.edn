@@ -1,15 +1,4 @@
 [
-; inst
- #inst "1985-04-12T23:20:50.52Z"
- #inst "1996-12-19T16:39:57-08:00"
- #inst "1990-12-31T23:59:60Z"
-
-   #inst "1990-12-31T15:59:60-08:00"
- #inst "1937-01-01T12:00:27.87+00:20",
-; uuid
- #uuid "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
-; sets
-; #{1 2 3 [4 5] "abc" 23.3}
-; tagged elements
-; #myapp/Person {:first "Fred" :last "Mertz"}
- ]
+ ; tagged elements
+ #myapp/Person {:first "Fred" :last "Mertz"}
+]

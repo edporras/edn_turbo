@@ -1350,7 +1350,7 @@ case 4:
 #line 472 "edn_parser.rl"
 
     if (cs >= EDN_set_first_final) {
-        o = arr;
+        o = make_ruby_set(arr);
         return p + 1;
     }
     else if (cs == EDN_set_error) {
@@ -1898,7 +1898,7 @@ case 4:
             buf.append(p_save + 1, len - 2);
 
             if (type == TAGGED_INST) {
-                o = get_rfc3339_date(buf);
+                o = make_ruby_date(buf);
 
                 if (o.is_nil()) {
                     error(__FUNCTION__, "RFC3339 Date Format");

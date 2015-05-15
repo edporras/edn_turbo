@@ -2,6 +2,7 @@
 #include <string>
 
 #include <rice/String.hpp>
+#include <rice/Array.hpp>
 
 #include <ruby/ruby.h>
 #include <ruby/encoding.h>
@@ -35,10 +36,17 @@ namespace edn
 
     //
     // get the date representation from the ruby side. See edn_turbo.rb
-    Rice::Object Parser::get_rfc3339_date(const std::string& s)
+    Rice::Object Parser::make_ruby_date(const std::string& s)
     {
         VALUE rb_s = Rice::protect(rb_str_new2, s.c_str());
-        return Rice::protect(rb_funcall, rb_mEDNT, rb_intern("rfc3339_date"), 1, rb_s);
+        return Rice::protect(rb_funcall, rb_mEDNT, EDNT_RFC3339_DATE_METHOD, 1, rb_s);
+    }
+
+    //
+    // get a set representation from the ruby side. See edn_turbo.rb
+    Rice::Object Parser::make_ruby_set(const Rice::Array& elems)
+    {
+        return Rice::protect(rb_funcall, rb_mEDNT, EDNT_MAKE_SET_METHOD, 1, elems.value());
     }
 
 

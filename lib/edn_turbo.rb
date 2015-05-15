@@ -3,6 +3,7 @@ require_relative 'edn_turbo/version'
 require_relative 'edn_turbo/edn_turbo'
 
 require 'date'
+require 'set'
 
 module EDNT
 
@@ -30,6 +31,13 @@ module EDNT
     end
 
     return d
+  end
+
+  # ----------------------------------------------------------------------------
+  # handles creation of a set from an array
+  #
+  def self.make_set(elems)
+    Set.new(elems)
   end
 
 end # EDN namespace
