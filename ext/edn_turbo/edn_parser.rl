@@ -46,6 +46,10 @@
 
         symbol         = '/' | (symbol_name ('/' symbol_name)?);
 
+        # int / decimal rules
+        integer        = '-'? ('0' | [1-9] digit*);
+        exp            = ([Ee] [+\-]? digit+);
+
 
         action close_err {
             std::stringstream s;
@@ -264,13 +268,11 @@ const char* edn::Parser::parse_string(const char *p, const char *pe, Rice::Objec
 
     action exit { fhold; fbreak; }
 
-    main := '-'? (
-                  (('0' |
-                    [1-9][0-9]*) '.' [0-9]+ ((([Ee] [+\-]?[0-9]+)?) | ([M]?))
-                   ) |
-                  (('0' | [1-9][0-9]*) ([Ee] [+\-]?[0-9]+))
-                  )
-        (^[0-9Ee.\-M]? @exit );
+    main := (
+             (integer '.' digit+ (exp? [M]?)) |
+             (integer exp)
+             )
+        (^[0-9Ee.+\-M]? @exit );
 }%%
 
 
@@ -297,12 +299,13 @@ const char* edn::Parser::parse_decimal(const char *p, const char *pe, Rice::Obje
 //
 %%{
     machine EDN_integer;
+    include EDN_common;
 
     write data noerror;
 
     action exit { fhold; fbreak; }
 
-    main := '-'? ('0' | [1-9][0-9]* [M]?) (^[0-9M]? @exit);
+    main := (integer [M|N]?) (^[0-9MN]? @exit);
 }%%
 
 const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Object& o)
