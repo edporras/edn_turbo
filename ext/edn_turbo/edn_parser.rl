@@ -124,10 +124,15 @@
     }
 
     action parse_dispatch {
-        const char *np = parse_discard(fpc + 1, pe);
+        const char *np = parse_discard(fpc, pe);
         if (np == NULL) {
-            // not a discard.. try a tagged
-            np = parse_dispatch(fpc + 1, pe, o);
+            // try a set then
+            np = parse_set(fpc, pe, o);
+
+            if (np == NULL) {
+                // not a discard.. try a tagged
+                np = parse_dispatch(fpc, pe, o);
+            }
         }
 
         if (np) {
@@ -456,13 +461,13 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
     machine EDN_set;
     include EDN_common;
 
-    write data;
+    write data noerror;
 
-    begin_set    = '{';
+    begin_set    = '#{';
     end_set      = '}';
 
     action parse_value {
-        //                std::cerr << "--- SET PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
+                        std::cerr << "--- SET PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
         Rice::Object v;
         const char *np = parse_value(fpc, pe, v);
         if (np == NULL) {
@@ -478,13 +483,15 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
     element       = ignore* begin_value >parse_value;
     next_element  = ignore* element;
 
- main := (
-          begin_set ignore* (
-                     (element ignore*)
-                     (next_element ignore*)*
-                     )?
-          end_set @err(close_err)
-          ) @exit;
+    main := (
+             begin_set ignore* (
+                                (element ignore*)
+                                (next_element ignore*)*
+                                )?
+             end_set @err(close_err)
+             )
+        ignore*
+        @exit;
 }%%
 
 //
@@ -492,7 +499,7 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
 //
 const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& o)
 {
-            std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
+                std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
     static const char* EDN_TYPE = "set";
 
     int cs;
@@ -505,10 +512,10 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& 
         o = make_ruby_set(arr);
         return p + 1;
     }
-    else if (cs == EDN_set_error) {
-        error(__FUNCTION__, *p);
-        return pe;
-    }
+    //    else if (cs == EDN_set_error) {
+    //    error(__FUNCTION__, *p);
+    //    return pe;
+    // }
     else if (cs == EDN_set_en_main) {} // silence ragel warning
     return NULL;
 }
@@ -564,6 +571,7 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& 
 
 const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& o)
 {
+    std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
     static const char* EDN_TYPE = "map";
 
     int cs;
@@ -571,7 +579,6 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
     Rice::Object k, v;
 
     %% write init;
-    p_save = p;
     %% write exec;
 
     if (cs >= EDN_map_first_final) {
@@ -593,46 +600,41 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
     machine EDN_dispatch;
     include EDN_common;
 
-    begin_uuid    = 'uuid ';
-    begin_inst    = 'inst ';
-    begin_set     = '{';
+    begin_uuid    = '#uuid';
+    begin_inst    = '#inst';
 
     write data;
 
     action parse_builtin_tagged_uuid {
+                        std::cerr << " --- BI TAG UUID: '" << fpc << "'" << std::endl;
         const char *np = parse_builtin_tagged(fpc + 1, pe, o, TAGGED_UUID);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     action parse_builtin_tagged_inst {
+                std::cerr << " --- BI TAG INST: '" << fpc << "'" << std::endl;
         const char *np = parse_builtin_tagged(fpc + 1, pe, o, TAGGED_INST);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
-    }
-
-    action parse_set {
-        //        std::cerr << " --- SET: '" << fpc << "'" << std::endl;
-        const char *np = parse_set(fpc, pe, o);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     action exit { fhold; fbreak; }
 
- main := (
-             begin_set >parse_set |
-             begin_uuid @parse_builtin_tagged_uuid |
-             begin_inst @parse_builtin_tagged_inst
+    main := ( ignore*
+             begin_uuid ignore* @parse_builtin_tagged_uuid |
+             begin_inst ignore* @parse_builtin_tagged_inst
 # TODO: need to add symbol parsing for tagged elements
-             ) ignore* @exit;
+           )
+        ignore*
+        @exit;
 }%%
 
 
 const char* edn::Parser::parse_dispatch(const char *p, const char *pe, Rice::Object& o)
 {
+                std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
     int cs;
 
     %% write init;
-    p_save = p;
-
     %% write exec;
 
     if (cs >= EDN_dispatch_first_final) {
@@ -661,14 +663,15 @@ const char* edn::Parser::parse_dispatch(const char *p, const char *pe, Rice::Obj
     action exit { fhold; fbreak; }
 
     main := ignore* (
-             inst | uuid
-             )
-            (^[a-fA-FTZ0-9:\.\-\+\"]* @exit);
+                     inst |
+                     uuid
+                     ) (^[a-fA-FTZ0-9:\.\-\+\"]* @exit);
 }%%
 
 
 const char* edn::Parser::parse_builtin_tagged(const char *p, const char *pe, Rice::Object& o, TaggedType type)
 {
+                    std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
     int cs;
 
     %% write init;
@@ -717,7 +720,7 @@ const char* edn::Parser::parse_builtin_tagged(const char *p, const char *pe, Ric
     machine EDN_discard;
     include EDN_common;
 
-    begin_discard = '_';
+    begin_discard = '#_';
 
     write data noerror;
 
@@ -738,6 +741,7 @@ const char* edn::Parser::parse_builtin_tagged(const char *p, const char *pe, Ric
 
 const char* edn::Parser::parse_discard(const char *p, const char *pe)
 {
+    std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
     int cs;
 
     %% write init;
