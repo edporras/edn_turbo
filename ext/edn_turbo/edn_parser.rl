@@ -123,7 +123,7 @@
     }
 
     action parse_dispatch {
-        const char *np = NULL;//parse_discard(fpc, pe);
+        const char *np = parse_discard(fpc, pe);
         if (np == NULL) {
             // try a set then
             np = parse_set(fpc, pe, o);
@@ -135,10 +135,11 @@
         }
 
         if (np) {
-        std::cerr << "--- PARSE DISP NP set : '" << np << "'" << std::endl;
+            //        std::cerr << "--- PARSE DISP NP set : '" << np << "'" << std::endl;
             fexec np;
-            fhold; fbreak;
+
         } else {
+                        fhold; fbreak;
             fexec pe;
         }
     }
@@ -162,8 +163,8 @@
 
 const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object& o)
 {
-                std::cerr << __FUNCTION__ << "   -  p: '" << p << "'" << std::endl;
-                int cs;
+    //                std::cerr << __FUNCTION__ << "   -  p: '" << p << "'" << std::endl;
+    int cs;
 
     %% write init;
     %% write exec;
@@ -351,7 +352,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
     include EDN_common;
 
     action parse_value {
-                                std::cerr << "--- VECTOR PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
+        //std::cerr << "--- VECTOR PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
         Rice::Object v;
         const char *np = parse_value(fpc, pe, v);
         if (np == NULL) {
@@ -390,7 +391,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
 //
 const char* edn::Parser::parse_vector(const char *p, const char *pe, Rice::Object& o)
 {
-                    std::cerr << __FUNCTION__ << "  -  p: '" << p << "'" << std::endl;
+    //std::cerr << __FUNCTION__ << "  -  p: '" << p << "'" << std::endl;
     static const char* EDN_TYPE = "vector";
 
     int cs;
@@ -400,6 +401,8 @@ const char* edn::Parser::parse_vector(const char *p, const char *pe, Rice::Objec
     %% write exec;
 
     if (cs >= EDN_vector_first_final) {
+
+
         o = arr;
         return p + 1;
     }
@@ -470,7 +473,7 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
     end_set      = '}';
 
     action parse_value {
-        std::cerr << "--- SET PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
+        //std::cerr << "--- SET PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
 
         {
             Rice::Object set_v;
@@ -493,8 +496,9 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
                                (element ignore*)
                                (next_element ignore*)*
                                )?
-            end_set @err(close_err)
-            ignore* @exit;
+            end_set @err(close_err) @exit;
+#        ignore*
+#         @exit;
 }%%
 
 //
@@ -502,7 +506,7 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
 //
 const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& o)
 {
-                std::cerr << __FUNCTION__ << "     -  p: '" << p << "'" << std::endl;
+    //std::cerr << __FUNCTION__ << "     -  p: '" << p << "'" << std::endl;
     static const char* EDN_TYPE = "set";
 
     int cs;
@@ -533,7 +537,7 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& 
     write data;
 
     action parse_key {
-        std::cerr << "--- MAP PARSE KEY: fpc is '" << fpc << "'" << std::endl;
+        //        std::cerr << "--- MAP PARSE KEY: fpc is '" << fpc << "'" << std::endl;
 
         const char *np = parse_value(fpc, pe, k);
         if (np == NULL) {
@@ -544,7 +548,7 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& 
     }
 
     action parse_value {
-                std::cerr << "--- MAP PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
+        //                std::cerr << "--- MAP PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
         const char *np = parse_value(fpc, pe, v);
         if (np == NULL) {
             fhold; fbreak;
@@ -575,7 +579,7 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& 
 
 const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& o)
 {
-    std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
+    //    std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
     static const char* EDN_TYPE = "map";
 
     int cs;
@@ -610,13 +614,13 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
     write data;
 
     action parse_builtin_tagged_uuid {
-                        std::cerr << " --- BI TAG UUID: '" << fpc << "'" << std::endl;
+        //                        std::cerr << " --- BI TAG UUID: '" << fpc << "'" << std::endl;
         const char *np = parse_builtin_tagged(fpc + 1, pe, o, TAGGED_UUID);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     action parse_builtin_tagged_inst {
-                std::cerr << " --- BI TAG INST: '" << fpc << "'" << std::endl;
+        //                std::cerr << " --- BI TAG INST: '" << fpc << "'" << std::endl;
         const char *np = parse_builtin_tagged(fpc + 1, pe, o, TAGGED_INST);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
@@ -635,7 +639,7 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
 
 const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Object& o)
 {
-                std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
+    //                std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
     int cs;
 
     %% write init;
@@ -675,7 +679,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
 
 const char* edn::Parser::parse_builtin_tagged(const char *p, const char *pe, Rice::Object& o, TaggedType type)
 {
-                    std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
+    //                    std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
     int cs;
 
     %% write init;
@@ -729,7 +733,7 @@ const char* edn::Parser::parse_builtin_tagged(const char *p, const char *pe, Ric
     write data noerror;
 
     action parse_value {
-                                std::cerr << "--- DISCARD PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
+        //                                std::cerr << "--- DISCARD PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
         Rice::Object dummy;
         const char* np = parse_value(fpc, pe, dummy);
         if (np == NULL) { fhold; fbreak; } else fexec np;
@@ -746,11 +750,10 @@ const char* edn::Parser::parse_builtin_tagged(const char *p, const char *pe, Ric
 
 const char* edn::Parser::parse_discard(const char *p, const char *pe)
 {
-    std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
+    //    std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
     int cs;
 
     %% write init;
-    p_save = p;
     %% write exec;
 
     if (cs >= EDN_discard_first_final) {
