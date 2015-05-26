@@ -34,6 +34,14 @@ file GEN_CC_PARSER_SRC_PATH => RAGEL_PARSER_SRC_PATH do
   end
 end
 
+task :graph do
+  TMPFILE='/tmp/ragel_edn'
+  MACHINE='EDN_value'
+
+  # assumes graphviz is installed
+  sh "ragel -Vp -S #{MACHINE} -o #{TMPFILE} #{EXT_PATH}/#{RAGEL_PARSER_SRC} && dot -Tpng #{TMPFILE} -o #{MACHINE}.png"
+end
+
 task :build => [:clean, :ragel, :compile, :chmod]
 
 # add dependency to test task

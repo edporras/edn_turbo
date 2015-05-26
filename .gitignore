@@ -9,4 +9,4 @@ tmp/*
 .ruby-version
 *.hpp
 *.ipp
-
+*.png
