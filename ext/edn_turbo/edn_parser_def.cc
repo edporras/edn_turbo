@@ -35,11 +35,11 @@ namespace edn
 
 
     //
-    // get the date representation from the ruby side. See edn_turbo.rb
-    Rice::Object Parser::make_ruby_date(const std::string& s)
+    // get a set representation from the ruby side. See edn_turbo.rb
+    Rice::Object Parser::make_edn_symbol(const std::string& name)
     {
-        VALUE rb_s = Rice::protect(rb_str_new2, s.c_str());
-        return Rice::protect(rb_funcall, rb_mEDNT, EDNT_RFC3339_DATE_METHOD, 1, rb_s);
+        VALUE rb_s = Rice::protect(rb_str_new2, name.c_str());
+        return Rice::protect(rb_funcall, rb_mEDNT, EDNT_MAKE_EDN_SYMBOL, 1, rb_s);
     }
 
     //
@@ -55,7 +55,6 @@ namespace edn
     {
         VALUE rb_s = Rice::protect(rb_str_new2, name.c_str());
         return Rice::protect(rb_funcall, rb_mEDNT, EDNT_TAGGED_ELEM, 2, rb_s, data.value());
-        //        return Rice::protect(rb_funcall, rb_mEDNT, EDNT_TAGGED_ELEM, 2, Rice::String(name).value(), elems.value());
     }
 
 

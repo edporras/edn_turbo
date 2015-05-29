@@ -29,8 +29,8 @@
         k_false        = 'false';
         begin_dispatch = '#';
         begin_keyword  = ':';
-        begin_value    = alnum | [:\"\-\+\.\{\[\(\\\#];
-        begin_symbol   = alpha;
+        begin_value    = alnum | [:\"\-\+\.\{\[\(\\\#<>];
+        begin_symbol   = alpha | [<>];
         begin_vector   = '[';
         end_vector     = ']';
         begin_map      = '{';
@@ -44,7 +44,7 @@
         symbol_first_c = symbol_chars - [0-9]; # non-numeric
         symbol_name    = [\-\+\.]? symbol_first_c (symbol_chars)*;
 
-        symbol         = '/' | (symbol_name ('/' symbol_name)?);
+        symbol         = '/' | '<' | '>' | (symbol_name ('/' symbol_name)?);
 
         # int / decimal rules
         integer        = '-'? ('0' | [1-9] digit*);
@@ -87,8 +87,8 @@
             if      (sym == "true")  { o = Qtrue; }
             else if (sym == "false") { o = Qfalse; }
             else if (sym == "nil")   { o = Qnil; }
-            else {
-                o = Rice::Symbol(sym);
+            else if (sym.length() > 0){
+                o = Parser::make_edn_symbol(sym);
             }
             fexec np;
         }
@@ -166,9 +166,6 @@
     action exit { fhold; fbreak; }
 
     main := (
-#             k_nil ignore* @parse_nil |
-#             k_false ignore* @parse_false |
-#             k_true ignore* @parse_true |
              begin_dispatch >parse_dispatch |
              string_delim >parse_string |
              begin_symbol >parse_symbol |
@@ -211,11 +208,6 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object
 
     write data;
 
-    action parse_symbol {
-        const char *np = parse_symbol2(fpc, pe, o);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
-    }
-
     action exit { fhold; fbreak; }
 
     main := (
@@ -226,6 +218,7 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object
 
 const char* edn::Parser::parse_symbol(const char *p, const char *pe, std::string& s)
 {
+    //std::cerr << __FUNCTION__ << "   -  p: '" << p << "'" << std::endl;
     int cs;
 
     %% write init;
@@ -238,13 +231,6 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, std::string
         buf.append(p_save, len);
 
         s = buf;
-        /*        if      (buf == "true")  { o = Qtrue; }
-        else if (buf == "false") { o = Qfalse; }
-        else if (buf == "nil")   { o = Qnil; }
-        else*/// {
-            //            std::cerr << "symbol is: '" << buf << "'" << std::endl;
-            //            o = Rice::Symbol(buf);
-            //        }
         return p;
     }
     else if (cs == EDN_symbol_error) {
@@ -684,8 +670,8 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
     machine EDN_tagged;
     include EDN_common;
 
-    begin_uuid    = '#uuid';
-    begin_inst    = '#inst';
+#    inst = (string_delim [0-9\-\+:\.TZ]* string_delim);
+#    uuid = (string_delim [a-f0-9\-]* string_delim);
 
     # tags
     tagged_symbol = alpha [a-zA-z0-9]*;
@@ -693,32 +679,6 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
     user_tag      = '#' tagged_symbol '/' tagged_symbol;
 
     write data;
-
-    action parse_tagged_element {
-        std::cerr << " --- TAGGED ELEM: '" << fpc << "'" << std::endl;
-
-        std::string sym;
-        const char *np = parse_symbol(fpc, pe, sym);
-
-        if (np == NULL) { fhold; fbreak; } else {
-            std::cerr << "\t\t symbol name: '" << sym << "'" << std::endl;
-            fexec np;
-        }
-        //        const char *np = parse_tagged_element(fpc + 1, pe, o);
-        //        if (np == NULL) { fhold; fbreak; } else fexec np;
-    }
-
-    action parse_builtin_tagged_uuid {
-        //                        std::cerr << " --- BI TAG UUID: '" << fpc << "'" << std::endl;
-        const char *np = parse_builtin_tagged(fpc + 1, pe, o, TAGGED_UUID);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
-    }
-
-    action parse_builtin_tagged_inst {
-        //                std::cerr << " --- BI TAG INST: '" << fpc << "'" << std::endl;
-        const char *np = parse_builtin_tagged(fpc + 1, pe, o, TAGGED_INST);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
-    }
 
     action parse_symbol {
         const char *np = parse_symbol(fpc, pe, sym_name);
@@ -731,13 +691,7 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
 
     action exit { fhold; fbreak; }
 
-#    main := ( ignore*
-#              begin_uuid ignore* @parse_builtin_tagged_uuid |
-#              begin_inst ignore* @parse_builtin_tagged_inst |
-#              user_tag >parse_tagged_element
-#              ) ignore* @exit;
-
-     main := ('#' symbol >parse_symbol ignore* begin_value >parse_value) ignore* @exit;
+    main := ('#' symbol >parse_symbol ignore* begin_value >parse_value) ignore* @exit;
 }%%
 
 
@@ -760,71 +714,6 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
         return pe;
     }
     else if (cs == EDN_tagged_en_main) {} // silence ragel warning
-    return NULL;
-}
-
-
-// ============================================================
-// built-in tagged element parsing - #uuid or #inst
-//
-%%{
-    machine EDN_builtin_tagged;
-    include EDN_common;
-
-    write data;
-
-    inst = (string_delim [0-9\-\+:\.TZ]* string_delim);
-    uuid = (string_delim [a-f0-9\-]* string_delim);
-
-    action exit { fhold; fbreak; }
-
-    main := ignore* (
-                     inst |
-                     uuid
-                     ) (^[a-fA-FTZ0-9:\.\-\+\"]* @exit);
-}%%
-
-
-const char* edn::Parser::parse_builtin_tagged(const char *p, const char *pe, Rice::Object& o, TaggedType type)
-{
-    //                    std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
-    int cs;
-
-    %% write init;
-    p_save = p;
-    %% write exec;
-
-    if (cs >= EDN_builtin_tagged_first_final) {
-        std::size_t len = p - p_save;
-
-        if (len > 2)
-        {
-            std::string buf;
-            buf.reserve(len);
-
-            // omit the quotes
-            buf.append(p_save + 1, len - 2);
-
-            if (type == TAGGED_INST) {
-                o = make_ruby_date(buf);
-
-                if (o.is_nil()) {
-                    error(__FUNCTION__, "RFC3339 Date Format");
-                    return pe;
-                }
-            }
-            else {
-                o = Rice::String(buf);
-            }
-            return p + 1;
-        }
-    }
-    else if (cs == EDN_builtin_tagged_error) {
-        error(__FUNCTION__, *p);
-        return pe;
-    }
-    else if (cs == EDN_builtin_tagged_en_main) {} // silence ragel warning
-
     return NULL;
 }
 

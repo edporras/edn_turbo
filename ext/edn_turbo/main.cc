@@ -14,7 +14,7 @@ namespace edn {
     Rice::Module rb_mEDNT;
 
     // methods on the ruby side we'll call from here
-    VALUE EDNT_RFC3339_DATE_METHOD = Qnil;
+    VALUE EDNT_MAKE_EDN_SYMBOL = Qnil;
     VALUE EDNT_MAKE_SET_METHOD = Qnil;
     VALUE EDNT_TAGGED_ELEM = Qnil;
 
@@ -46,7 +46,7 @@ void Init_edn_turbo(void)
     edn::rb_mEDNT = Rice::define_module("EDNT");
 
     // bind methods we'll call - these should be defined in edn_turbo.rb
-    edn::EDNT_RFC3339_DATE_METHOD = rb_intern("rfc3339_date");
+    edn::EDNT_MAKE_EDN_SYMBOL = rb_intern("make_edn_symbol");
     edn::EDNT_MAKE_SET_METHOD = rb_intern("make_set");
     edn::EDNT_TAGGED_ELEM = rb_intern("tagged_element");
 

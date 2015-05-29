@@ -24,21 +24,28 @@ module EDNT
   # ----------------------------------------------------------------------------
   # register a tagged element
   #
-  TAGS = {}
+  TAGS = {
+    # built-in tagged elements
+    "inst" => lambda { |*a| DateTime.parse(*a) },
+    "uuid" => lambda { |*a| String.new(*a) }
+  }
 
   def self.register(tag, func = nil, &block)
-    if block_given?
-      func = block
-    end
+    # don't allow re-registration of built-in tags
+    if tag != "inst" && tag != "uuid"
+      if block_given?
+        func = block
+      end
 
-    if func.nil?
-      func = lambda { |x| x }
-    end
+      if func.nil?
+        func = lambda { |x| x }
+      end
 
-    if func.is_a?(Class)
-      TAGS[tag] = lambda { |*args| func.new(*args) }
-    else
-      TAGS[tag] = func
+      if func.is_a?(Class)
+        TAGS[tag] = lambda { |*args| func.new(*args) }
+      else
+        TAGS[tag] = func
+      end
     end
   end
 
@@ -51,7 +58,7 @@ module EDNT
     if func
       func.call(element)
     else
-#      EDN::Type::Unknown.new(tag, element)
+      EDN::Type::Unknown.new(tag, element)
     end
   end
 
@@ -83,11 +90,3 @@ module EDNT
   end
 
 end # EDN namespace
-
-EDNT::register("inst") do |v|
-  DateTime.parse(v)
-end
-
-EDNT::register("uuid") do |v|
-  String.new(v)
-end

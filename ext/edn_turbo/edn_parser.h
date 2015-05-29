@@ -15,7 +15,7 @@ typedef unsigned char ui8;
 namespace edn
 {
     extern Rice::Module rb_mEDNT;
-    extern VALUE EDNT_RFC3339_DATE_METHOD;
+    extern VALUE EDNT_MAKE_EDN_SYMBOL;
     extern VALUE EDNT_MAKE_SET_METHOD;
     extern VALUE EDNT_TAGGED_ELEM;
 
@@ -24,12 +24,6 @@ namespace edn
     class Parser
     {
     private:
-        enum TaggedType {
-            TAGGED_UUID,
-            TAGGED_INST,
-            TAGGED_DISCARD,
-            TAGGED_SET
-        };
 
         std::size_t line_number;
         const char* p_save;
@@ -48,13 +42,13 @@ namespace edn
         const char* parse_list   (const char *p, const char *pe, Rice::Object& o);
         const char* parse_set    (const char *p, const char *pe, Rice::Object& o);
         const char* parse_tagged (const char *p, const char *pe, Rice::Object& o);
-        const char* parse_builtin_tagged(const char *p, const char *pe, Rice::Object& o, TaggedType type);
+
         const char* parse_discard(const char *p, const char *pe);
 
         static bool parse_byte_stream(const char *p, const char *pe, Rice::String& s);
         static bool unicode_to_utf8(const char *s, std::size_t len, std::string& rslt);
 
-        static Rice::Object make_ruby_date(const std::string& s);
+        static Rice::Object make_edn_symbol(const std::string& name);
         static Rice::Object make_ruby_set(const Rice::Array& elems);
         static Rice::Object tagged_element(const std::string& name, const Rice::Object& data);
 
