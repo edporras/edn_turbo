@@ -29,7 +29,8 @@
         k_false        = 'false';
         begin_dispatch = '#';
         begin_keyword  = ':';
-        begin_value    = digit | [:nft\"\-\+\.\{\[\(\\\#];
+        begin_value    = alnum | [:\"\-\+\.\{\[\(\\\#];
+        begin_symbol   = alpha;
         begin_vector   = '[';
         end_vector     = ']';
         begin_map      = '{';
@@ -72,10 +73,16 @@
         o = Qnil;
     }
     action parse_false {
+        std::cerr << "PASRE FALSE" << std::endl;
         o = Qfalse;
     }
     action parse_true {
         o = Qtrue;
+    }
+
+    action parse_symbol {
+        const char *np = parse_symbol(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     action parse_keyword {
@@ -123,8 +130,11 @@
     }
 
     action parse_dispatch {
-        const char *np = parse_discard(fpc, pe);
-        if (np == NULL) {
+        const char *np = NULL; //parse_discard(fpc, pe);
+        if (np) {
+                    std::cerr << "--- PARSE DISCARD - NP is set : '" << np << "'" << std::endl;
+        } else {
+            //        if (np == NULL) {
             // try a set then
             np = parse_set(fpc, pe, o);
 
@@ -139,7 +149,7 @@
             fexec np;
 
         } else {
-                        fhold; fbreak;
+            fhold; fbreak;
             fexec pe;
         }
     }
@@ -147,17 +157,18 @@
     action exit { fhold; fbreak; }
 
     main := (
-             k_nil @parse_nil |
-             k_false @parse_false |
-             k_true @parse_true |
+#             k_nil ignore* @parse_nil |
+#             k_false ignore* @parse_false |
+#             k_true ignore* @parse_true |
              begin_dispatch >parse_dispatch |
              string_delim >parse_string |
+             begin_symbol >parse_symbol |
              begin_keyword >parse_keyword |
              begin_number >parse_number |
              begin_vector >parse_vector |
              begin_list >parse_list |
              begin_map >parse_map
-             ) %*exit;
+            ) %*exit;
 }%%
 
 
@@ -179,6 +190,75 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object
     else if (cs == EDN_value_en_main) {} // silence ragel warning
     return NULL;
 }
+
+
+
+// ============================================================
+// symbol parsing
+//
+%%{
+    machine EDN_symbol;
+    include EDN_common;
+
+    write data;
+
+    action parse_nil {
+        o = Qnil;
+    }
+    action parse_false {
+        std::cerr << "PF" << std::endl;
+        o = Qfalse;
+    }
+    action parse_true {
+        o = Qtrue;
+    }
+
+    action parse_symbol {
+        const char *np = parse_symbol2(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
+    action exit { fhold; fbreak; }
+
+    main := (
+             k_nil ignore* @parse_nil |
+             k_false ignore* @parse_false |
+             k_true ignore* @parse_true |
+             symbol
+             ) ignore* (^symbol_chars? @exit);
+}%%
+
+
+const char* edn::Parser::parse_symbol(const char *p, const char *pe, Rice::Object& o)
+{
+    int cs;
+
+    %% write init;
+    p_save = p;
+    %% write exec;
+
+    if (cs >= EDN_symbol_first_final) {
+        uint32_t len = p - p_save;
+        std::string buf;
+        buf.append(p_save, len);
+
+        /*        if      (buf == "true")  { o = Qtrue; }
+        else if (buf == "false") { o = Qfalse; }
+        else if (buf == "nil")   { o = Qnil; }
+        else*/ {
+            std::cerr << "symbol is: '" << buf << "'" << std::endl;
+            //            o = Rice::Symbol(buf);
+        }
+        return p;
+    }
+    else if (cs == EDN_symbol_error) {
+        error(__FUNCTION__, *p);
+        return pe;
+    }
+    else if (cs == EDN_symbol_en_main) {} // silence ragel warning
+    return NULL;
+}
+
 
 
 
@@ -611,7 +691,18 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
     begin_uuid    = '#uuid';
     begin_inst    = '#inst';
 
+    # tags
+    tagged_symbol = alpha [a-zA-z0-9]*;
+    built_in_tag  = '#' tagged_symbol;
+    user_tag      = '#' tagged_symbol '/' tagged_symbol;
+
     write data;
+
+    action parse_tagged_element {
+        //        std::cerr << " --- TAGGED ELEM: '" << fpc << "'" << std::endl;
+        //        const char *np = parse_tagged_element(fpc + 1, pe, o);
+        //        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
 
     action parse_builtin_tagged_uuid {
         //                        std::cerr << " --- BI TAG UUID: '" << fpc << "'" << std::endl;
@@ -628,18 +719,16 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
     action exit { fhold; fbreak; }
 
     main := ( ignore*
-             begin_uuid ignore* @parse_builtin_tagged_uuid |
-             begin_inst ignore* @parse_builtin_tagged_inst
-# TODO: need to add symbol parsing for tagged elements
-           )
-        ignore*
-        @exit;
+              begin_uuid ignore* @parse_builtin_tagged_uuid |
+              begin_inst ignore* @parse_builtin_tagged_inst |
+              user_tag >parse_tagged_element
+              ) ignore* @exit;
 }%%
 
 
 const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Object& o)
 {
-    //                std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
+    //    std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
     int cs;
 
     %% write init;
@@ -733,24 +822,28 @@ const char* edn::Parser::parse_builtin_tagged(const char *p, const char *pe, Ric
     write data noerror;
 
     action parse_value {
-        //                                std::cerr << "--- DISCARD PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
+                                        std::cerr << "--- DISCARD PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
         Rice::Object dummy;
         const char* np = parse_value(fpc, pe, dummy);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
+        if (np == NULL) { fhold; fbreak; } else {
+            //            fexec np;
+            np = parse_value(np, pe, dummy);
+            fexec np;
+        }
     }
 
     action exit { fhold; fbreak; }
 
     main := (
              begin_discard ignore* begin_value >parse_value
-             )
+             ) ignore*
         @exit;
 }%%
 
 
 const char* edn::Parser::parse_discard(const char *p, const char *pe)
 {
-    //    std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
+        std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
     int cs;
 
     %% write init;

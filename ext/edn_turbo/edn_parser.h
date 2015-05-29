@@ -38,6 +38,7 @@ namespace edn
 
         const char* parse_decimal(const char *p, const char *pe, Rice::Object& o);
         const char* parse_integer(const char *p, const char *pe, Rice::Object& o);
+        const char* parse_symbol (const char *p, const char *pe, Rice::Object& o);
         const char* parse_keyword(const char *p, const char *pe, Rice::Object& o);
         const char* parse_string (const char *p, const char *pe, Rice::Object& o);
         const char* parse_value  (const char *p, const char *pe, Rice::Object& o);
