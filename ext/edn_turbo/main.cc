@@ -16,6 +16,7 @@ namespace edn {
     // methods on the ruby side we'll call from here
     VALUE EDNT_RFC3339_DATE_METHOD = Qnil;
     VALUE EDNT_MAKE_SET_METHOD = Qnil;
+    VALUE EDNT_TAGGED_ELEM = Qnil;
 
 
     void die(int sig)
@@ -47,6 +48,7 @@ void Init_edn_turbo(void)
     // bind methods we'll call - these should be defined in edn_turbo.rb
     edn::EDNT_RFC3339_DATE_METHOD = rb_intern("rfc3339_date");
     edn::EDNT_MAKE_SET_METHOD = rb_intern("make_set");
+    edn::EDNT_TAGGED_ELEM = rb_intern("tagged_element");
 
     // bind the ruby Parser class to the C++ one
     Rice::Data_Type<edn::Parser> rb_cParser =

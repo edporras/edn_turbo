@@ -49,6 +49,15 @@ namespace edn
         return Rice::protect(rb_funcall, rb_mEDNT, EDNT_MAKE_SET_METHOD, 1, elems.value());
     }
 
+    //
+    // get an object representation from the ruby side using the given symbol name
+    Rice::Object Parser::tagged_element(const std::string& name, const Rice::Object& data)
+    {
+        VALUE rb_s = Rice::protect(rb_str_new2, name.c_str());
+        return Rice::protect(rb_funcall, rb_mEDNT, EDNT_TAGGED_ELEM, 2, rb_s, data.value());
+        //        return Rice::protect(rb_funcall, rb_mEDNT, EDNT_TAGGED_ELEM, 2, Rice::String(name).value(), elems.value());
+    }
+
 
     //
     // error reporting

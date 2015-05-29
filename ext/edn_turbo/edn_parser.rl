@@ -81,8 +81,17 @@
     }
 
     action parse_symbol {
-        const char *np = parse_symbol(fpc, pe, o);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
+        std::string sym;
+        const char *np = parse_symbol(fpc, pe, sym);
+        if (np == NULL) { fhold; fbreak; } else {
+            if      (sym == "true")  { o = Qtrue; }
+            else if (sym == "false") { o = Qfalse; }
+            else if (sym == "nil")   { o = Qnil; }
+            else {
+                o = Rice::Symbol(sym);
+            }
+            fexec np;
+        }
     }
 
     action parse_keyword {
@@ -202,17 +211,6 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object
 
     write data;
 
-    action parse_nil {
-        o = Qnil;
-    }
-    action parse_false {
-        std::cerr << "PF" << std::endl;
-        o = Qfalse;
-    }
-    action parse_true {
-        o = Qtrue;
-    }
-
     action parse_symbol {
         const char *np = parse_symbol2(fpc, pe, o);
         if (np == NULL) { fhold; fbreak; } else fexec np;
@@ -221,15 +219,12 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object
     action exit { fhold; fbreak; }
 
     main := (
-             k_nil ignore* @parse_nil |
-             k_false ignore* @parse_false |
-             k_true ignore* @parse_true |
              symbol
              ) ignore* (^symbol_chars? @exit);
 }%%
 
 
-const char* edn::Parser::parse_symbol(const char *p, const char *pe, Rice::Object& o)
+const char* edn::Parser::parse_symbol(const char *p, const char *pe, std::string& s)
 {
     int cs;
 
@@ -242,13 +237,14 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, Rice::Objec
         std::string buf;
         buf.append(p_save, len);
 
+        s = buf;
         /*        if      (buf == "true")  { o = Qtrue; }
         else if (buf == "false") { o = Qfalse; }
         else if (buf == "nil")   { o = Qnil; }
-        else*/ {
-            std::cerr << "symbol is: '" << buf << "'" << std::endl;
+        else*/// {
+            //            std::cerr << "symbol is: '" << buf << "'" << std::endl;
             //            o = Rice::Symbol(buf);
-        }
+            //        }
         return p;
     }
     else if (cs == EDN_symbol_error) {
@@ -699,7 +695,15 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
     write data;
 
     action parse_tagged_element {
-        //        std::cerr << " --- TAGGED ELEM: '" << fpc << "'" << std::endl;
+        std::cerr << " --- TAGGED ELEM: '" << fpc << "'" << std::endl;
+
+        std::string sym;
+        const char *np = parse_symbol(fpc, pe, sym);
+
+        if (np == NULL) { fhold; fbreak; } else {
+            std::cerr << "\t\t symbol name: '" << sym << "'" << std::endl;
+            fexec np;
+        }
         //        const char *np = parse_tagged_element(fpc + 1, pe, o);
         //        if (np == NULL) { fhold; fbreak; } else fexec np;
     }
@@ -716,25 +720,40 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
+    action parse_symbol {
+        const char *np = parse_symbol(fpc, pe, sym_name);
+        if (np == NULL) { fhold; fbreak; } else { fexec np; }
+    }
+    action parse_value {
+        const char *np = parse_value(fpc, pe, object);
+        if (np == NULL) { fhold; fbreak; } else { fexec np; }
+    }
+
     action exit { fhold; fbreak; }
 
-    main := ( ignore*
-              begin_uuid ignore* @parse_builtin_tagged_uuid |
-              begin_inst ignore* @parse_builtin_tagged_inst |
-              user_tag >parse_tagged_element
-              ) ignore* @exit;
+#    main := ( ignore*
+#              begin_uuid ignore* @parse_builtin_tagged_uuid |
+#              begin_inst ignore* @parse_builtin_tagged_inst |
+#              user_tag >parse_tagged_element
+#              ) ignore* @exit;
+
+     main := ('#' symbol >parse_symbol ignore* begin_value >parse_value) ignore* @exit;
 }%%
 
 
 const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Object& o)
 {
-    //    std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
+    std::string sym_name;
+    Rice::Object object;
+
     int cs;
 
     %% write init;
     %% write exec;
 
     if (cs >= EDN_tagged_first_final) {
+        //        std::cerr << __FUNCTION__ << " parse symbol name as '" << sym_name << "', value is: " << object << std::endl;
+        o = Parser::tagged_element(sym_name, object);
         return p + 1;
     }
     else if (cs == EDN_tagged_error) {
