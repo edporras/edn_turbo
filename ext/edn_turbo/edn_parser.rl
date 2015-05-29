@@ -87,7 +87,7 @@
             if      (sym == "true")  { o = Qtrue; }
             else if (sym == "false") { o = Qfalse; }
             else if (sym == "nil")   { o = Qnil; }
-            else if (sym.length() > 0){
+            else {
                 o = Parser::make_edn_symbol(sym);
             }
             fexec np;
@@ -691,7 +691,7 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
 
     action exit { fhold; fbreak; }
 
-    main := ('#' symbol >parse_symbol ignore* begin_value >parse_value) ignore* @exit;
+    main := ('#' symbol >parse_symbol ignore* begin_value >parse_value) @exit;
 }%%
 
 
