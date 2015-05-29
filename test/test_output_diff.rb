@@ -127,6 +127,28 @@ class EDNT_Test < Minitest::Test
               )
   end
 
+  #
+  # for testing tagged element #edn_turbo/test_tagged
+  class Tagged
+    def initialize(data)
+      @item = data[:item]
+      @other = data[:other]
+    end
+
+    def to_s
+      [ @item, @other ]
+    end
+  end
+
+  def test_tagged_elem
+
+    EDNT.register("edn_turbo/test_tagged") do |data|
+      Tagged.new(data).to_s
+    end
+
+    assert_equal([345, :a], @parser.read('#edn_turbo/test_tagged { :item 345 :other :a }'))
+  end
+
   def test_packard
 
     check_file('test/map_3.edn',
