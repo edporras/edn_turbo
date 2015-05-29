@@ -63,19 +63,6 @@ module EDNT
   end
 
   # ----------------------------------------------------------------------------
-  # handles creation of an rfc3339-formatted date based on date-formatted string
-  #
-  def self.rfc3339_date(str)
-    d = nil
-    begin
-      d = DateTime.rfc3339(str)
-    rescue ArgumentError
-    end
-
-    return d
-  end
-
-  # ----------------------------------------------------------------------------
   # handles creation of a set from an array
   #
   def self.make_set(elems)
