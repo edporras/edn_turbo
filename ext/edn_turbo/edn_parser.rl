@@ -29,6 +29,7 @@
         k_false        = 'false';
         begin_dispatch = '#';
         begin_keyword  = ':';
+        begin_char     = '\\';
         begin_value    = alnum | [:\"\-\+\.\{\[\(\\\#<>];
         begin_symbol   = alpha | [<>];
         begin_vector   = '[';
@@ -99,6 +100,12 @@
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
+    action parse_char {
+        std::string s;
+        s += *fpc;
+        o = Rice::String(s);
+    }
+
     action parse_string {
         const char *np = parse_string(fpc, pe, o);
         if (np == NULL) { fhold; fbreak; } else fexec np;
@@ -167,6 +174,7 @@
 
     main := (
              begin_dispatch >parse_dispatch |
+             begin_char (alnum|punct) >parse_char |
              string_delim >parse_string |
              begin_symbol >parse_symbol |
              begin_keyword >parse_keyword |
@@ -309,13 +317,14 @@ const char* edn::Parser::parse_keyword(const char *p, const char *pe, Rice::Obje
                            '\\'[\"\\/bfnrt] |
                            '\\u'[0-9a-fA-F]{4} |
                            '\\'^([\"\\/bfnrtu]|0..0x1f))* %parse_string)
-        string_delim @err(close_err)
-        @exit;
+            string_delim @err(close_err)
+            @exit;
 }%%
 
 
 const char* edn::Parser::parse_string(const char *p, const char *pe, Rice::Object& o)
 {
+    //    std::cerr << __FUNCTION__ << "   -  p: '" << p << "'" << std::endl;
     static const char* EDN_TYPE = "string";
     int cs;
     const char *eof = pe;
@@ -348,7 +357,7 @@ const char* edn::Parser::parse_string(const char *p, const char *pe, Rice::Objec
     action exit { fhold; fbreak; }
 
     main := (
-             (integer '.' digit+ (exp? [M]?)) |
+             (integer '.' digit* (exp? [M]?)) |
              (integer exp)
              )
         (^[0-9Ee.+\-M]? @exit );
@@ -729,7 +738,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
 
     write data noerror;
 
-    action parse_value {
+    action consume_value {
                                         std::cerr << "--- DISCARD PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
         Rice::Object dummy;
         const char* np = parse_value(fpc, pe, dummy);
@@ -743,7 +752,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
     action exit { fhold; fbreak; }
 
     main := (
-             begin_discard ignore* begin_value >parse_value
+             begin_discard ignore* begin_value >consume_value
              ) ignore*
         @exit;
 }%%
