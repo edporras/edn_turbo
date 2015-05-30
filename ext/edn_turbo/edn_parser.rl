@@ -49,7 +49,7 @@
 
         symbol_name    = [\-\+\.]? symbol_first_c (symbol_chars)*;
 
-        symbol         = operators | (symbol_name ('/' symbol_name)?);
+        symbol         = (operators | (symbol_name ('/' symbol_name)?));
 
         # int / decimal rules
         integer        = '-'? ('0' | [1-9] digit*);
@@ -143,27 +143,28 @@
     }
 
     action parse_dispatch {
-        const char *np = NULL; //parse_discard(fpc, pe);
+        const char *np = parse_discard(fpc, pe);
         if (np) {
-                    std::cerr << "--- PARSE DISCARD - NP is set : '" << np << "'" << std::endl;
+            //                    std::cerr << "--- PARSE DISCARD - NP is set : '" << np << "'" << std::endl;
+                    fexec np;
         } else {
             //        if (np == NULL) {
             // try a set then
             np = parse_set(fpc, pe, o);
 
             if (np == NULL) {
-                // not a discard.. try a tagged
+                // try a tagged item
                 np = parse_tagged(fpc, pe, o);
             }
-        }
 
-        if (np) {
-            //        std::cerr << "--- PARSE DISP NP set : '" << np << "'" << std::endl;
-            fexec np;
+            if (np) {
+                //        std::cerr << "--- PARSE DISP NP set : '" << np << "'" << std::endl;
+                fexec np;
 
-        } else {
-            fhold; fbreak;
-            fexec pe;
+            } else {
+                fhold; fbreak;
+                fexec pe;
+            }
         }
     }
 
@@ -185,7 +186,7 @@
 
 const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object& o)
 {
-    //                std::cerr << __FUNCTION__ << "   -  p: '" << p << "'" << std::endl;
+    //    std::cerr << __FUNCTION__ << "   -  p: '" << p << "'" << std::endl;
     int cs;
 
     %% write init;
@@ -730,6 +731,8 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
 
     begin_discard = '#_';
 
+    ident = [a-zA-Z0-9/\-\+]+ | punct;
+
     write data noerror;
 
     action consume_value {
@@ -737,8 +740,6 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
         Rice::Object dummy;
         const char* np = parse_value(fpc, pe, dummy);
         if (np == NULL) { fhold; fbreak; } else {
-            //            fexec np;
-            np = parse_value(np, pe, dummy);
             fexec np;
         }
     }
@@ -746,7 +747,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
     action exit { fhold; fbreak; }
 
     main := (
-             begin_discard ignore* begin_value >consume_value
+             begin_discard ignore* ident
              ) ignore*
         @exit;
 }%%
@@ -754,7 +755,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
 
 const char* edn::Parser::parse_discard(const char *p, const char *pe)
 {
-        std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
+    //std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
     int cs;
 
     %% write init;
@@ -789,7 +790,7 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
 
     main := ignore* (
                      begin_value >parse_value
-                     ) ignore*;
+                     )* ignore*;
 }%%
 
 //
