@@ -144,11 +144,7 @@
 
     action parse_dispatch {
         const char *np = parse_discard(fpc, pe);
-        if (np) {
-            //                    std::cerr << "--- PARSE DISCARD - NP is set : '" << np << "'" << std::endl;
-                    fexec np;
-        } else {
-            //        if (np == NULL) {
+        if (np == NULL) {
             // try a set then
             np = parse_set(fpc, pe, o);
 
@@ -156,15 +152,14 @@
                 // try a tagged item
                 np = parse_tagged(fpc, pe, o);
             }
+        }
 
-            if (np) {
-                //        std::cerr << "--- PARSE DISP NP set : '" << np << "'" << std::endl;
-                fexec np;
-
-            } else {
-                fhold; fbreak;
-                fexec pe;
-            }
+        if (np) {
+            //        std::cerr << "--- PARSE DISP NP set : '" << np << "'" << std::endl;
+            fexec np;
+        } else {
+            fhold; fbreak;
+            fexec pe;
         }
     }
 
@@ -744,10 +739,14 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
         }
     }
 
+    action consume_collection {
+
+    }
+
     action exit { fhold; fbreak; }
 
     main := (
-             begin_discard ignore* ident
+             begin_discard ignore* (ident)
              ) ignore*
         @exit;
 }%%
@@ -764,10 +763,6 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
     if (cs >= EDN_discard_first_final) {
         return p + 1;
     }
-    //    else if (cs == EDN_discard_error) {
-    //        error(__FUNCTION__, *p);
-    //        return pe;
-    //    }
     else if (cs == EDN_discard_en_main) {} // silence ragel warning
 
     return NULL;
