@@ -143,24 +143,8 @@
     }
 
     action parse_dispatch {
-        const char *np = parse_discard(fpc, pe);
-        if (np == NULL) {
-            // try a set then
-            np = parse_set(fpc, pe, o);
-
-            if (np == NULL) {
-                // try a tagged item
-                np = parse_tagged(fpc, pe, o);
-            }
-        }
-
-        if (np) {
-            //        std::cerr << "--- PARSE DISP NP set : '" << np << "'" << std::endl;
-            fexec np;
-        } else {
-            fhold; fbreak;
-            fexec pe;
-        }
+        const char *np = parse_dispatch(fpc + 1, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     action exit { fhold; fbreak; }
@@ -534,9 +518,9 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
     machine EDN_set;
     include EDN_common;
 
-    write data noerror;
+    write data;
 
-    begin_set    = '#{';
+    begin_set    = '{';
     end_set      = '}';
 
     action parse_value {
@@ -567,7 +551,7 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
 //
 const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& o)
 {
-    //std::cerr << __FUNCTION__ << "     -  p: '" << p << "'" << std::endl;
+    //    std::cerr << __FUNCTION__ << "     -  p: '" << p << "'" << std::endl;
     static const char* EDN_TYPE = "set";
 
     int cs;
@@ -579,6 +563,10 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& 
     if (cs >= EDN_set_first_final) {
         o = make_ruby_set(set);
         return p + 1;
+    }
+    else if (cs == EDN_set_error) {
+        error(__FUNCTION__, *p);
+        return pe;
     }
     else if (cs == EDN_set_en_main) {} // silence ragel warning
     return NULL;
@@ -674,8 +662,8 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
 
     # tags
     tagged_symbol = alpha [a-zA-z0-9]*;
-    built_in_tag  = '#' tagged_symbol;
-    user_tag      = '#' tagged_symbol '/' tagged_symbol;
+    built_in_tag  = tagged_symbol;
+    user_tag      = tagged_symbol '/' tagged_symbol;
 
     write data;
 
@@ -690,12 +678,13 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
 
     action exit { fhold; fbreak; }
 
-    main := ('#' symbol >parse_symbol ignore* begin_value >parse_value) @exit;
+    main := (symbol >parse_symbol ignore* begin_value >parse_value) @exit;
 }%%
 
 
 const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Object& o)
 {
+    //    std::cerr << __FUNCTION__ << " p '" << p << "'" << std::endl;
     std::string sym_name;
     Rice::Object object;
 
@@ -724,24 +713,11 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
     machine EDN_discard;
     include EDN_common;
 
-    begin_discard = '#_';
+    write data;
+
+    begin_discard = '_';
 
     ident = [a-zA-Z0-9/\-\+]+ | punct;
-
-    write data noerror;
-
-    action consume_value {
-        std::cerr << "--- DISCARD PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
-        Rice::Object dummy;
-        const char* np = parse_value(fpc, pe, dummy);
-        if (np == NULL) { fhold; fbreak; } else {
-            fexec np;
-        }
-    }
-
-    action consume_collection {
-
-    }
 
     action exit { fhold; fbreak; }
 
@@ -754,7 +730,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
 
 const char* edn::Parser::parse_discard(const char *p, const char *pe)
 {
-    //std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
+    //    std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
     int cs;
 
     %% write init;
@@ -763,11 +739,73 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
     if (cs >= EDN_discard_first_final) {
         return p + 1;
     }
+    else if (cs == EDN_discard_error) {
+        error(__FUNCTION__, *p);
+        return pe;
+    }
     else if (cs == EDN_discard_en_main) {} // silence ragel warning
 
     return NULL;
 }
 
+
+
+// ============================================================
+// dispatch
+//
+%%{
+    machine EDN_dispatch;
+    include EDN_common;
+
+    write data;
+
+    action parse_discard {
+        //        std::cerr << "--- DISPATCH DISCARD: fpc is '" << fpc << "'" << std::endl;
+        const char *np = parse_discard(fpc, pe);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
+    action parse_set {
+        //        std::cerr << "--- DISPATCH SET: fpc is '" << fpc << "'" << std::endl;
+        const char *np = parse_set(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
+    action parse_tagged {
+        //        std::cerr << "--- DISPATCH TAGGED: fpc is '" << fpc << "'" << std::endl;
+        const char *np = parse_tagged(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
+    action exit { fhold; fbreak; }
+
+    main := (
+             ('_' >parse_discard) |
+             '{' >parse_set |
+             alpha >parse_tagged
+             ) @exit;
+}%%
+
+
+const char* edn::Parser::parse_dispatch(const char *p, const char *pe, Rice::Object& o)
+{
+    //    std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
+    int cs;
+
+    %% write init;
+    %% write exec;
+
+    if (cs >= EDN_dispatch_first_final) {
+        return p + 1;
+    }
+    else if (cs == EDN_dispatch_error) {
+        error(__FUNCTION__, *p);
+        return pe;
+    }
+    else if (cs == EDN_dispatch_en_main) {} // silence ragel warning
+
+    return NULL;
+}
 
 // ============================================================
 // main parsing machine
@@ -785,7 +823,7 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
 
     main := ignore* (
                      begin_value >parse_value
-                     )* ignore*;
+                     ) ignore*;
 }%%
 
 //

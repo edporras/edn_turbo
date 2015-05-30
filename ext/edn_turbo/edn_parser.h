@@ -42,6 +42,7 @@ namespace edn
         const char* parse_list   (const char *p, const char *pe, Rice::Object& o);
         const char* parse_set    (const char *p, const char *pe, Rice::Object& o);
         const char* parse_tagged (const char *p, const char *pe, Rice::Object& o);
+        const char* parse_dispatch(const char *p, const char *pe, Rice::Object& o);
 
         const char* parse_discard(const char *p, const char *pe);
 

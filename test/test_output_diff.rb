@@ -173,7 +173,7 @@ class EDNT_Test < Minitest::Test
 
   end
 
-  def test_symbols
+  def test_discard
 
 #    check_file('test/discard.edn', 456)
 #    check_file('test/discard_2.edn', 456)
