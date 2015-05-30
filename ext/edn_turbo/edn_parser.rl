@@ -94,9 +94,13 @@
     }
 
     action parse_char {
-        std::string s;
-        s += *fpc;
-        o = Rice::String(s);
+        Rice::String s;
+
+        if (!parse_escaped_char(*fpc, s)) {
+            fhold; fbreak;
+        } else {
+            o = s;
+        }
     }
 
     action parse_string {

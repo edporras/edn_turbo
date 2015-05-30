@@ -46,6 +46,7 @@ namespace edn
         const char* parse_discard(const char *p, const char *pe);
 
         static bool parse_byte_stream(const char *p, const char *pe, Rice::String& s);
+        static bool parse_escaped_char(char c, Rice::String& s);
         static bool unicode_to_utf8(const char *s, std::size_t len, std::string& rslt);
 
         static Rice::Object make_edn_symbol(const std::string& name);

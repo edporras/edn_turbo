@@ -33,6 +33,26 @@ namespace edn
         return false;
     }
 
+    //
+    // handles things like \c, \n
+    //
+    bool Parser::parse_escaped_char(char c, Rice::String& s)
+    {
+        char str[2] = { c, 0 };
+
+        switch (c) {
+          case 'n': str[0] = '\n'; break;
+          case 't': str[0] = '\t'; break;
+          case 'r': str[0] = '\r'; break;
+          case 'v': str[0] = '\v'; break;
+          case 'f': str[0] = '\f'; break;
+          default: break;
+        }
+
+        s = str;
+        return true;
+    }
+
 
     //
     // get a set representation from the ruby side. See edn_turbo.rb

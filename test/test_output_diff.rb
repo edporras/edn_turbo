@@ -46,7 +46,7 @@ class EDNT_Test < Minitest::Test
 
     check_file('test/values.edn',
                [false, true, nil, "this is a test", "this\tis\\only\ta\ttest\rof\"various\nescaped\\values",
-                "c", "&",
+                "c", "&", "\t",
                 "123➪456®789"]
               )
   end
