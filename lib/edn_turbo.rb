@@ -13,11 +13,12 @@ module EDNT
   #
   def self.read(input)
 
-    data = input.instance_of?(String) ? input : input.read
+    begin
+      data = input.instance_of?(String) ? input : input.read
 
-    raise "EOF error" if data == ''
-
-    Parser.new.read(data)
+      Parser.new.read(data)
+    rescue EOFError
+    end
 
   end
 
