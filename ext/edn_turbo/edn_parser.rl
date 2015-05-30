@@ -26,7 +26,7 @@
         ignore         = ws | comment;
 
         operators      = [/\.\*!_\?$%&<>\=\-\+];
-        symbol_chars   = [a-zA-Z0-9\*\-\+\#:] | operators;
+        symbol_chars   = [a-zA-Z0-9\#:] | operators;
 
         symbol_first_c = symbol_chars - [0-9\#\:]; # non-numeric, no '#' or ':'
 
@@ -252,11 +252,16 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, std::string
     machine EDN_keyword;
     include EDN_common;
 
+    keyword_chars = symbol_chars;
+    keyword_start = symbol_first_c | '#'; # keywords can have '#' after ':'
+
+    keyword_name    = keyword_start (keyword_chars)*;
+
     write data;
 
     action exit { fhold; fbreak; }
 
-    main := begin_keyword symbol (^symbol_chars? @exit);
+    main := begin_keyword keyword_name (^keyword_chars? @exit);
 }%%
 
 
