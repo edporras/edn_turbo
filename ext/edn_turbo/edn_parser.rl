@@ -24,14 +24,21 @@
         ws             = [\t\v\f\r ] | ',' | counter;
         comment        = ';' cr_neg* counter;
         ignore         = ws | comment;
+
+        operators      = [/\.\*!_\?$%&<>\=\-\+];
+        symbol_chars   = [a-zA-Z0-9\*\-\+\#:] | operators;
+
+        symbol_first_c = symbol_chars - [0-9\#\:]; # non-numeric, no '#' or ':'
+
         k_nil          = 'nil';
         k_true         = 'true';
         k_false        = 'false';
         begin_dispatch = '#';
         begin_keyword  = ':';
         begin_char     = '\\';
-        begin_value    = alnum | [:\"\-\+\.\{\[\(\\\#<>];
-        begin_symbol   = alpha | [<>];
+        begin_value    = alnum | [:\"\{\[\(\\\#] | operators;
+# TODO: support - and + symbols. Currently conflicting with numeric values
+        begin_symbol   = symbol_first_c - ('-'|'+');
         begin_vector   = '[';
         end_vector     = ']';
         begin_map      = '{';
@@ -40,12 +47,9 @@
         string_delim   = '"';
         begin_number   = digit | '-';
 
-        # symbol naming rules to match EDN spec
-        symbol_chars   = [a-zA-Z0-9\*\-\+!_\?$%&=<>\./\#:];
-        symbol_first_c = symbol_chars - [0-9]; # non-numeric
         symbol_name    = [\-\+\.]? symbol_first_c (symbol_chars)*;
 
-        symbol         = '/' | '<' | '>' | (symbol_name ('/' symbol_name)?);
+        symbol         = operators | (symbol_name ('/' symbol_name)?);
 
         # int / decimal rules
         integer        = '-'? ('0' | [1-9] digit*);
@@ -69,17 +73,6 @@
     include EDN_common;
 
     write data;
-
-    action parse_nil {
-        o = Qnil;
-    }
-    action parse_false {
-        std::cerr << "PASRE FALSE" << std::endl;
-        o = Qfalse;
-    }
-    action parse_true {
-        o = Qtrue;
-    }
 
     action parse_symbol {
         std::string sym;
@@ -472,8 +465,6 @@ const char* edn::Parser::parse_vector(const char *p, const char *pe, Rice::Objec
     %% write exec;
 
     if (cs >= EDN_vector_first_final) {
-
-
         o = arr;
         return p + 1;
     }
@@ -544,17 +535,13 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
     end_set      = '}';
 
     action parse_value {
-        //std::cerr << "--- SET PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
-
-        {
-            Rice::Object set_v;
-            const char *np = parse_value(fpc, pe, set_v);
-            if (np == NULL) {
-                fhold; fbreak;
-            } else {
-                set.push(set_v);
-                fexec np;
-            }
+        Rice::Object set_v;
+        const char *np = parse_value(fpc, pe, set_v);
+        if (np == NULL) {
+            fhold; fbreak;
+        } else {
+            set.push(set_v);
+            fexec np;
         }
     }
 
@@ -568,8 +555,6 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
                                (next_element ignore*)*
                                )?
             end_set @err(close_err) @exit;
-#        ignore*
-#         @exit;
 }%%
 
 //
@@ -739,7 +724,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
     write data noerror;
 
     action consume_value {
-                                        std::cerr << "--- DISCARD PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
+        std::cerr << "--- DISCARD PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
         Rice::Object dummy;
         const char* np = parse_value(fpc, pe, dummy);
         if (np == NULL) { fhold; fbreak; } else {
@@ -770,7 +755,7 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
         return p + 1;
     }
     //    else if (cs == EDN_discard_error) {
-        //        error(__FUNCTION__, *p);
+    //        error(__FUNCTION__, *p);
     //        return pe;
     //    }
     else if (cs == EDN_discard_en_main) {} // silence ragel warning

@@ -150,6 +150,30 @@ class EDNT_Test < Minitest::Test
     assert_equal([345, :a], @parser.read('#edn_turbo/test_tagged { :item 345 :other :a }'))
   end
 
+  def test_symbols
+
+    check_file('test/operators.edn',
+               [EDN::Type::Symbol.new('/'),
+                EDN::Type::Symbol.new('.'),
+                EDN::Type::Symbol.new('*'),
+                EDN::Type::Symbol.new('!'),
+                EDN::Type::Symbol.new('_'),
+                EDN::Type::Symbol.new('?'),
+                EDN::Type::Symbol.new('$'),
+                EDN::Type::Symbol.new('%'),
+                EDN::Type::Symbol.new('>'),
+                EDN::Type::Symbol.new('<'),
+                EDN::Type::Symbol.new('&'),
+                EDN::Type::Symbol.new('='),
+                # TODO: fix
+                #                EDN::Type::Symbol.new('-'),
+                #                EDN::Type::Symbol.new('+'),
+               ]
+              )
+
+  end
+
+
   def test_packard
 
     check_file('test/map_3.edn',
