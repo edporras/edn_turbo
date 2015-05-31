@@ -413,10 +413,14 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
         if (np == NULL) {
             fhold; fbreak;
         } else {
-            if (!discard_cur) {
+            // if there's an entry in the discard list, the current
+            // object is not meant to be kept
+            if (!discard.empty()) {
+                discard.pop();
+            }
+            else {
+                // otherwise we add it to the sequence
                 arr.push(v);
-            } else {
-                discard_cur = false;
             }
             fexec np;
         }
@@ -678,7 +682,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
 
     action discard_value {
         const char *np = parse_value(fpc, pe, o);
-        if (np == NULL) { fhold; fbreak; } else { discard_cur = true; fexec np; }
+        if (np == NULL) { fhold; fbreak; } else { discard.push(o); fexec np; }
     }
 
     action exit {
@@ -803,7 +807,11 @@ Rice::Object edn::Parser::parse(const char* buf, std::size_t len)
     const char *pe;
     Rice::Object result;
 
+    // init
     line_number = 1;
+    p_save = NULL;
+    while (!discard.empty())
+        discard.pop();
 
     %% write init;
     p = &buf[0];

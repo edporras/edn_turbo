@@ -3,6 +3,8 @@
 
 #include <string>
 #include <sstream>
+#include <stack>
+
 #include <rice/Module.hpp>
 #include <rice/Object.hpp>
 #include <rice/Array.hpp>
@@ -28,7 +30,7 @@ namespace edn
         std::size_t line_number;
         const char* p_save;
         const char* eof;
-        bool discard_cur;
+        std::stack<Rice::Object> discard;
 
         Rice::Object parse(const char* s, std::size_t len);
 
@@ -70,7 +72,7 @@ namespace edn
         }
 
     public:
-        Parser() : line_number(1), p_save(NULL), eof(NULL), discard_cur(false) { }
+        Parser() : line_number(1), p_save(NULL), eof(NULL) { }
 
         Rice::Object process(const std::string& data) { return parse(data.c_str(), data.length()); }
 
