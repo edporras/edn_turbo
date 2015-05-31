@@ -61,7 +61,7 @@
             std::stringstream s;
             s << "unterminated " << EDN_TYPE;
             error(__FUNCTION__, s.str());
-            fexec pe;
+            exit(-1);
         }
 }%%
 
@@ -398,15 +398,16 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
 
 
 // ============================================================
-// vector parsing machine. EDN_vector_common is used to parse EDN
-// vectors and lists since they're both represented as vectors in ruby
+// EDN_sequence_common is used to parse EDN containers - elements are
+// initially stored in a rice array and then the final corresponding
+// container is built from the list (although, for vectors, lists, and
+// sets the same array is used)
 //
 %%{
-    machine EDN_vector_common;
+    machine EDN_sequence_common;
     include EDN_common;
 
     action parse_value {
-        //std::cerr << "--- VECTOR PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
         Rice::Object v;
         const char *np = parse_value(fpc, pe, v);
         if (np == NULL) {
@@ -419,6 +420,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
 
     element       = begin_value >parse_value;
     next_element  = ignore* element;
+    sequence      = ((element ignore*) (next_element ignore*)*);
 
     action exit { fhold; fbreak; }
 }%%
@@ -427,15 +429,11 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
 // vector-specific machine
 %%{
     machine EDN_vector;
-    include EDN_vector_common;
+    include EDN_sequence_common;
 
     write data;
 
-    main := begin_vector ignore* (
-                                  (element ignore*)
-                                  (next_element ignore*)*
-                                  )?
-            end_vector @err(close_err)
+    main := begin_vector ignore* sequence? end_vector @err(close_err)
             @exit;
 }%%
 
@@ -473,15 +471,11 @@ const char* edn::Parser::parse_vector(const char *p, const char *pe, Rice::Objec
 //
 %%{
     machine EDN_list;
-    include EDN_vector_common;
+    include EDN_sequence_common;
 
     write data;
 
-    main := begin_list ignore* (
-                                (element ignore*)
-                                (next_element ignore*)*
-                                )?
-            end_list @err(close_err)
+    main := begin_list ignore* sequence? end_list @err(close_err)
             @exit;
 }%%
 
@@ -517,18 +511,14 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
 //
 %%{
     machine EDN_set;
-    include EDN_vector_common;
+    include EDN_sequence_common;
 
     write data;
 
     begin_set    = '{';
     end_set      = '}';
 
-    main := begin_set ignore* (
-                               (element ignore*)
-                               (next_element ignore*)*
-                               )?
-            end_set @err(close_err) @exit;
+    main := begin_set ignore* sequence? end_set @err(close_err) @exit;
 }%%
 
 //
@@ -564,7 +554,7 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& 
 //
 %%{
     machine EDN_map;
-    include EDN_vector_common;
+    include EDN_sequence_common;
 
     end_map        = '}';
 
@@ -576,11 +566,7 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& 
         fexec pe;
     }
 
-    main := begin_map ignore* (
-                               (element ignore*)
-                               (next_element ignore*)*
-                               )?
-            end_map @err(close_err) @exit;
+    main := begin_map ignore* (sequence)? :>> end_map @err(close_err) @exit;
 }%%
 
 
@@ -597,7 +583,7 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
     if (cs >= EDN_map_first_final) {
 
         if ((arr.size() % 2) != 0) {
-            std::cerr << "odd number of elements in map" << std::endl;
+            error(__FUNCTION__, "odd number of elements in map");
             return pe;
         }
 
@@ -692,7 +678,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
     }
 
     action exit {
-        discard = true;
+        discard_cur = true;
         fhold; fbreak;
     }
 
@@ -793,16 +779,15 @@ const char* edn::Parser::parse_dispatch(const char *p, const char *pe, Rice::Obj
 
     action parse_value {
         const char* np = parse_value(fpc, pe, result);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
+        if (np == NULL) { fexec pe; fbreak; } else fexec np;
     }
 
     element       = begin_value >parse_value;
     next_element  = ignore* element;
+    sequence      = ((element ignore*) (next_element ignore*)*);
 
-    main := ignore* (
-                     (element ignore*)
-                     (next_element ignore*)*
-                     )? ignore*;
+    # TODO: check this. Using a sequence to handle cases with a discard
+    main := ignore* sequence? ignore*;
 }%%
 
 //

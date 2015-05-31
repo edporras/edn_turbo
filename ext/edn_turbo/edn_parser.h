@@ -28,7 +28,7 @@ namespace edn
         std::size_t line_number;
         const char* p_save;
         const char* eof;
-        bool discard;
+        bool discard_cur;
 
         Rice::Object parse(const char* s, std::size_t len);
 
@@ -72,7 +72,7 @@ namespace edn
         }
 
     public:
-        Parser() : line_number(1), p_save(NULL), eof(NULL), discard(false) { }
+        Parser() : line_number(1), p_save(NULL), eof(NULL), discard_cur(false) { }
 
         Rice::Object process(const std::string& data) { return parse(data.c_str(), data.length()); }
 

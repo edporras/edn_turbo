@@ -594,7 +594,7 @@ tr2:
             std::stringstream s;
             s << "unterminated " << EDN_TYPE;
             error(__FUNCTION__, s.str());
-            {p = (( pe))-1;}
+            exit(-1);
         }
 	goto st0;
 #line 601 "edn_parser.cc"
@@ -711,7 +711,7 @@ case 7:
             std::stringstream s;
             s << "unterminated " << EDN_TYPE;
             error(__FUNCTION__, s.str());
-            {p = (( pe))-1;}
+            exit(-1);
         }
 	break;
 #line 718 "edn_parser.cc"
@@ -1076,17 +1076,19 @@ case 6:
 
 
 // ============================================================
-// vector parsing machine. EDN_vector_common is used to parse EDN
-// vectors and lists since they're both represented as vectors in ruby
+// EDN_sequence_common is used to parse EDN containers - elements are
+// initially stored in a rice array and then the final corresponding
+// container is built from the list (although, for vectors, lists, and
+// sets the same array is used)
 //
 
-#line 424 "edn_parser.rl"
+#line 426 "edn_parser.rl"
 
 
 //
 // vector-specific machine
 
-#line 1090 "edn_parser.cc"
+#line 1092 "edn_parser.cc"
 static const int EDN_vector_start = 1;
 static const int EDN_vector_first_final = 4;
 static const int EDN_vector_error = 0;
@@ -1094,7 +1096,7 @@ static const int EDN_vector_error = 0;
 static const int EDN_vector_en_main = 1;
 
 
-#line 440 "edn_parser.rl"
+#line 438 "edn_parser.rl"
 
 
 
@@ -1110,14 +1112,14 @@ const char* edn::Parser::parse_vector(const char *p, const char *pe, Rice::Objec
     Rice::Array arr;
 
 
-#line 1114 "edn_parser.cc"
+#line 1116 "edn_parser.cc"
 	{
 	cs = EDN_vector_start;
 	}
 
-#line 455 "edn_parser.rl"
+#line 453 "edn_parser.rl"
 
-#line 1121 "edn_parser.cc"
+#line 1123 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -1133,10 +1135,10 @@ tr2:
             std::stringstream s;
             s << "unterminated " << EDN_TYPE;
             error(__FUNCTION__, s.str());
-            {p = (( pe))-1;}
+            exit(-1);
         }
 	goto st0;
-#line 1140 "edn_parser.cc"
+#line 1142 "edn_parser.cc"
 st0:
 cs = 0;
 	goto _out;
@@ -1145,9 +1147,8 @@ tr3:
 	{ line_number++; }
 	goto st2;
 tr4:
-#line 408 "edn_parser.rl"
+#line 410 "edn_parser.rl"
 	{
-        //std::cerr << "--- VECTOR PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
         Rice::Object v;
         const char *np = parse_value(p, pe, v);
         if (np == NULL) {
@@ -1162,7 +1163,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 1166 "edn_parser.cc"
+#line 1167 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr3;
 		case 32: goto st2;
@@ -1195,14 +1196,14 @@ case 3:
 		goto tr3;
 	goto st3;
 tr6:
-#line 423 "edn_parser.rl"
+#line 425 "edn_parser.rl"
 	{ p--; {p++; cs = 4; goto _out;} }
 	goto st4;
 st4:
 	if ( ++p == pe )
 		goto _test_eof4;
 case 4:
-#line 1206 "edn_parser.cc"
+#line 1207 "edn_parser.cc"
 	goto st0;
 	}
 	_test_eof2: cs = 2; goto _test_eof;
@@ -1219,17 +1220,17 @@ case 4:
             std::stringstream s;
             s << "unterminated " << EDN_TYPE;
             error(__FUNCTION__, s.str());
-            {p = (( pe))-1;}
+            exit(-1);
         }
 	break;
-#line 1226 "edn_parser.cc"
+#line 1227 "edn_parser.cc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 456 "edn_parser.rl"
+#line 454 "edn_parser.rl"
 
     if (cs >= EDN_vector_first_final) {
         o = arr;
@@ -1249,7 +1250,7 @@ case 4:
 // list parsing machine
 //
 
-#line 1253 "edn_parser.cc"
+#line 1254 "edn_parser.cc"
 static const int EDN_list_start = 1;
 static const int EDN_list_first_final = 4;
 static const int EDN_list_error = 0;
@@ -1257,7 +1258,7 @@ static const int EDN_list_error = 0;
 static const int EDN_list_en_main = 1;
 
 
-#line 486 "edn_parser.rl"
+#line 480 "edn_parser.rl"
 
 
 //
@@ -1271,14 +1272,14 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
     Rice::Array arr;
 
 
-#line 1275 "edn_parser.cc"
+#line 1276 "edn_parser.cc"
 	{
 	cs = EDN_list_start;
 	}
 
-#line 499 "edn_parser.rl"
+#line 493 "edn_parser.rl"
 
-#line 1282 "edn_parser.cc"
+#line 1283 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -1294,10 +1295,10 @@ tr2:
             std::stringstream s;
             s << "unterminated " << EDN_TYPE;
             error(__FUNCTION__, s.str());
-            {p = (( pe))-1;}
+            exit(-1);
         }
 	goto st0;
-#line 1301 "edn_parser.cc"
+#line 1302 "edn_parser.cc"
 st0:
 cs = 0;
 	goto _out;
@@ -1306,9 +1307,8 @@ tr3:
 	{ line_number++; }
 	goto st2;
 tr4:
-#line 408 "edn_parser.rl"
+#line 410 "edn_parser.rl"
 	{
-        //std::cerr << "--- VECTOR PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
         Rice::Object v;
         const char *np = parse_value(p, pe, v);
         if (np == NULL) {
@@ -1348,7 +1348,7 @@ case 2:
 		goto tr4;
 	goto tr2;
 tr5:
-#line 423 "edn_parser.rl"
+#line 425 "edn_parser.rl"
 	{ p--; {p++; cs = 4; goto _out;} }
 	goto st4;
 st4:
@@ -1379,7 +1379,7 @@ case 3:
             std::stringstream s;
             s << "unterminated " << EDN_TYPE;
             error(__FUNCTION__, s.str());
-            {p = (( pe))-1;}
+            exit(-1);
         }
 	break;
 #line 1386 "edn_parser.cc"
@@ -1389,7 +1389,7 @@ case 3:
 	_out: {}
 	}
 
-#line 500 "edn_parser.rl"
+#line 494 "edn_parser.rl"
 
     if (cs >= EDN_list_first_final) {
         o = arr;
@@ -1417,7 +1417,7 @@ static const int EDN_set_error = 0;
 static const int EDN_set_en_main = 1;
 
 
-#line 532 "edn_parser.rl"
+#line 522 "edn_parser.rl"
 
 
 //
@@ -1437,7 +1437,7 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& 
 	cs = EDN_set_start;
 	}
 
-#line 546 "edn_parser.rl"
+#line 536 "edn_parser.rl"
 
 #line 1443 "edn_parser.cc"
 	{
@@ -1455,7 +1455,7 @@ tr2:
             std::stringstream s;
             s << "unterminated " << EDN_TYPE;
             error(__FUNCTION__, s.str());
-            {p = (( pe))-1;}
+            exit(-1);
         }
 	goto st0;
 #line 1462 "edn_parser.cc"
@@ -1467,9 +1467,8 @@ tr3:
 	{ line_number++; }
 	goto st2;
 tr4:
-#line 408 "edn_parser.rl"
+#line 410 "edn_parser.rl"
 	{
-        //std::cerr << "--- VECTOR PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
         Rice::Object v;
         const char *np = parse_value(p, pe, v);
         if (np == NULL) {
@@ -1484,7 +1483,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 1488 "edn_parser.cc"
+#line 1487 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr3;
 		case 32: goto st2;
@@ -1517,14 +1516,14 @@ case 3:
 		goto tr3;
 	goto st3;
 tr6:
-#line 423 "edn_parser.rl"
+#line 425 "edn_parser.rl"
 	{ p--; {p++; cs = 4; goto _out;} }
 	goto st4;
 st4:
 	if ( ++p == pe )
 		goto _test_eof4;
 case 4:
-#line 1528 "edn_parser.cc"
+#line 1527 "edn_parser.cc"
 	goto st0;
 	}
 	_test_eof2: cs = 2; goto _test_eof;
@@ -1541,17 +1540,17 @@ case 4:
             std::stringstream s;
             s << "unterminated " << EDN_TYPE;
             error(__FUNCTION__, s.str());
-            {p = (( pe))-1;}
+            exit(-1);
         }
 	break;
-#line 1548 "edn_parser.cc"
+#line 1547 "edn_parser.cc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 547 "edn_parser.rl"
+#line 537 "edn_parser.rl"
 
     if (cs >= EDN_set_first_final) {
         o = make_ruby_set(arr);
@@ -1571,7 +1570,7 @@ case 4:
 // hash parsing
 //
 
-#line 1575 "edn_parser.cc"
+#line 1574 "edn_parser.cc"
 static const int EDN_map_start = 1;
 static const int EDN_map_first_final = 4;
 static const int EDN_map_error = 0;
@@ -1579,7 +1578,7 @@ static const int EDN_map_error = 0;
 static const int EDN_map_en_main = 1;
 
 
-#line 584 "edn_parser.rl"
+#line 570 "edn_parser.rl"
 
 
 
@@ -1591,14 +1590,14 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
     int cs;
 
 
-#line 1595 "edn_parser.cc"
+#line 1594 "edn_parser.cc"
 	{
 	cs = EDN_map_start;
 	}
 
-#line 595 "edn_parser.rl"
+#line 581 "edn_parser.rl"
 
-#line 1602 "edn_parser.cc"
+#line 1601 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -1614,10 +1613,10 @@ tr2:
             std::stringstream s;
             s << "unterminated " << EDN_TYPE;
             error(__FUNCTION__, s.str());
-            {p = (( pe))-1;}
+            exit(-1);
         }
 	goto st0;
-#line 1621 "edn_parser.cc"
+#line 1620 "edn_parser.cc"
 st0:
 cs = 0;
 	goto _out;
@@ -1626,9 +1625,8 @@ tr3:
 	{ line_number++; }
 	goto st2;
 tr4:
-#line 408 "edn_parser.rl"
+#line 410 "edn_parser.rl"
 	{
-        //std::cerr << "--- VECTOR PARSE VALUE: fpc is '" << fpc << "'" << std::endl;
         Rice::Object v;
         const char *np = parse_value(p, pe, v);
         if (np == NULL) {
@@ -1643,7 +1641,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 1647 "edn_parser.cc"
+#line 1645 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr3;
 		case 32: goto st2;
@@ -1676,14 +1674,14 @@ case 3:
 		goto tr3;
 	goto st3;
 tr6:
-#line 423 "edn_parser.rl"
+#line 425 "edn_parser.rl"
 	{ p--; {p++; cs = 4; goto _out;} }
 	goto st4;
 st4:
 	if ( ++p == pe )
 		goto _test_eof4;
 case 4:
-#line 1687 "edn_parser.cc"
+#line 1685 "edn_parser.cc"
 	goto st0;
 	}
 	_test_eof2: cs = 2; goto _test_eof;
@@ -1700,22 +1698,22 @@ case 4:
             std::stringstream s;
             s << "unterminated " << EDN_TYPE;
             error(__FUNCTION__, s.str());
-            {p = (( pe))-1;}
+            exit(-1);
         }
 	break;
-#line 1707 "edn_parser.cc"
+#line 1705 "edn_parser.cc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 596 "edn_parser.rl"
+#line 582 "edn_parser.rl"
 
     if (cs >= EDN_map_first_final) {
 
         if ((arr.size() % 2) != 0) {
-            std::cerr << "odd number of elements in map" << std::endl;
+            error(__FUNCTION__, "odd number of elements in map");
             return pe;
         }
 
@@ -1741,7 +1739,7 @@ case 4:
 // tagged element parsing - #uuid, #inst, #{, #_
 //
 
-#line 1745 "edn_parser.cc"
+#line 1743 "edn_parser.cc"
 static const int EDN_tagged_start = 1;
 static const int EDN_tagged_first_final = 5;
 static const int EDN_tagged_error = 0;
@@ -1749,7 +1747,7 @@ static const int EDN_tagged_error = 0;
 static const int EDN_tagged_en_main = 1;
 
 
-#line 651 "edn_parser.rl"
+#line 637 "edn_parser.rl"
 
 
 
@@ -1762,14 +1760,14 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
     int cs;
 
 
-#line 1766 "edn_parser.cc"
+#line 1764 "edn_parser.cc"
 	{
 	cs = EDN_tagged_start;
 	}
 
-#line 663 "edn_parser.rl"
+#line 649 "edn_parser.rl"
 
-#line 1773 "edn_parser.cc"
+#line 1771 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -1802,7 +1800,7 @@ st0:
 cs = 0;
 	goto _out;
 tr0:
-#line 639 "edn_parser.rl"
+#line 625 "edn_parser.rl"
 	{
         const char *np = parse_symbol(p, pe, sym_name);
         if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else { {p = (( np))-1;} }
@@ -1812,7 +1810,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 1816 "edn_parser.cc"
+#line 1814 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr3;
 		case 32: goto st3;
@@ -1849,7 +1847,7 @@ st3:
 	if ( ++p == pe )
 		goto _test_eof3;
 case 3:
-#line 1853 "edn_parser.cc"
+#line 1851 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr3;
 		case 32: goto st3;
@@ -1874,19 +1872,19 @@ case 3:
 		goto tr5;
 	goto st0;
 tr5:
-#line 643 "edn_parser.rl"
+#line 629 "edn_parser.rl"
 	{
         const char *np = parse_value(p, pe, object);
         if (np == NULL) { p--; {p++; cs = 5; goto _out;} } else { {p = (( np))-1;} }
     }
-#line 648 "edn_parser.rl"
+#line 634 "edn_parser.rl"
 	{ p--; {p++; cs = 5; goto _out;} }
 	goto st5;
 st5:
 	if ( ++p == pe )
 		goto _test_eof5;
 case 5:
-#line 1890 "edn_parser.cc"
+#line 1888 "edn_parser.cc"
 	goto st0;
 st4:
 	if ( ++p == pe )
@@ -1896,19 +1894,19 @@ case 4:
 		goto tr3;
 	goto st4;
 tr4:
-#line 643 "edn_parser.rl"
+#line 629 "edn_parser.rl"
 	{
         const char *np = parse_value(p, pe, object);
         if (np == NULL) { p--; {p++; cs = 6; goto _out;} } else { {p = (( np))-1;} }
     }
-#line 648 "edn_parser.rl"
+#line 634 "edn_parser.rl"
 	{ p--; {p++; cs = 6; goto _out;} }
 	goto st6;
 st6:
 	if ( ++p == pe )
 		goto _test_eof6;
 case 6:
-#line 1912 "edn_parser.cc"
+#line 1910 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr3;
 		case 32: goto st3;
@@ -1948,7 +1946,7 @@ case 6:
 	_out: {}
 	}
 
-#line 664 "edn_parser.rl"
+#line 650 "edn_parser.rl"
 
     if (cs >= EDN_tagged_first_final) {
         //        std::cerr << __FUNCTION__ << " parse symbol name as '" << sym_name << "', value is: " << object << std::endl;
@@ -1967,7 +1965,7 @@ case 6:
 // discard
 //
 
-#line 1971 "edn_parser.cc"
+#line 1969 "edn_parser.cc"
 static const int EDN_discard_start = 1;
 static const int EDN_discard_first_final = 4;
 static const int EDN_discard_error = 0;
@@ -1975,7 +1973,7 @@ static const int EDN_discard_error = 0;
 static const int EDN_discard_en_main = 1;
 
 
-#line 702 "edn_parser.rl"
+#line 688 "edn_parser.rl"
 
 
 
@@ -1986,14 +1984,14 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
     Rice::Object o;
 
 
-#line 1990 "edn_parser.cc"
+#line 1988 "edn_parser.cc"
 	{
 	cs = EDN_discard_start;
 	}
 
-#line 712 "edn_parser.rl"
+#line 698 "edn_parser.rl"
 
-#line 1997 "edn_parser.cc"
+#line 1995 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -2014,7 +2012,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 2018 "edn_parser.cc"
+#line 2016 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr2;
 		case 32: goto st2;
@@ -2039,14 +2037,14 @@ case 2:
 		goto tr3;
 	goto st0;
 tr3:
-#line 689 "edn_parser.rl"
+#line 675 "edn_parser.rl"
 	{
         const char *np = parse_value(p, pe, o);
         if (np == NULL) { p--; {p++; cs = 4; goto _out;} } else { {p = (( np))-1;} }
     }
-#line 694 "edn_parser.rl"
+#line 680 "edn_parser.rl"
 	{
-        discard = true;
+        discard_cur = true;
         p--; {p++; cs = 4; goto _out;}
     }
 	goto st4;
@@ -2054,7 +2052,7 @@ st4:
 	if ( ++p == pe )
 		goto _test_eof4;
 case 4:
-#line 2058 "edn_parser.cc"
+#line 2056 "edn_parser.cc"
 	goto st0;
 st3:
 	if ( ++p == pe )
@@ -2072,7 +2070,7 @@ case 3:
 	_out: {}
 	}
 
-#line 713 "edn_parser.rl"
+#line 699 "edn_parser.rl"
 
     if (cs >= EDN_discard_first_final) {
         return p + 1;
@@ -2092,7 +2090,7 @@ case 3:
 // dispatch
 //
 
-#line 2096 "edn_parser.cc"
+#line 2094 "edn_parser.cc"
 static const int EDN_dispatch_start = 1;
 static const int EDN_dispatch_first_final = 2;
 static const int EDN_dispatch_error = 0;
@@ -2100,7 +2098,7 @@ static const int EDN_dispatch_error = 0;
 static const int EDN_dispatch_en_main = 1;
 
 
-#line 762 "edn_parser.rl"
+#line 748 "edn_parser.rl"
 
 
 
@@ -2110,14 +2108,14 @@ const char* edn::Parser::parse_dispatch(const char *p, const char *pe, Rice::Obj
     int cs;
 
 
-#line 2114 "edn_parser.cc"
+#line 2112 "edn_parser.cc"
 	{
 	cs = EDN_dispatch_start;
 	}
 
-#line 771 "edn_parser.rl"
+#line 757 "edn_parser.rl"
 
-#line 2121 "edn_parser.cc"
+#line 2119 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -2138,40 +2136,40 @@ st0:
 cs = 0;
 	goto _out;
 tr0:
-#line 749 "edn_parser.rl"
+#line 735 "edn_parser.rl"
 	{
         //        std::cerr << "--- DISPATCH TAGGED: fpc is '" << fpc << "'" << std::endl;
         const char *np = parse_tagged(p, pe, o);
         if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
     }
-#line 755 "edn_parser.rl"
+#line 741 "edn_parser.rl"
 	{ p--; {p++; cs = 2; goto _out;} }
 	goto st2;
 tr2:
-#line 737 "edn_parser.rl"
+#line 723 "edn_parser.rl"
 	{
         //        std::cerr << "--- DISPATCH DISCARD: fpc is '" << fpc << "'" << std::endl;
         const char *np = parse_discard(p, pe);
         if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
     }
-#line 755 "edn_parser.rl"
+#line 741 "edn_parser.rl"
 	{ p--; {p++; cs = 2; goto _out;} }
 	goto st2;
 tr3:
-#line 743 "edn_parser.rl"
+#line 729 "edn_parser.rl"
 	{
         //        std::cerr << "--- DISPATCH SET: fpc is '" << fpc << "'" << std::endl;
         const char *np = parse_set(p, pe, o);
         if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
     }
-#line 755 "edn_parser.rl"
+#line 741 "edn_parser.rl"
 	{ p--; {p++; cs = 2; goto _out;} }
 	goto st2;
 st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 2175 "edn_parser.cc"
+#line 2173 "edn_parser.cc"
 	goto st0;
 	}
 	_test_eof2: cs = 2; goto _test_eof;
@@ -2180,7 +2178,7 @@ case 2:
 	_out: {}
 	}
 
-#line 772 "edn_parser.rl"
+#line 758 "edn_parser.rl"
 
     if (cs >= EDN_dispatch_first_final) {
         return p + 1;
@@ -2198,14 +2196,14 @@ case 2:
 // main parsing machine
 //
 
-#line 2202 "edn_parser.cc"
+#line 2200 "edn_parser.cc"
 static const int EDN_start = 2;
 static const int EDN_error = 0;
 
 static const int EDN_en_main = 2;
 
 
-#line 806 "edn_parser.rl"
+#line 791 "edn_parser.rl"
 
 
 //
@@ -2221,17 +2219,17 @@ Rice::Object edn::Parser::parse(const char* buf, std::size_t len)
     line_number = 1;
 
 
-#line 2225 "edn_parser.cc"
+#line 2223 "edn_parser.cc"
 	{
 	cs = EDN_start;
 	}
 
-#line 821 "edn_parser.rl"
+#line 806 "edn_parser.rl"
     p = &buf[0];
     pe = p + len;
     eof = pe; // eof defined in Parser class
 
-#line 2235 "edn_parser.cc"
+#line 2233 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -2242,17 +2240,17 @@ tr1:
 	{ line_number++; }
 	goto st2;
 tr4:
-#line 794 "edn_parser.rl"
+#line 780 "edn_parser.rl"
 	{
         const char* np = parse_value(p, pe, result);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
+        if (np == NULL) { {p = (( pe))-1;} {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
     }
 	goto st2;
 st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 2256 "edn_parser.cc"
+#line 2254 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr1;
 		case 32: goto st2;
@@ -2294,7 +2292,7 @@ case 1:
 	_out: {}
 	}
 
-#line 825 "edn_parser.rl"
+#line 810 "edn_parser.rl"
 
     if (cs == EDN_error) {
         error(__FUNCTION__, *p);

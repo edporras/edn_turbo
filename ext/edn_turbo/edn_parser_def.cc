@@ -12,13 +12,13 @@
 namespace edn
 {
     //
-    //
+    // add an element to a sequence if we're not to discard it
     void Parser::save_to_list(Rice::Array& v, Rice::Object& o)
     {
-        if (!discard) {
+        if (!discard_cur) {
             v.push(o);
         } else {
-            discard = false;
+            discard_cur = false;
         }
     }
 
