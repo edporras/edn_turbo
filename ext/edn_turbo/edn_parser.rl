@@ -417,10 +417,10 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
         }
     }
 
-    action exit { fhold; fbreak; }
-
     element       = begin_value >parse_value;
     next_element  = ignore* element;
+
+    action exit { fhold; fbreak; }
 }%%
 
 //
@@ -686,59 +686,27 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
 
     begin_discard = '_';
 
-    ident = ([a-zA-Z0-9/\-\+<>\"]);
-
-    action init {
-        std::cerr << "INIT fpc: '" << *(fpc) << "', pe: '" << *pe << "'" << std::endl;
+    action discard_value {
+        const char *np = parse_value(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else { fexec np; }
     }
 
-    action consume {
-        std::cerr << "CONSUME fpc: '" << *(fpc) << "', pe: '" << *pe << "'" << std::endl;
-    }
-
-    action open_seq {
-        std::cerr << "OPEN SEQ fpc: '" << *(fpc) << "', pe: '" << *pe << "'" << std::endl;
-        switch (*fpc) {
-          case '{': closer_stack.push('}'); break;
-          case '[': closer_stack.push(']'); break;
-          case '(': closer_stack.push(')'); break;
-        }
-    }
-
-    action close_seq {
-        std::cerr << "CONSUME fpc: '" << *(fpc) << "', pe: '" << *pe << "'" << std::endl;
-        if (closer_stack.top() == *fpc) {
-            closer_stack.pop();
-        }
-    }
-
-    action is_done {
-        closer_stack.empty()
-    }
     action exit {
-        std::cerr << "EXIT fpc: '" << *fpc << "'" << std::endl;
         discard = true;
         fhold; fbreak;
     }
 
-    main := '_' (
-                 start: ( space -> start |
-                          ^space @consume -> value ),
-                 value: (
-                         ident+ @consume -> value |
-                         [\{\[\(] @open_seq -> value |
-                         [\}\]\)] @close_seq -> value |
-                         ignore when is_done -> final
-                         )
-                 ) @exit;
+    main := '_' ignore* (
+                         begin_value >discard_value
+                         ) @exit;
 }%%
 
 
 const char* edn::Parser::parse_discard(const char *p, const char *pe)
 {
-        std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
+    //std::cerr << __FUNCTION__ << " -  p: '" << p << "'" << std::endl;
     int cs;
-    std::stack<char> closer_stack;
+    Rice::Object o;
 
     %% write init;
     %% write exec;
@@ -828,9 +796,13 @@ const char* edn::Parser::parse_dispatch(const char *p, const char *pe, Rice::Obj
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
+    element       = begin_value >parse_value;
+    next_element  = ignore* element;
+
     main := ignore* (
-                     begin_value >parse_value
-                     )* ignore*;
+                     (element ignore*)
+                     (next_element ignore*)*
+                     )? ignore*;
 }%%
 
 //
