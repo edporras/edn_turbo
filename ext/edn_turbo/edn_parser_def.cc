@@ -12,6 +12,18 @@
 namespace edn
 {
     //
+    //
+    void Parser::save_to_list(Rice::Array& v, Rice::Object& o)
+    {
+        if (!discard) {
+            v.push(o);
+        } else {
+            discard = false;
+        }
+    }
+
+
+    //
     // copies the string data, unescaping any present values that need to be replaced
     //
     bool Parser::parse_byte_stream(const char *p_start, const char *p_end, Rice::String& s)
