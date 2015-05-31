@@ -413,7 +413,11 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
         if (np == NULL) {
             fhold; fbreak;
         } else {
-            save_to_list(arr, v);
+            if (!discard_cur) {
+                arr.push(v);
+            } else {
+                discard_cur = false;
+            }
             fexec np;
         }
     }
@@ -674,11 +678,10 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
 
     action discard_value {
         const char *np = parse_value(fpc, pe, o);
-        if (np == NULL) { fhold; fbreak; } else { fexec np; }
+        if (np == NULL) { fhold; fbreak; } else { discard_cur = true; fexec np; }
     }
 
     action exit {
-        discard_cur = true;
         fhold; fbreak;
     }
 

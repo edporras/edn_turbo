@@ -12,18 +12,6 @@
 namespace edn
 {
     //
-    // add an element to a sequence if we're not to discard it
-    void Parser::save_to_list(Rice::Array& v, Rice::Object& o)
-    {
-        if (!discard_cur) {
-            v.push(o);
-        } else {
-            discard_cur = false;
-        }
-    }
-
-
-    //
     // copies the string data, unescaping any present values that need to be replaced
     //
     bool Parser::parse_byte_stream(const char *p_start, const char *p_end, Rice::String& s)
