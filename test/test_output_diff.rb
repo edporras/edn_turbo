@@ -175,10 +175,10 @@ class EDNT_Test < Minitest::Test
 
   def test_discard
 
-#    check_file('test/discard.edn', 456)
-#    check_file('test/discard_2.edn', 456)
-    check_file('test/discard_3.edn', 456)
-
+    check_file('test/discard.edn', [:a, :b, 42, [:c]])
+    check_file('test/discard2.edn', [:a])
+    check_file('test/discard3.edn', 456)
+    check_file('test/discard4.edn', [1, 2, 3, 4])
   end
 
   def test_packard
