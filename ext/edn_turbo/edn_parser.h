@@ -36,6 +36,7 @@ namespace edn
 
         Rice::Object parse(const char* s, std::size_t len);
 
+        const char* parse_operator(const char *p, const char *pe, Rice::Object& o);
         const char* parse_decimal(const char *p, const char *pe, Rice::Object& o);
         const char* parse_integer(const char *p, const char *pe, Rice::Object& o);
         const char* parse_esc_char(const char *p, const char *pe, Rice::Object& o);
