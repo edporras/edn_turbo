@@ -460,10 +460,10 @@ tr14:
 	{
         //std::cerr << "PARSE OP::NUM '" << (fpc - 1) << "'" << std::endl;
         // try to parse a decimal first
-        const char *np = parse_decimal(p - 1, pe, o);
+        const char *np = parse_decimal(p_save, pe, o);
         if (np == NULL) {
             // if we can't, try to parse it as an int
-            np = parse_integer(p - 1, pe, o);
+            np = parse_integer(p_save, pe, o);
         }
 
         if (np) {
@@ -482,7 +482,7 @@ tr15:
 	{
         //        std::cerr << "PARSE OP::SYM '" << (fpc - 1) << "'" << std::endl;
         std::string sym;
-        const char *np = parse_symbol(p - 1, pe, sym);
+        const char *np = parse_symbol(p_save, pe, sym);
         if (np == NULL) { p--; {p++; cs = 8; goto _out;} } else {
             o = Parser::make_edn_symbol(sym);
             {p = (( np))-1;}

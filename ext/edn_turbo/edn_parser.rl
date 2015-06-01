@@ -30,9 +30,6 @@
         symbol_start   = alpha;
         symbol_chars   = symbol_start | digit | [\#:_\-\.];
 
-#        k_nil          = 'nil';
-#        k_true         = 'true';
-#        k_false        = 'false';
         begin_dispatch = '#';
         begin_keyword  = ':';
         begin_char     = '\\';
@@ -191,9 +188,9 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object
     write data;
 
     action parse_symbol {
-        //        std::cerr << "PARSE OP::SYM '" << (fpc - 1) << "'" << std::endl;
+        // parse a symbol including the leading operator (-, +, .)
         std::string sym;
-        const char *np = parse_symbol(fpc - 1, pe, sym);
+        const char *np = parse_symbol(p_save, pe, sym);
         if (np == NULL) { fhold; fbreak; } else {
             o = Parser::make_edn_symbol(sym);
             fexec np;
@@ -201,12 +198,15 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object
     }
 
     action parse_number {
-        //std::cerr << "PARSE OP::NUM '" << (fpc - 1) << "'" << std::endl;
+        // parse a number with the leading symbol - this is slightly
+        // different than the one within EDN_value since it includes
+        // the leading - or +
+        //
         // try to parse a decimal first
-        const char *np = parse_decimal(fpc - 1, pe, o);
+        const char *np = parse_decimal(p_save, pe, o);
         if (np == NULL) {
             // if we can't, try to parse it as an int
-            np = parse_integer(fpc - 1, pe, o);
+            np = parse_integer(p_save, pe, o);
         }
 
         if (np) {
@@ -221,7 +221,7 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object
     }
 
     action parse_operator {
-        //        std::cerr << "PARSE OP::OP '" << *(fpc-1) << "', pe: '" << *pe << "'" << std::endl;
+        // stand-alone operators (-, +, /, ... etc)
         std::string sym;
         sym += *(fpc - 1);
         o = Parser::make_edn_symbol(sym);
