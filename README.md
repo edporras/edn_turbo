@@ -74,9 +74,9 @@ Known problems
 ==============
 As of v0.2.0:
 
-# Need to support stand-alone `-` and `+` symbols as well as named 
+- Need to support stand-alone `-` and `+` symbols as well as named 
 symbols with a leading `-`. The current set of parsers expect only
 numeric values to optionally lead with a `-` so support for the
 other two cases requires refactoring of the parser logic
-# Need to check handling of discards at the root level. Discards
+- Need to check handling of discards at the root level. Discards
 within containers looks to work 100% as far as I know.
