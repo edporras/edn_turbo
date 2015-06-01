@@ -29,7 +29,8 @@
         operators      = [/\.\*!_\?$%&<>\=\-\+];
         symbol_chars   = [a-zA-Z0-9\#:] | operators;
 
-        symbol_first_c = symbol_chars - [0-9\#\:]; # non-numeric, no '#' or ':'
+        # non-numeric, no '#' or ':'
+        symbol_first_c = symbol_chars - [0-9\#\:];
 
 #        k_nil          = 'nil';
 #        k_true         = 'true';
@@ -41,10 +42,8 @@
 # TODO: support - and + symbols. Currently conflicting with numeric values
         begin_symbol   = symbol_first_c - ('-'|'+');
         begin_vector   = '[';
-        end_vector     = ']';
         begin_map      = '{';
         begin_list     = '(';
-        end_list       = ')';
         string_delim   = '"';
         begin_number   = digit | '-';
 
@@ -209,7 +208,7 @@ const char* edn::Parser::parse_esc_char(const char *p, const char *pe, Rice::Obj
     %% write exec;
 
     if (cs >= EDN_escaped_char_first_final) {
-        if (!parse_escaped_char(p_save + 1, p, o)) {
+        if (!Parser::parse_escaped_char(p_save + 1, p, o)) {
             return pe;
         }
         return p;
@@ -325,7 +324,7 @@ const char* edn::Parser::parse_keyword(const char *p, const char *pe, Rice::Obje
     write data;
 
     action parse_string {
-        if (!parse_byte_stream(p_save + 1, p, s)) {
+        if (!Parser::parse_byte_stream(p_save + 1, p, s)) {
             fhold;
             fbreak;
         } else {
@@ -396,7 +395,7 @@ const char* edn::Parser::parse_decimal(const char *p, const char *pe, Rice::Obje
     %% write exec;
 
     if (cs >= EDN_decimal_first_final) {
-        o = float_to_ruby(p_save, p - p_save);
+        o = Parser::float_to_ruby(p_save, p - p_save);
         return p + 1;
     }
     else if (cs == EDN_decimal_en_main) {} // silence ragel warning
@@ -427,7 +426,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
     %% write exec;
 
     if (cs >= EDN_integer_first_final) {
-        o = integer_to_ruby(p_save, p - p_save);
+        o = Parser::integer_to_ruby(p_save, p - p_save);
         return p + 1;
     }
     else if (cs == EDN_integer_en_main) {} // silence ragel warning
@@ -477,6 +476,8 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
     machine EDN_vector;
     include EDN_sequence_common;
 
+    end_vector     = ']';
+
     write data;
 
     main := begin_vector (
@@ -521,10 +522,13 @@ const char* edn::Parser::parse_vector(const char *p, const char *pe, Rice::Objec
     machine EDN_list;
     include EDN_sequence_common;
 
+    end_list       = ')';
+
     write data;
 
-    main := begin_list ignore* sequence? end_list @err(close_err)
-            @exit;
+    main := begin_list (
+                        ignore* sequence? :>> end_list
+                        ) @err(close_err) @exit;
 }%%
 
 //
@@ -566,7 +570,9 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
     begin_set    = '{';
     end_set      = '}';
 
-    main := begin_set ignore* sequence? end_set @err(close_err) @exit;
+    main := begin_set (
+                       ignore* sequence? :>> end_set
+                       ) @err(close_err) @exit;
 }%%
 
 //
@@ -584,7 +590,7 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& 
     %% write exec;
 
     if (cs >= EDN_set_first_final) {
-        o = make_ruby_set(arr);
+        o = Parser::make_ruby_set(arr);
         return p + 1;
     }
     else if (cs == EDN_set_error) {
@@ -614,7 +620,9 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& 
         fexec pe;
     }
 
-    main := begin_map ignore* (sequence)? :>> end_map @err(close_err) @exit;
+    main := begin_map (
+                       ignore* (sequence)? :>> end_map
+                       ) @err(close_err) @exit;
 }%%
 
 
@@ -729,9 +737,9 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
         fhold; fbreak;
     }
 
-    main := '_' ignore* (
-                         begin_value >discard_value
-                         ) @exit;
+    main := begin_discard ignore* (
+                                   begin_value >discard_value
+                                   ) @exit;
 }%%
 
 
@@ -768,19 +776,16 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
     write data;
 
     action parse_discard {
-        //        std::cerr << "--- DISPATCH DISCARD: fpc is '" << fpc << "'" << std::endl;
         const char *np = parse_discard(fpc, pe);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     action parse_set {
-        //        std::cerr << "--- DISPATCH SET: fpc is '" << fpc << "'" << std::endl;
         const char *np = parse_set(fpc, pe, o);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     action parse_tagged {
-        //        std::cerr << "--- DISPATCH TAGGED: fpc is '" << fpc << "'" << std::endl;
         const char *np = parse_tagged(fpc, pe, o);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
