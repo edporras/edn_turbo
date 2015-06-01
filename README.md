@@ -8,7 +8,7 @@ Written based on the functionality of
 achieving much faster parsing. 
 
 As of v0.2.0, `edn_turbo` requires `edn` to support tagged elements 
-using a similar API and return types. The eventual goal is to bundle 
+using a similar API and return types. Eventually, I'd like to bundle 
 `edn_turbo` as an optional parser for `edn`.
 
 Some quick sample runs comparing time output of file reads using `edn`
@@ -72,11 +72,7 @@ Usage
 
 Known problems
 ==============
-As of v0.2.0:
+As of v0.2.1:
 
-- Need to support stand-alone `-` and `+` symbols as well as named 
-symbols with a leading `-`. The current set of parsers expect only
-numeric values to optionally lead with a `-` so support for the
-other two cases requires refactoring of the parser logic
 - Need to check handling of discards at the root level. Discards
 within containers looks to work 100% as far as I know.
