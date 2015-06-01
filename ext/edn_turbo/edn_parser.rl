@@ -61,7 +61,7 @@
             std::stringstream s;
             s << "unterminated " << EDN_TYPE;
             error(__FUNCTION__, s.str());
-            exit(-1);
+            fhold; fbreak;
         }
 }%%
 
@@ -479,8 +479,10 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
 
     write data;
 
-    main := begin_vector ignore* sequence? end_vector @err(close_err)
-            @exit;
+    main := begin_vector (
+                          ignore* sequence? :>> end_vector
+                          )
+                          @err(close_err) @exit;
 }%%
 
 
