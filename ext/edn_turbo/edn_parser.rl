@@ -74,6 +74,31 @@
 
     write data;
 
+    action parse_dispatch {
+        const char *np = parse_dispatch(fpc + 1, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
+    action parse_char {
+        const char *np = parse_esc_char(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
+    action parse_string {
+        const char *np = parse_string(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
+    action parse_keyword {
+        const char *np = parse_keyword(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
+    action parse_operator {
+        const char *np = parse_operator(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
     action parse_symbol {
         std::string sym;
         const char *np = parse_symbol(fpc, pe, sym);
@@ -86,21 +111,6 @@
             }
             fexec np;
         }
-    }
-
-    action parse_keyword {
-        const char *np = parse_keyword(fpc, pe, o);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
-    }
-
-    action parse_char {
-        const char *np = parse_esc_char(fpc, pe, o);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
-    }
-
-    action parse_string {
-        const char *np = parse_string(fpc, pe, o);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     action parse_number {
@@ -137,19 +147,15 @@
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
-    action parse_dispatch {
-        const char *np = parse_dispatch(fpc + 1, pe, o);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
-    }
-
     action exit { fhold; fbreak; }
 
     main := (
              begin_dispatch >parse_dispatch |
              begin_char >parse_char |
              string_delim >parse_string |
-             begin_symbol >parse_symbol |
              begin_keyword >parse_keyword |
+#             operator >parse_operator |
+             begin_symbol >parse_symbol |
              begin_number >parse_number |
              begin_vector >parse_vector |
              begin_list >parse_list |
@@ -338,9 +344,8 @@ const char* edn::Parser::parse_keyword(const char *p, const char *pe, Rice::Obje
                           (^([\"\\] | 0..0x1f) |
                            '\\'[\"\\/bfnrt] |
                            '\\u'[0-9a-fA-F]{4} |
-                           '\\'^([\"\\/bfnrtu]|0..0x1f))* %parse_string)
-            string_delim @err(close_err)
-            @exit;
+                           '\\'^([\"\\/bfnrtu]|0..0x1f))* %parse_string
+                          ) :>> string_delim @err(close_err) @exit;
 }%%
 
 
