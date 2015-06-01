@@ -117,14 +117,14 @@ class EDNT_Test < Minitest::Test
 
   def test_map
 
-    check_file('test/map_1.edn',
+    check_file('test/map1.edn',
                {:key_a1=>true,:key_a2=>false,:key_a3=>[1, 2, 3, "test string", nil, {1=>2}],
                 :key_a4=>{:key_a31=>23, :key_a32=>24.4},"string_key"=>:kval,
                 :embedded=>[true, {:c2g_md5=>"2bbee1cd3045710db6fec432b00d1e0c"}],
                 2=>{:a=>:b}}
               )
 
-    check_file('test/map_2.edn',
+    check_file('test/map2.edn',
                {:int=>1, :string=>"hello", :char=>"a", :array=>[0, 1], :hash=>{:key=>"value"}}
               )
   end
@@ -166,9 +166,8 @@ class EDNT_Test < Minitest::Test
                 EDN::Type::Symbol.new('<'),
                 EDN::Type::Symbol.new('&'),
                 EDN::Type::Symbol.new('='),
-                # TODO: fix
-                #                EDN::Type::Symbol.new('-'),
-                #                EDN::Type::Symbol.new('+'),
+                EDN::Type::Symbol.new('-'),
+                EDN::Type::Symbol.new('+'),
                ]
               )
 
@@ -184,7 +183,7 @@ class EDNT_Test < Minitest::Test
 
   def test_packard
 
-    check_file('test/map_3.edn',
+    check_file('test/map3.edn',
                {:meta=>{:data_format_version=>304,
                         :filename=>"test/colorspan.pdf",
                         :is_ok=>true,

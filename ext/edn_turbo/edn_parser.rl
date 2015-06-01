@@ -26,9 +26,9 @@
         comment        = ';' cr_neg* counter;
         ignore         = ws | comment;
 
-        operators      = [/\.\*!_\?$%&<>\=\-\+];
+        operators      = [/\.\*!_\?$%&<>\=+\-];
         symbol_start   = alpha;
-        symbol_chars   = symbol_start | digit | [\#:_];
+        symbol_chars   = symbol_start | digit | [\#:_\-\.];
 
 #        k_nil          = 'nil';
 #        k_true         = 'true';
@@ -45,7 +45,6 @@
         begin_number   = digit;
 
         symbol_name    = symbol_start (symbol_chars)*;
-
         symbol         = (symbol_name ('/' symbol_name)?);
 
         # int / decimal rules
@@ -92,7 +91,6 @@
     }
 
     action parse_operator {
-        //        std::cerr << "PARSE VALUE::OP '" << fpc << "'" << std::endl;
         const char *np = parse_operator(fpc, pe, o);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
@@ -203,7 +201,7 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object
     }
 
     action parse_number {
-        //        std::cerr << "PARSE OP::NUM '" << (fpc - 1) << "'" << std::endl;
+        //std::cerr << "PARSE OP::NUM '" << (fpc - 1) << "'" << std::endl;
         // try to parse a decimal first
         const char *np = parse_decimal(fpc - 1, pe, o);
         if (np == NULL) {
@@ -250,11 +248,6 @@ const char* edn::Parser::parse_operator(const char *p, const char *pe, Rice::Obj
     %% write exec;
 
     if (cs >= EDN_operator_first_final) {
-        //                std::size_t len = p - p_save;
-        //      std::cerr << "len is: " << len << std::endl;
-                /*        std::string buf;
-                buf.append(p_save, p - p_save);
-                std::cerr << "   buf: '" << buf << "'" << std::endl;*/
         return p;
     }
     else if (cs == EDN_operator_error) {
@@ -326,7 +319,7 @@ const char* edn::Parser::parse_esc_char(const char *p, const char *pe, Rice::Obj
     main := (
              operators? symbol |
              operators
-             ) ignore* (^(symbol | operators)? @exit);
+             ) ignore* (^(symbol_chars | operators)? @exit);
 }%%
 
 
@@ -467,11 +460,10 @@ const char* edn::Parser::parse_string(const char *p, const char *pe, Rice::Objec
 
     action exit { fhold; fbreak; }
 
-    main := '-'? (
-                  (integer '.' digit* (exp? [M]?)) |
-                  (integer exp) |
-                  (integer 'M')
-                  ) (^[0-9Ee.+\-M]? @exit );
+    main := ('-'|'+')? (
+                        (integer '.' digit* (exp? [M]?)) |
+                        (integer exp)
+                        ) (^[0-9Ee.+\-M]? @exit );
 }%%
 
 
@@ -504,8 +496,8 @@ const char* edn::Parser::parse_decimal(const char *p, const char *pe, Rice::Obje
     action exit { fhold; fbreak; }
 
     main := (
-             ('-'|'+')? (integer [M|N]?)
-             ) (^[0-9N\-\+]? @exit);
+             ('-'|'+')? (integer [MN]?)
+             ) (^[0-9MN+\-]? @exit);
 }%%
 
 const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Object& o)
@@ -759,13 +751,8 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
     machine EDN_tagged;
     include EDN_common;
 
-#    inst = (string_delim [0-9\-\+:\.TZ]* string_delim);
+#    inst = (string_delim [0-9+\-:\.TZ]* string_delim);
 #    uuid = (string_delim [a-f0-9\-]* string_delim);
-
-    # tags
-    tagged_symbol = alpha [a-zA-z0-9_]*;
-    built_in_tag  = tagged_symbol;
-    user_tag      = tagged_symbol '/' tagged_symbol;
 
     write data;
 
