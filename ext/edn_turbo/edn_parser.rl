@@ -356,8 +356,7 @@ const char* edn::Parser::parse_decimal(const char *p, const char *pe, Rice::Obje
     %% write exec;
 
     if (cs >= EDN_decimal_first_final) {
-        double value;
-        o = Parser::buftotype<double>(p_save, p - p_save, value);
+        o = float_to_ruby(p_save, p - p_save);
         return p + 1;
     }
     else if (cs == EDN_decimal_en_main) {} // silence ragel warning
@@ -388,8 +387,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
     %% write exec;
 
     if (cs >= EDN_integer_first_final) {
-        int value;
-        o = Parser::buftotype<int>(p_save, p - p_save, value);
+        o = integer_to_ruby(p_save, p - p_save);
         return p + 1;
     }
     else if (cs == EDN_integer_en_main) {} // silence ragel warning

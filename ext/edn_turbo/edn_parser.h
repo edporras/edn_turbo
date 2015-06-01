@@ -20,6 +20,8 @@ namespace edn
     extern VALUE EDNT_MAKE_EDN_SYMBOL;
     extern VALUE EDNT_MAKE_SET_METHOD;
     extern VALUE EDNT_TAGGED_ELEM;
+    extern VALUE EDNT_STR_INT_TO_BIGNUM;
+    extern VALUE EDNT_STR_DBL_TO_BIGNUM;
 
     //
     // C-extension EDN Parser class representation
@@ -64,12 +66,16 @@ namespace edn
         // utility method to convert a primitive in string form to a
         // ruby type
         template <class T>
-        static Rice::Object buftotype(const char* p, long len, T& val) {
+        static Rice::Object buftotype(const char* p, std::size_t len) {
+            T val;
             std::string buf;
             buf.append(p, len);
             std::istringstream(buf) >> val;
             return to_ruby<T>(val);
         }
+
+        static Rice::Object integer_to_ruby(const char* str, std::size_t len);
+        static Rice::Object float_to_ruby(const char* str, std::size_t len);
 
     public:
         Parser() : line_number(1), p_save(NULL), eof(NULL) { }

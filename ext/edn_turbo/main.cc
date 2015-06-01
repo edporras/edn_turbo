@@ -17,6 +17,8 @@ namespace edn {
     VALUE EDNT_MAKE_EDN_SYMBOL = Qnil;
     VALUE EDNT_MAKE_SET_METHOD = Qnil;
     VALUE EDNT_TAGGED_ELEM = Qnil;
+    VALUE EDNT_STR_INT_TO_BIGNUM = Qnil;
+    VALUE EDNT_STR_DBL_TO_BIGNUM = Qnil;
 
 
     void die(int sig)
@@ -49,6 +51,8 @@ void Init_edn_turbo(void)
     edn::EDNT_MAKE_EDN_SYMBOL = rb_intern("make_edn_symbol");
     edn::EDNT_MAKE_SET_METHOD = rb_intern("make_set");
     edn::EDNT_TAGGED_ELEM = rb_intern("tagged_element");
+    edn::EDNT_STR_INT_TO_BIGNUM = rb_intern("string_int_to_bignum");
+    edn::EDNT_STR_DBL_TO_BIGNUM = rb_intern("string_double_to_bignum");
 
     // bind the ruby Parser class to the C++ one
     Rice::Data_Type<edn::Parser> rb_cParser =

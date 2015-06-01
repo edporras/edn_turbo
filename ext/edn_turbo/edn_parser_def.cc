@@ -1,5 +1,7 @@
 #include <iostream>
+#include <iomanip>
 #include <string>
+#include <limits>
 
 #include <rice/String.hpp>
 #include <rice/Array.hpp>
@@ -11,6 +13,46 @@
 
 namespace edn
 {
+    template <typename T>
+    static std::size_t get_max_chars(T)
+    {
+        std::stringstream s;
+        s << std::fixed << std::numeric_limits<T>::max();
+        return s.str().length();
+    }
+
+    static const std::size_t LL_max_chars = get_max_chars<>((long long) 1);
+    static const std::size_t LD_max_chars = get_max_chars<>((long double) 1);
+
+    //
+    //
+    Rice::Object Parser::integer_to_ruby(const char* str, std::size_t len)
+    {
+        if (len < LL_max_chars)
+        {
+            return buftotype<long>(str, len);
+        }
+
+        // value is outside of range of long type. Use ruby to convert it
+        VALUE rb_s = Rice::protect(rb_str_new2, str);
+        return Rice::protect(rb_funcall, rb_mEDNT, EDNT_STR_INT_TO_BIGNUM, 1, rb_s);
+    }
+
+    //
+    //
+    Rice::Object Parser::float_to_ruby(const char* str, std::size_t len)
+    {
+        if (len < LD_max_chars)
+        {
+            return buftotype<double>(str, len);
+        }
+
+        // value is outside of range of long type. Use ruby to convert it
+        VALUE rb_s = Rice::protect(rb_str_new2, str);
+        return Rice::protect(rb_funcall, rb_mEDNT, EDNT_STR_DBL_TO_BIGNUM, 1, rb_s);
+    }
+
+
     //
     // copies the string data, unescaping any present values that need to be replaced
     //
