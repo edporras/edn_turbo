@@ -25,7 +25,8 @@ namespace edn
     static const std::size_t LD_max_chars = get_max_chars<>((long double) 1);
 
     //
-    //
+    // convert to int.. if string rep has more digits than long can
+    // hold, call into ruby to get a big num
     Rice::Object Parser::integer_to_ruby(const char* str, std::size_t len)
     {
         if (len < LL_max_chars)
@@ -39,7 +40,7 @@ namespace edn
     }
 
     //
-    //
+    // as above.. TODO: check exponential
     Rice::Object Parser::float_to_ruby(const char* str, std::size_t len)
     {
         if (len < LD_max_chars)
@@ -60,9 +61,8 @@ namespace edn
     {
         if (p_end > p_start) {
             std::string buf;
-            std::size_t len = p_end - p_start;
 
-            if (unicode_to_utf8(p_start, len, buf))
+            if (unicode_to_utf8(p_start, p_end - p_start, buf))
             {
                 // utf-8 encode
                 VALUE vs = Rice::protect( rb_str_new2, buf.c_str() );
@@ -76,7 +76,7 @@ namespace edn
     }
 
     //
-    // handles things like \c, \n
+    // handles things like \c, \newline
     //
     bool Parser::parse_escaped_char(const char *p, const char *pe, Rice::Object& o)
     {
@@ -89,9 +89,10 @@ namespace edn
             else if (buf == "tab") buf = "\\t";
             else if (buf == "return") buf = "\\r";
             else if (buf == "space") buf = " ";
-            // what are these?
-            //        else if (buf == "") buf = "\v";
-            //        else if (buf == "feed") buf = "\f";
+            else if (buf == "formfeed") buf = "\\f";
+            else if (buf == "backspace") buf = "\\b";
+            // TODO: is this supported?
+            else if (buf == "verticaltab") buf = "\\v";
             else return false;
         }
 
