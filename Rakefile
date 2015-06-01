@@ -7,7 +7,6 @@ NAME = 'edn_turbo'
 LIB_DIR = "lib/#{NAME}"
 EXT_BUNDLE = "#{LIB_DIR}/#{NAME}.#{RbConfig::CONFIG['DLEXT']}"
 
-
 EXT_PATH               = "ext/#{NAME}"
 RAGEL_PARSER_SRC       = "edn_parser.rl"
 RAGEL_PARSER_SRC_PATH  = "#{EXT_PATH}/#{RAGEL_PARSER_SRC}"
@@ -23,6 +22,8 @@ task :chmod do
   File.chmod(0775, EXT_BUNDLE)
 end
 
+CLEAN.include(["*.png", "*.gem"])
+
 task :ragel => GEN_CC_PARSER_SRC_PATH
 
 
@@ -34,9 +35,11 @@ file GEN_CC_PARSER_SRC_PATH => RAGEL_PARSER_SRC_PATH do
   end
 end
 
-task :graph do
+
+task :graph, [:machine] do |t, args|
+  args.with_defaults(:machine => 'EDN_value')
   TMPFILE='/tmp/ragel_edn'
-  MACHINE='EDN_value'
+  MACHINE=args[:machine]
 
   # assumes graphviz is installed
   sh "ragel -Vp -S #{MACHINE} -o #{TMPFILE} #{EXT_PATH}/#{RAGEL_PARSER_SRC} && dot -Tpng #{TMPFILE} -o #{MACHINE}.png"
