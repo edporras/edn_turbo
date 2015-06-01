@@ -31,9 +31,9 @@
 
         symbol_first_c = symbol_chars - [0-9\#\:]; # non-numeric, no '#' or ':'
 
-        k_nil          = 'nil';
-        k_true         = 'true';
-        k_false        = 'false';
+#        k_nil          = 'nil';
+#        k_true         = 'true';
+#        k_false        = 'false';
         begin_dispatch = '#';
         begin_keyword  = ':';
         begin_char     = '\\';
@@ -95,13 +95,8 @@
     }
 
     action parse_char {
-        Rice::String s;
-
-        if (!parse_escaped_char(*fpc, s)) {
-            fhold; fbreak;
-        } else {
-            o = s;
-        }
+        const char *np = parse_esc_char(fpc, pe, o);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     action parse_string {
@@ -152,7 +147,7 @@
 
     main := (
              begin_dispatch >parse_dispatch |
-             begin_char (alnum|punct) >parse_char |
+             begin_char >parse_char |
              string_delim >parse_string |
              begin_symbol >parse_symbol |
              begin_keyword >parse_keyword |
@@ -166,7 +161,7 @@
 
 const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object& o)
 {
-    //    std::cerr << __FUNCTION__ << "   -  p: '" << p << "'" << std::endl;
+    //std::cerr << __FUNCTION__ << "   -  p: '" << p << "'" << std::endl;
     int cs;
 
     %% write init;
@@ -182,6 +177,51 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object
     else if (cs == EDN_value_en_main) {} // silence ragel warning
     return NULL;
 }
+
+
+
+// ============================================================
+// escaped char parsing
+//
+%%{
+    machine EDN_escaped_char;
+    include EDN_common;
+
+    write data;
+
+    valid_chars = alpha;
+
+    action exit { fhold; fbreak; }
+
+    main := (
+             begin_char valid_chars+ ignore*
+             ) (^(valid_chars | '\\')? @exit);
+}%%
+
+
+const char* edn::Parser::parse_esc_char(const char *p, const char *pe, Rice::Object& o)
+{
+    //std::cerr << __FUNCTION__ << "   -  p: '" << p << "'" << std::endl;
+    int cs;
+
+    %% write init;
+    p_save = p;
+    %% write exec;
+
+    if (cs >= EDN_escaped_char_first_final) {
+        if (!parse_escaped_char(p_save + 1, p, o)) {
+            return pe;
+        }
+        return p;
+    }
+    else if (cs == EDN_escaped_char_error) {
+        error(__FUNCTION__, *p);
+        return pe;
+    }
+    else if (cs == EDN_escaped_char_en_main) {} // silence ragel warning
+    return NULL;
+}
+
 
 
 

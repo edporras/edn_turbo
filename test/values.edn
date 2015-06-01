@@ -5,7 +5,7 @@
  "this is a test"
  "this\tis\\only\ta\ttest\rof\"various\nescaped\\values"
  \c
- \&
- \t
+ \newline
+ \tab
  "123➪456®789"
 ]

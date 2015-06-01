@@ -78,20 +78,24 @@ namespace edn
     //
     // handles things like \c, \n
     //
-    bool Parser::parse_escaped_char(char c, Rice::String& s)
+    bool Parser::parse_escaped_char(const char *p, const char *pe, Rice::Object& o)
     {
-        char str[2] = { c, 0 };
+        std::string buf;
+        std::size_t len = pe - p;
+        buf.append(p, len);
 
-        switch (c) {
-          case 'n': str[0] = '\n'; break;
-          case 't': str[0] = '\t'; break;
-          case 'r': str[0] = '\r'; break;
-          case 'v': str[0] = '\v'; break;
-          case 'f': str[0] = '\f'; break;
-          default: break;
+        if (len > 1) {
+            if      (buf == "newline") buf = "\\n";
+            else if (buf == "tab") buf = "\\t";
+            else if (buf == "return") buf = "\\r";
+            else if (buf == "space") buf = " ";
+            // what are these?
+            //        else if (buf == "") buf = "\v";
+            //        else if (buf == "feed") buf = "\f";
+            else return false;
         }
 
-        s = str;
+        o = Rice::String(buf);
         return true;
     }
 

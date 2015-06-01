@@ -38,6 +38,7 @@ namespace edn
 
         const char* parse_decimal(const char *p, const char *pe, Rice::Object& o);
         const char* parse_integer(const char *p, const char *pe, Rice::Object& o);
+        const char* parse_esc_char(const char *p, const char *pe, Rice::Object& o);
         const char* parse_symbol (const char *p, const char *pe, std::string& s);
         const char* parse_keyword(const char *p, const char *pe, Rice::Object& o);
         const char* parse_string (const char *p, const char *pe, Rice::Object& o);
@@ -51,9 +52,9 @@ namespace edn
 
         const char* parse_discard(const char *p, const char *pe);
 
-        static bool parse_byte_stream(const char *p, const char *pe, Rice::String& s);
-        static bool parse_escaped_char(char c, Rice::String& s);
-        static bool unicode_to_utf8(const char *s, std::size_t len, std::string& rslt);
+        static bool parse_byte_stream (const char *p, const char *pe, Rice::String& s);
+        static bool parse_escaped_char(const char *p, const char *pe, Rice::Object& s);
+        static bool unicode_to_utf8   (const char *s, std::size_t len, std::string& rslt);
 
         static Rice::Object make_edn_symbol(const std::string& name);
         static Rice::Object make_ruby_set(const Rice::Array& elems);
