@@ -53,13 +53,13 @@ namespace edn
         const char* parse_tagged  (const char *p, const char *pe, Rice::Object& o);
 
         // defined in edn_parser_unicode.cc
-        static bool unicode_to_utf8(const char *s, std::size_t len, std::string& rslt);
+        static bool to_utf8(const char *s, std::size_t len, std::string& rslt);
 
         // defined in edn_parser_util.cc
         static Rice::Object integer_to_ruby(const char* str, std::size_t len);
         static Rice::Object float_to_ruby  (const char* str, std::size_t len);
 
-        static bool parse_byte_stream (const char *p, const char *pe, Rice::String& s);
+        static bool parse_byte_stream (const char *p, const char *pe, Rice::String& s, bool encode);
         static bool parse_escaped_char(const char *p, const char *pe, Rice::Object& s);
 
         static Rice::Object make_edn_symbol(const std::string& name);

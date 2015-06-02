@@ -190,7 +190,10 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object
 
 
 // ============================================================
-// string parsing
+// string parsing - incoming string is raw so interpreting utf
+// encodings & unicode values might be necessary. To optimize things a
+// bit, we mark the string for encoding if anything outside of the
+// ascii range is found.
 //
 %%{
     machine EDN_string;
@@ -199,19 +202,22 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object
     write data;
 
     action parse_string {
-        if (!Parser::parse_byte_stream(p_save + 1, p, s)) {
-            fhold;
-            fbreak;
-        } else {
+        if (Parser::parse_byte_stream(p_save + 1, p, s, encode)) {
             fexec p + 1;
+        } else {
+            fhold; fbreak;
         }
     }
 
+    action mark_for_encoding {
+        encode = true;
+    }
 
     main := string_delim (
-                          (^([\"\\] | 0..0x1f) |
-                           '\\'[\"\\/bfnrt] |
-                           '\\u'[0-9a-fA-F]{4} |
+                          (^([\"\\] | 0..0x1f | 0xc2..0xf5) |
+                           ((0xc2..0xf5) |
+                            '\\'[\"\\/bfnrt] |
+                            '\\u'[0-9a-fA-F]{4}) $mark_for_encoding |
                            '\\'^([\"\\/bfnrtu]|0..0x1f))* %parse_string
                           ) :>> string_delim @err(close_err) @exit;
 }%%
@@ -222,9 +228,10 @@ const char* edn::Parser::parse_string(const char *p, const char *pe, Rice::Objec
     //    std::cerr << __FUNCTION__ << "   -  p: '" << p << "'" << std::endl;
     static const char* EDN_TYPE = "string";
     int cs;
+    bool encode = false;
     const char *eof = pe;
-
     Rice::String s;
+
     %% write init;
     p_save = p;
     %% write exec;

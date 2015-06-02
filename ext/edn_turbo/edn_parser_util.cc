@@ -59,19 +59,25 @@ namespace edn
     //
     // copies the string data, unescaping any present values that need to be replaced
     //
-    bool Parser::parse_byte_stream(const char *p_start, const char *p_end, Rice::String& s)
+    bool Parser::parse_byte_stream(const char *p_start, const char *p_end, Rice::String& s,
+                                   bool encode)
     {
         if (p_end > p_start) {
             std::string buf;
 
-            if (unicode_to_utf8(p_start, p_end - p_start, buf))
-            {
-                // utf-8 encode
-                VALUE vs = Rice::protect( rb_str_new2, buf.c_str() );
-                VALUE s_utf8 = Rice::protect( rb_enc_associate, vs, rb_utf8_encoding() );
-                s = Rice::String(s_utf8);
-                return true;
+            if (encode) {
+                if (!to_utf8(p_start, p_end - p_start, buf))
+                    return false;
             }
+            else {
+                buf.append(p_start, p_end - p_start);
+            }
+
+            // utf-8 encode
+            VALUE vs = Rice::protect( rb_str_new2, buf.c_str() );
+            VALUE s_utf8 = Rice::protect( rb_enc_associate, vs, rb_utf8_encoding() );
+            s = Rice::String(s_utf8);
+            return true;
         }
 
         return false;
@@ -87,14 +93,14 @@ namespace edn
         buf.append(p, len);
 
         if (len > 1) {
-            if      (buf == "newline") buf = "\\n";
-            else if (buf == "tab") buf = "\\t";
-            else if (buf == "return") buf = "\\r";
-            else if (buf == "space") buf = " ";
-            else if (buf == "formfeed") buf = "\\f";
-            else if (buf == "backspace") buf = "\\b";
+            if      (buf == "newline") buf = '\n';
+            else if (buf == "tab") buf = '\t';
+            else if (buf == "return") buf = '\r';
+            else if (buf == "space") buf = ' ';
+            else if (buf == "formfeed") buf = '\f';
+            else if (buf == "backspace") buf = '\b';
             // TODO: is this supported?
-            else if (buf == "verticaltab") buf = "\\v";
+            else if (buf == "verticaltab") buf = '\v';
             else return false;
         }
 

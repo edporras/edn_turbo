@@ -15,7 +15,7 @@ namespace edn
     //
     // unescapes any values that need to be replaced, saves it to utf8
     //
-    bool Parser::unicode_to_utf8(const char *s, std::size_t len, std::string& rslt)
+    bool Parser::to_utf8(const char *s, std::size_t len, std::string& rslt)
     {
         icu::UnicodeString ustr(s, len);
 
