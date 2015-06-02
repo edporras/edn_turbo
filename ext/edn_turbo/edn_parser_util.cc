@@ -13,6 +13,8 @@
 
 namespace edn
 {
+    //
+    // used to determine max number of chars in string value of a type
     template <typename T>
     static std::size_t get_max_chars(T)
     {
