@@ -5,6 +5,7 @@
 #include <rice/Hash.hpp>
 #include <rice/Array.hpp>
 #include <rice/to_from_ruby.hpp>
+#include <rice/Exception.hpp>
 
 #include "edn_parser.h"
 
@@ -445,7 +446,7 @@ const char* edn::Parser::parse_operator(const char *p, const char *pe, Rice::Obj
 
 
 // ============================================================
-// escaped char parsing
+// escaped char parsing - handles \c, \newline, \formfeed, etc.
 //
 %%{
     machine EDN_escaped_char;
@@ -515,6 +516,7 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, std::string
     %% write exec;
 
     if (cs >= EDN_symbol_first_final) {
+        // copy the symbol text
         sym.clear();
         sym.append(p_save, p - p_save);
         return p;
@@ -818,7 +820,10 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& 
 
 
 // ============================================================
-// discard
+// discard - consume the discard token and parse the next value to
+// discard. TODO: perhaps optimize this so no object data is built
+// by defining a new machine(s) to consume items within container
+// delimiters
 //
 %%{
     machine EDN_discard;
@@ -904,6 +909,7 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
         if (np == NULL) { fhold; fbreak; } else { fexec np; }
     }
 
+
     main := (symbol >parse_symbol ignore* begin_value >parse_value) @exit;
 }%%
 
@@ -920,7 +926,15 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
 
     if (cs >= EDN_tagged_first_final) {
         //std::cerr << __FUNCTION__ << " parse symbol name as '" << sym_name << "', value is: " << data << std::endl;
-        o = Parser::tagged_element(sym_name, data);
+
+        try {
+            // tagged_element makes a call to ruby which may throw an
+            // exception when parsing the data
+            o = Parser::tagged_element(sym_name, data);
+        } catch (Rice::Exception& e) {
+            error(__FUNCTION__, e.message().str());
+            return pe;
+        }
         return p + 1;
     }
     else if (cs == EDN_tagged_error) {
