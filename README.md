@@ -5,45 +5,26 @@ Ruby C-extension for parsing EDN files.
 
 Written based on the functionality of
 [edn](https://github.com/relevance/edn-ruby) but with the goal of
-achieving much faster parsing. 
+achieving much faster parsing.
 
 As of v0.2.0, `edn_turbo` requires `edn` to support tagged elements 
 using a similar API and return types. Eventually, I'd like to bundle 
 `edn_turbo` as an optional parser for `edn`.
 
 Some quick sample runs comparing time output of file reads using `edn`
-and `edn_turbo`:
+and `edn_turbo` (see [issue 12](https://github.com/relevance/edn-ruby/issues/12)):
 
-1. 792K data file:
-
-```
-        with edn
-
-real    0m1.022s
-user    0m0.960s
-sys     0m0.047s
-
-        with edn_turbo
-
-real    0m0.132s
-user    0m0.091s
-sys     0m0.038s
-```
-
-2. 43M data file:
-
-```
-        with edn
-
-real    0m55.922s
-user    0m55.155s
-sys     0m0.339s
-
-        with edn_turbo
-
-real    0m1.976s
-user    0m1.844s
-sys     0m0.111s
+```ruby
+irb(main):004:0> s = "[{\"x\" {\"id\" \"/model/952\", \"model_name\" \"person\", \"ancestors\" [\"record\" \"asset\"], \"format\" \"edn\"}, \"id\" 952, \"name\" nil, \"model_name\" \"person\", \"rel\" {}, \"description\" nil, \"age\" nil, \"updated_at\" nil, \"created_at\" nil, \"anniversary\" nil, \"job\" nil, \"start_date\" nil, \"username\" nil, \"vacation_start\" nil, \"vacation_end\" nil, \"expenses\" nil, \"rate\" nil, \"display_name\" nil, \"gross_profit_per_month\" nil}]"
+=> "[{\"x\" {\"id\" \"/model/952\", \"model_name\" \"person\", \"ancestors\" [\"record\" \"asset\"], \"format\" \"edn\"}, \"id\" 952, \"name\" nil, \"model_name\" \"person\", \"rel\" {}, \"description\" nil, \"age\" nil, \"updated_at\" nil, \"created_at\" nil, \"anniversary\" nil, \"job\" nil, \"start_date\" nil, \"username\" nil, \"vacation_start\" nil, \"vacation_end\" nil, \"expenses\" nil, \"rate\" nil, \"display_name\" nil, \"gross_profit_per_month\" nil}]"
+irb(main):005:0> Benchmark.realtime { 100.times { EDN::read(s) } }
+=> 0.08602
+irb(main):006:0> Benchmark.realtime { 100.times { EDNT::read(s) } }
+=> 0.005923
+irb(main):007:0> Benchmark.realtime { 100000.times { EDN::read(s) } }
+=> 81.185499
+irb(main):008:0> Benchmark.realtime { 100000.times { EDNT::read(s) } }
+=> 3.929506
 ```
 
 Dependencies
@@ -72,7 +53,6 @@ Usage
 
 Known problems
 ==============
-As of v0.2.1:
+v0.2.2:
 
-- Need to check handling of discards at the root level. Discards
-within containers looks to work 100% as far as I know.
+- Need to emulate EDN::Reader.each
