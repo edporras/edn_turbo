@@ -2,16 +2,14 @@
 #include <iostream>
 #include <clocale>
 
-// always include rice headers before ruby.h
-#include <rice/Data_Type.hpp>
-#include <rice/Constructor.hpp>
-
 #include "edn_parser.h"
+
+#include <ruby/ruby.h>
 
 
 namespace edn {
 
-    Rice::Module rb_mEDNT;
+    VALUE rb_mEDNT;
 
     // methods on the ruby side we'll call from here
     VALUE EDNT_MAKE_EDN_SYMBOL = Qnil;
@@ -20,6 +18,33 @@ namespace edn {
     VALUE EDNT_STR_INT_TO_BIGNUM = Qnil;
     VALUE EDNT_STR_DBL_TO_BIGNUM = Qnil;
 
+    template<class T>
+    void delete_obj(T *ptr) {
+        delete ptr;
+    }
+
+    template<class T>
+    VALUE wrap_ptr(VALUE klass, T* ptr) {
+        return Data_Wrap_Struct(klass, 0, delete_obj<T>, ptr);
+    }
+
+    VALUE alloc_obj(VALUE self){
+        return wrap_ptr<edn::Parser>(self, new Parser());
+    }
+
+    VALUE initialize(int argc, VALUE* argv, VALUE self)
+    {
+        edn::Parser *p;
+        Data_Get_Struct( self, edn::Parser, p );
+        return self;
+    }
+
+    VALUE ext_read(VALUE self, VALUE data)
+    {
+        edn::Parser *p;
+        Data_Get_Struct( self, edn::Parser, p );
+        return p->process(StringValueCStr(data));
+    }
 
     void die(int sig)
     {
@@ -45,21 +70,20 @@ void Init_edn_turbo(void)
         return;
     }
 
-    edn::rb_mEDNT = Rice::define_module("EDNT");
+    edn::rb_mEDNT = rb_define_module("EDNT");
 
-    // bind methods we'll call - these should be defined in edn_turbo.rb
+    // bind the ruby Parser class to the C++ one
+    VALUE rb_cParser = rb_define_class_under(edn::rb_mEDNT, "Parser", rb_cObject);
+    rb_define_alloc_func(rb_cParser, edn::alloc_obj);
+    rb_define_method(rb_cParser, "initialize", (VALUE(*)(ANYARGS)) &edn::initialize, -1 );
+    rb_define_method(rb_cParser, "ext_read", (VALUE(*)(ANYARGS)) &edn::ext_read, 1 );
+
+    // bind ruby methods we'll call - these should be defined in edn_turbo.rb
     edn::EDNT_MAKE_EDN_SYMBOL = rb_intern("make_edn_symbol");
     edn::EDNT_MAKE_SET_METHOD = rb_intern("make_set");
     edn::EDNT_TAGGED_ELEM = rb_intern("tagged_element");
     edn::EDNT_STR_INT_TO_BIGNUM = rb_intern("string_int_to_bignum");
     edn::EDNT_STR_DBL_TO_BIGNUM = rb_intern("string_double_to_bignum");
-
-    // bind the ruby Parser class to the C++ one
-    Rice::Data_Type<edn::Parser> rb_cParser =
-        Rice::define_class_under<edn::Parser>(edn::rb_mEDNT, "Parser")
-        .define_constructor(Rice::Constructor<edn::Parser>())
-        .define_method("ext_read", &edn::Parser::process, (Rice::Arg("data")))
-        ;
 
     // import whatever else we've defined in the ruby side
     rb_require("edn_turbo/edn_parser");

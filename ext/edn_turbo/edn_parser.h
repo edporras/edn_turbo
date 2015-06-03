@@ -11,12 +11,10 @@
 #include <rice/String.hpp>
 #include <rice/to_from_ruby.hpp>
 
-typedef unsigned char ui8;
-
 
 namespace edn
 {
-    extern Rice::Module rb_mEDNT;
+    extern VALUE rb_mEDNT;
     extern VALUE EDNT_MAKE_EDN_SYMBOL;
     extern VALUE EDNT_MAKE_SET_METHOD;
     extern VALUE EDNT_TAGGED_ELEM;
