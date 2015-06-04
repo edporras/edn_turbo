@@ -37,7 +37,7 @@ namespace edn
         const char* parse_integer (const char *p, const char *pe, VALUE& v);
         const char* parse_operator(const char *p, const char *pe, VALUE& v);
         const char* parse_esc_char(const char *p, const char *pe, VALUE& v);
-        const char* parse_symbol  (const char *p, const char *pe, std::string& s);
+        const char* parse_symbol  (const char *p, const char *pe, VALUE& v);
         const char* parse_vector  (const char *p, const char *pe, VALUE& v);
         const char* parse_list    (const char *p, const char *pe, VALUE& v);
         const char* parse_map     (const char *p, const char *pe, VALUE& v);
@@ -56,24 +56,24 @@ namespace edn
         static bool parse_byte_stream (const char *p, const char *pe, VALUE& rslt, bool encode);
         static bool parse_escaped_char(const char *p, const char *pe, VALUE& rslt);
 
-        static VALUE make_edn_symbol(const std::string& name);
-        static VALUE make_ruby_set(const VALUE elems);
-        static VALUE tagged_element(const std::string& name, VALUE data);
-
-        void error(const std::string& f, const std::string& err, char c) const;
-        void error(const std::string& f, char err_c) const { error(f, "", err_c); }
-        void error(const std::string& f, const std::string& err_msg) const { error(f, err_msg, '\0'); }
+        static VALUE make_edn_symbol(VALUE sym);
+        static VALUE make_ruby_set(VALUE elems);
+        static VALUE tagged_element(VALUE name, VALUE data);
 
         // utility method to convert a primitive in string form to a
         // ruby type
         template <class T>
-        static T buftotype(const char* p, std::size_t len) {
+        static inline T buftotype(const char* p, std::size_t len) {
             T val;
             std::string buf;
             buf.append(p, len);
             std::istringstream(buf) >> val;
             return val;
         }
+
+        void error(const std::string& f, const std::string& err, char c) const;
+        void error(const std::string& f, char err_c) const { error(f, "", err_c); }
+        void error(const std::string& f, const std::string& err_msg) const { error(f, err_msg, '\0'); }
 
     public:
         Parser() : line_number(1), p_save(NULL), eof(NULL) { }

@@ -113,12 +113,13 @@
 
     action parse_symbol {
         // user identifiers and reserved keywords (true, false, nil)
-        std::string sym;
+        VALUE sym = Qnil;
         const char *np = parse_symbol(fpc, pe, sym);
         if (np == NULL) { fhold; fbreak; } else {
-            if      (sym == "true")  { v = Qtrue; }
-            else if (sym == "false") { v = Qfalse; }
-            else if (sym == "nil")   { v = Qnil; }
+            // parse_symbol will make 'sym' a ruby string
+            if      (std::strcmp(RSTRING_PTR(sym), "true") == 0)  { v = Qtrue; }
+            else if (std::strcmp(RSTRING_PTR(sym), "false") == 0) { v = Qfalse; }
+            else if (std::strcmp(RSTRING_PTR(sym), "nil") == 0)   { v = Qnil; }
             else {
                 v = Parser::make_edn_symbol(sym);
             }
@@ -199,7 +200,7 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, VALUE& v)
     write data;
 
     action parse_string {
-        if (Parser::parse_byte_stream(p_save + 1, p, s, encode)) {
+        if (Parser::parse_byte_stream(p_save + 1, p, v, encode)) {
             fexec p + 1;
         } else {
             fhold; fbreak;
@@ -226,15 +227,12 @@ const char* edn::Parser::parse_string(const char *p, const char *pe, VALUE& v)
     static const char* EDN_TYPE = "string";
     int cs;
     bool encode = false;
-    const char *eof = pe;
-    VALUE s;
 
     %% write init;
     p_save = p;
     %% write exec;
 
     if (cs >= EDN_string_first_final) {
-        v = s;
         return p + 1;
     }
     else if (cs == EDN_string_error) {
@@ -373,7 +371,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
 
     action parse_symbol {
         // parse a symbol including the leading operator (-, +, .)
-        std::string sym;
+        VALUE sym = Qnil;
         const char *np = parse_symbol(p_save, pe, sym);
         if (np == NULL) { fhold; fbreak; } else {
             v = Parser::make_edn_symbol(sym);
@@ -406,8 +404,8 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
 
     action parse_operator {
         // stand-alone operators (-, +, /, ... etc)
-        std::string sym;
-        sym += *(p_save);
+        char op[2] = { *p_save, 0 };
+        VALUE sym = rb_str_new2(op);
         v = Parser::make_edn_symbol(sym);
     }
 
@@ -490,6 +488,7 @@ const char* edn::Parser::parse_esc_char(const char *p, const char *pe, VALUE& v)
 // character and an optional leading operator (name, -today,
 // .yesterday)
 //
+//
 %%{
     machine EDN_symbol;
     include EDN_common;
@@ -503,7 +502,7 @@ const char* edn::Parser::parse_esc_char(const char *p, const char *pe, VALUE& v)
 }%%
 
 
-const char* edn::Parser::parse_symbol(const char *p, const char *pe, std::string& sym)
+const char* edn::Parser::parse_symbol(const char *p, const char *pe, VALUE& s)
 {
     int cs;
 
@@ -513,8 +512,9 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, std::string
 
     if (cs >= EDN_symbol_first_final) {
         // copy the symbol text
-        sym.clear();
-        sym.append(p_save, p - p_save);
+        if (s == Qnil)
+            s = rb_str_new2("");
+        rb_str_cat(s, p_save, p - p_save);
         return p;
     }
     else if (cs == EDN_symbol_error) {
@@ -912,8 +912,8 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
 
 const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
 {
-    std::string sym_name;
-    VALUE data;
+    VALUE sym_name = Qnil;
+    VALUE data = Qnil;
 
     int cs;
 

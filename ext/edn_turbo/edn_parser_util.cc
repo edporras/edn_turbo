@@ -56,19 +56,16 @@ namespace edn
 
     static inline VALUE edn_prot_rb_funcall( edn_rb_f_type func, VALUE args )
     {
-        VALUE s;
         int error;
-        s = rb_protect( func, args, &error );
+        VALUE s = rb_protect( func, args, &error );
         if (error) Parser::throw_error(error);
         return s;
     }
 
-    static inline VALUE edn_prot_rb_new_str( const char* str )
-    {
-        VALUE s;
+    static inline VALUE edn_prot_rb_new_str(const char* str) {
         int error;
-        s = rb_protect( reinterpret_cast<VALUE (*)(VALUE)>(rb_str_new_cstr),
-                        reinterpret_cast<VALUE>(str), &error );
+        VALUE s = rb_protect( reinterpret_cast<VALUE (*)(VALUE)>(rb_str_new_cstr),
+                              reinterpret_cast<VALUE>(str), &error );
         if (error) Parser::throw_error(error);
         return s;
     }
@@ -98,7 +95,7 @@ namespace edn
     }
 
     //
-    // as above.. TODO: check exponential
+    // as above.. TODO: check exponential..
     VALUE Parser::float_to_ruby(const char* str, std::size_t len)
     {
         if (len < LD_max_chars)
@@ -130,10 +127,11 @@ namespace edn
             }
 
             // utf-8 encode
-            VALUE vs = edn_prot_rb_new_str( buf.c_str() );
+            VALUE vs = edn_prot_rb_new_str(buf.c_str());
             int error;
             v_utf8 = rb_protect( edn_rb_enc_associate_utf8, vs, &error);
-            return (error == 0);
+            if (error) Parser::throw_error(error);
+            return true;
         } else if (p_end == p_start) {
             v_utf8 = rb_str_new("", 0);
             return true;
@@ -170,15 +168,15 @@ namespace edn
 
     //
     // get a set representation from the ruby side. See edn_turbo.rb
-    VALUE Parser::make_edn_symbol(const std::string& name)
+    VALUE Parser::make_edn_symbol(VALUE sym)
     {
-        prot_args args(edn::EDNT_MAKE_EDN_SYMBOL, edn_prot_rb_new_str(name.c_str()));
+        prot_args args(edn::EDNT_MAKE_EDN_SYMBOL, sym);
         return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
     //
     // get a set representation from the ruby side. See edn_turbo.rb
-    VALUE Parser::make_ruby_set(const VALUE elems)
+    VALUE Parser::make_ruby_set(VALUE elems)
     {
         prot_args args(edn::EDNT_MAKE_SET_METHOD, elems);
         return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
@@ -186,9 +184,9 @@ namespace edn
 
     //
     // get an object representation from the ruby side using the given symbol name
-    VALUE Parser::tagged_element(const std::string& name, VALUE data)
+    VALUE Parser::tagged_element(VALUE name, VALUE data)
     {
-        prot_args args(edn::EDNT_TAGGED_ELEM, edn_prot_rb_new_str(name.c_str()), data);
+        prot_args args(edn::EDNT_TAGGED_ELEM, name, data);
         return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
