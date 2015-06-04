@@ -31,7 +31,6 @@ Gem::Specification.new do |s|
   s.add_dependency('edn', '~> 1.0')
   s.add_dependency('rake', '~> 10.3')
   s.add_dependency('rake-compiler', '~> 0.9')
-  s.add_dependency('rice', '~> 1.7')
 
   if s.respond_to? :specification_version then
     s.specification_version = 3

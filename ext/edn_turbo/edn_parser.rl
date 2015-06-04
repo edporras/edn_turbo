@@ -1,11 +1,7 @@
 #include <iostream>
 #include <string>
 #include <stack>
-
-#include <rice/Hash.hpp>
-#include <rice/Array.hpp>
-#include <rice/to_from_ruby.hpp>
-#include <rice/Exception.hpp>
+#include <exception>
 
 #include "edn_parser.h"
 
@@ -73,23 +69,23 @@
 
     action parse_string {
         // string types within double-quotes
-        const char *np = parse_string(fpc, pe, o);
+        const char *np = parse_string(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     action parse_keyword {
         // tokens with a leading ':'
-        const char *np = parse_keyword(fpc, pe, o);
+        const char *np = parse_keyword(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     action parse_number {
         // tokens w/ leading digits: non-negative integers & decimals.
         // try to parse a decimal first
-        const char *np = parse_decimal(fpc, pe, o);
+        const char *np = parse_decimal(fpc, pe, v);
         if (np == NULL) {
             // if we can't, try to parse it as an int
-            np = parse_integer(fpc, pe, o);
+            np = parse_integer(fpc, pe, v);
         }
 
         if (np) {
@@ -105,13 +101,13 @@
 
     action parse_operator {
         // stand-alone operators *, +, -, etc.
-        const char *np = parse_operator(fpc, pe, o);
+        const char *np = parse_operator(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     action parse_char {
         // tokens w/ leading \ (escaped characters \newline, \c, etc.)
-        const char *np = parse_esc_char(fpc, pe, o);
+        const char *np = parse_esc_char(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
@@ -120,11 +116,11 @@
         std::string sym;
         const char *np = parse_symbol(fpc, pe, sym);
         if (np == NULL) { fhold; fbreak; } else {
-            if      (sym == "true")  { o = Qtrue; }
-            else if (sym == "false") { o = Qfalse; }
-            else if (sym == "nil")   { o = Qnil; }
+            if      (sym == "true")  { v = Qtrue; }
+            else if (sym == "false") { v = Qfalse; }
+            else if (sym == "nil")   { v = Qnil; }
             else {
-                o = Parser::make_edn_symbol(sym);
+                v = Parser::make_edn_symbol(sym);
             }
             fexec np;
         }
@@ -132,25 +128,25 @@
 
     action parse_vector {
         // [
-        const char *np = parse_vector(fpc, pe, o);
+        const char *np = parse_vector(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     action parse_list {
         // (
-        const char *np = parse_list(fpc, pe, o);
+        const char *np = parse_list(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     action parse_map {
         // {
-        const char *np = parse_map(fpc, pe, o);
+        const char *np = parse_map(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     action parse_dispatch {
         // handles tokens w/ leading # ("#_", "#{", and tagged elems)
-        const char *np = parse_dispatch(fpc + 1, pe, o);
+        const char *np = parse_dispatch(fpc + 1, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
@@ -170,7 +166,7 @@
 }%%
 
 
-const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object& o)
+const char *edn::Parser::parse_value(const char *p, const char *pe, VALUE& v)
 {
     int cs;
 
@@ -224,7 +220,7 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, Rice::Object
 }%%
 
 
-const char* edn::Parser::parse_string(const char *p, const char *pe, Rice::Object& o)
+const char* edn::Parser::parse_string(const char *p, const char *pe, VALUE& v)
 {
     //    std::cerr << __FUNCTION__ << "   -  p: '" << p << "'" << std::endl;
     static const char* EDN_TYPE = "string";
@@ -238,7 +234,7 @@ const char* edn::Parser::parse_string(const char *p, const char *pe, Rice::Objec
     %% write exec;
 
     if (cs >= EDN_string_first_final) {
-        o = s;
+        v = s;
         return p + 1;
     }
     else if (cs == EDN_string_error) {
@@ -269,7 +265,7 @@ const char* edn::Parser::parse_string(const char *p, const char *pe, Rice::Objec
 }%%
 
 
-const char* edn::Parser::parse_keyword(const char *p, const char *pe, Rice::Object& o)
+const char* edn::Parser::parse_keyword(const char *p, const char *pe, VALUE& v)
 {
     int cs;
 
@@ -280,9 +276,9 @@ const char* edn::Parser::parse_keyword(const char *p, const char *pe, Rice::Obje
     if (cs >= EDN_keyword_first_final) {
         std::string buf;
         uint32_t len = p - p_save;
-        // don't include leading ':' because Rice::Symbol will handle it
+        // don't include leading ':' because the ruby symbol will handle it
         buf.append(p_save + 1, len - 1);
-        o = Rice::Symbol(buf);
+        v = ID2SYM(rb_intern(buf.c_str()));
         return p;
     }
     else if (cs == EDN_keyword_error) {
@@ -312,7 +308,7 @@ const char* edn::Parser::parse_keyword(const char *p, const char *pe, Rice::Obje
 }%%
 
 
-const char* edn::Parser::parse_decimal(const char *p, const char *pe, Rice::Object& o)
+const char* edn::Parser::parse_decimal(const char *p, const char *pe, VALUE& v)
 {
     int cs;
 
@@ -321,7 +317,7 @@ const char* edn::Parser::parse_decimal(const char *p, const char *pe, Rice::Obje
     %% write exec;
 
     if (cs >= EDN_decimal_first_final) {
-        o = Parser::float_to_ruby(p_save, p - p_save);
+        v = Parser::float_to_ruby(p_save, p - p_save);
         return p + 1;
     }
     else if (cs == EDN_decimal_en_main) {} // silence ragel warning
@@ -344,7 +340,7 @@ const char* edn::Parser::parse_decimal(const char *p, const char *pe, Rice::Obje
              ) (^[0-9MN+\-]? @exit);
 }%%
 
-const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Object& o)
+const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
 {
     int cs;
 
@@ -353,7 +349,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
     %% write exec;
 
     if (cs >= EDN_integer_first_final) {
-        o = Parser::integer_to_ruby(p_save, p - p_save);
+        v = Parser::integer_to_ruby(p_save, p - p_save);
         return p + 1;
     }
     else if (cs == EDN_integer_en_main) {} // silence ragel warning
@@ -380,7 +376,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
         std::string sym;
         const char *np = parse_symbol(p_save, pe, sym);
         if (np == NULL) { fhold; fbreak; } else {
-            o = Parser::make_edn_symbol(sym);
+            v = Parser::make_edn_symbol(sym);
             fexec np;
         }
     }
@@ -391,10 +387,10 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
         // the leading - or +
         //
         // try to parse a decimal first
-        const char *np = parse_decimal(p_save, pe, o);
+        const char *np = parse_decimal(p_save, pe, v);
         if (np == NULL) {
             // if we can't, try to parse it as an int
-            np = parse_integer(p_save, pe, o);
+            np = parse_integer(p_save, pe, v);
         }
 
         if (np) {
@@ -412,7 +408,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
         // stand-alone operators (-, +, /, ... etc)
         std::string sym;
         sym += *(p_save);
-        o = Parser::make_edn_symbol(sym);
+        v = Parser::make_edn_symbol(sym);
     }
 
 
@@ -424,7 +420,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, Rice::Obje
 }%%
 
 
-const char* edn::Parser::parse_operator(const char *p, const char *pe, Rice::Object& o)
+const char* edn::Parser::parse_operator(const char *p, const char *pe, VALUE& v)
 {
     int cs;
 
@@ -463,7 +459,7 @@ const char* edn::Parser::parse_operator(const char *p, const char *pe, Rice::Obj
 }%%
 
 
-const char* edn::Parser::parse_esc_char(const char *p, const char *pe, Rice::Object& o)
+const char* edn::Parser::parse_esc_char(const char *p, const char *pe, VALUE& v)
 {
     int cs;
 
@@ -473,11 +469,9 @@ const char* edn::Parser::parse_esc_char(const char *p, const char *pe, Rice::Obj
 
     if (cs >= EDN_escaped_char_first_final) {
         // convert the escaped value to a character
-        VALUE v;
         if (!Parser::parse_escaped_char(p_save + 1, p, v)) {
             return pe;
         }
-        o = Rice::Object(v);
         return p;
     }
     else if (cs == EDN_escaped_char_error) {
@@ -535,7 +529,7 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, std::string
 
 // ============================================================
 // EDN_sequence_common is used to parse EDN containers - elements are
-// initially stored in a rice array and then the final corresponding
+// initially stored in an array and then the final corresponding
 // container is built from the list (although, for vectors, lists, and
 // sets the same array is used)
 //
@@ -548,7 +542,7 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, std::string
         // set). Regardless of the sequence type, an array of the
         // items is built. Once done, the sequence parser will convert
         // if needed
-        Rice::Object e;
+        VALUE e;
         const char *np = parse_value(fpc, pe, e);
         if (np == NULL) {
             fhold; fbreak;
@@ -562,7 +556,7 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, std::string
             else {
                 // otherwise we add it to the list of elements for the
                 // corresponding container
-                elems.push(e);
+                rb_ary_push(elems, e);
             }
             fexec np;
         }
@@ -593,18 +587,18 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, std::string
 //
 // vector parsing
 //
-const char* edn::Parser::parse_vector(const char *p, const char *pe, Rice::Object& o)
+const char* edn::Parser::parse_vector(const char *p, const char *pe, VALUE& v)
 {
     static const char* EDN_TYPE = "vector";
 
     int cs;
-    Rice::Array elems; // will store the vector's elements
+    VALUE elems = rb_ary_new(); // will store the vector's elements
 
     %% write init;
     %% write exec;
 
     if (cs >= EDN_vector_first_final) {
-        o = elems;
+        v = elems;
         return p + 1;
     }
     else if (cs == EDN_vector_error) {
@@ -636,18 +630,18 @@ const char* edn::Parser::parse_vector(const char *p, const char *pe, Rice::Objec
 //
 // list parsing
 //
-const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object& o)
+const char* edn::Parser::parse_list(const char *p, const char *pe, VALUE& v)
 {
     static const char* EDN_TYPE = "list";
 
     int cs;
-    Rice::Array elems;
+    VALUE elems = rb_ary_new();
 
     %% write init;
     %% write exec;
 
     if (cs >= EDN_list_first_final) {
-        o = elems;
+        v = elems;
         return p + 1;
     }
     else if (cs == EDN_list_error) {
@@ -678,14 +672,14 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, Rice::Object&
 }%%
 
 
-const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& o)
+const char* edn::Parser::parse_map(const char *p, const char *pe, VALUE& v)
 {
     static const char* EDN_TYPE = "map";
 
     int cs;
     // since we don't know whether we're looking at a key or value,
     // initially store all elements in a list
-    Rice::Array elems;
+    VALUE elems = rb_ary_new();
 
     %% write init;
     %% write exec;
@@ -693,20 +687,20 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
     if (cs >= EDN_map_first_final) {
 
         // hash parsing is done. Make sure we have an even count
-        if ((elems.size() % 2) != 0) {
+        if ((RARRAY_LEN(elems) % 2) != 0) {
             error(__FUNCTION__, "odd number of elements in map");
             return pe;
         }
 
         // now convert the sequence to a hash
-        Rice::Hash rslt;
-        while (elems.size())
+        VALUE rslt = rb_hash_new();
+        while (RARRAY_LEN(elems) > 0)
         {
-            Rice::Object k = elems.shift();
-            rslt[k] = elems.shift();
+            VALUE k = rb_ary_shift(elems);
+            rb_hash_aset(rslt, k, rb_ary_shift(elems));
         }
 
-        o = rslt;
+        v = rslt;
         return p + 1;
     }
     else if (cs == EDN_map_error) {
@@ -731,7 +725,7 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
 
     action parse_set {
         // #{ }
-        const char *np = parse_set(fpc, pe, o);
+        const char *np = parse_set(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
@@ -743,7 +737,7 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
 
     action parse_tagged {
         // #inst, #uuid, or #user/tag
-        const char *np = parse_tagged(fpc, pe, o);
+        const char *np = parse_tagged(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
@@ -756,7 +750,7 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, Rice::Object& 
 }%%
 
 
-const char* edn::Parser::parse_dispatch(const char *p, const char *pe, Rice::Object& o)
+const char* edn::Parser::parse_dispatch(const char *p, const char *pe, VALUE& v)
 {
     int cs;
 
@@ -796,19 +790,19 @@ const char* edn::Parser::parse_dispatch(const char *p, const char *pe, Rice::Obj
 //
 // set parsing
 //
-const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& o)
+const char* edn::Parser::parse_set(const char *p, const char *pe, VALUE& v)
 {
     static const char* EDN_TYPE = "set";
 
     int cs;
-    Rice::Array elems; // stored as a vector
+    VALUE elems = rb_ary_new(); // stored as an array
 
     %% write init;
     %% write exec;
 
     if (cs >= EDN_set_first_final) {
         // all elements collected; now convert to a set
-        o = Parser::make_ruby_set(elems);
+        v = Parser::make_ruby_set(elems);
         return p + 1;
     }
     else if (cs == EDN_set_error) {
@@ -836,12 +830,12 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& 
     begin_discard = '_';
 
     action discard_value {
-        const char *np = parse_value(fpc, pe, o);
+        const char *np = parse_value(fpc, pe, v);
         if (np) {
             // this token is to be discard it so store it in the
             // discard stack - we really don't need to save it so this
             // could be simplified
-            discard.push(o);
+            discard.push(v);
             fexec np;
         } else {
             fhold; fbreak;
@@ -858,7 +852,7 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, Rice::Object& 
 const char* edn::Parser::parse_discard(const char *p, const char *pe)
 {
     int cs;
-    Rice::Object o;
+    VALUE v;
 
     %% write init;
     %% write exec;
@@ -916,10 +910,10 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
 }%%
 
 
-const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Object& o)
+const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
 {
     std::string sym_name;
-    Rice::Object data;
+    VALUE data;
 
     int cs;
 
@@ -932,9 +926,9 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
         try {
             // tagged_element makes a call to ruby which may throw an
             // exception when parsing the data
-            o = Parser::tagged_element(sym_name, data);
-        } catch (Rice::Exception& e) {
-            error(__FUNCTION__, e.message().str());
+            v = Parser::tagged_element(sym_name, data);
+        } catch (std::exception& e) {
+            error(__FUNCTION__, e.what());
             return pe;
         }
         return p + 1;
@@ -973,12 +967,12 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, Rice::Objec
 //
 // TODO: Currently using a sequence to handle cases with a discard
 // but EDN's Reader allows token by token parsing
-Rice::Object edn::Parser::parse(const char* buf, std::size_t len)
+VALUE edn::Parser::parse(const char* buf, std::size_t len)
 {
     int cs;
     const char *p;
     const char *pe;
-    Rice::Object result;
+    VALUE result = Qnil;
 
     // init
     line_number = 1;

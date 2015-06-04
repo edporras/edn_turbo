@@ -1,4 +1,4 @@
-require 'mkmf-rice'
+require 'mkmf'
 
 HEADER_DIRS = [
   '/usr/local/include',

@@ -5,10 +5,6 @@
 #include <sstream>
 #include <stack>
 
-// always include rice headers before ruby.h
-#include <rice/Object.hpp>
-#include <rice/to_from_ruby.hpp>
-
 #include <ruby/ruby.h>
 
 
@@ -30,25 +26,25 @@ namespace edn
         std::size_t line_number;
         const char* p_save;
         const char* eof;
-        std::stack<Rice::Object> discard;
+        std::stack<VALUE> discard;
 
-        Rice::Object parse(const char* s, std::size_t len);
+        VALUE parse(const char* s, std::size_t len);
 
-        const char* parse_value   (const char *p, const char *pe, Rice::Object& o);
-        const char* parse_string  (const char *p, const char *pe, Rice::Object& o);
-        const char* parse_keyword (const char *p, const char *pe, Rice::Object& o);
-        const char* parse_decimal (const char *p, const char *pe, Rice::Object& o);
-        const char* parse_integer (const char *p, const char *pe, Rice::Object& o);
-        const char* parse_operator(const char *p, const char *pe, Rice::Object& o);
-        const char* parse_esc_char(const char *p, const char *pe, Rice::Object& o);
+        const char* parse_value   (const char *p, const char *pe, VALUE& v);
+        const char* parse_string  (const char *p, const char *pe, VALUE& v);
+        const char* parse_keyword (const char *p, const char *pe, VALUE& v);
+        const char* parse_decimal (const char *p, const char *pe, VALUE& v);
+        const char* parse_integer (const char *p, const char *pe, VALUE& v);
+        const char* parse_operator(const char *p, const char *pe, VALUE& v);
+        const char* parse_esc_char(const char *p, const char *pe, VALUE& v);
         const char* parse_symbol  (const char *p, const char *pe, std::string& s);
-        const char* parse_vector  (const char *p, const char *pe, Rice::Object& o);
-        const char* parse_list    (const char *p, const char *pe, Rice::Object& o);
-        const char* parse_map     (const char *p, const char *pe, Rice::Object& o);
-        const char* parse_dispatch(const char *p, const char *pe, Rice::Object& o);
-        const char* parse_set     (const char *p, const char *pe, Rice::Object& o);
+        const char* parse_vector  (const char *p, const char *pe, VALUE& v);
+        const char* parse_list    (const char *p, const char *pe, VALUE& v);
+        const char* parse_map     (const char *p, const char *pe, VALUE& v);
+        const char* parse_dispatch(const char *p, const char *pe, VALUE& v);
+        const char* parse_set     (const char *p, const char *pe, VALUE& v);
         const char* parse_discard (const char *p, const char *pe);
-        const char* parse_tagged  (const char *p, const char *pe, Rice::Object& o);
+        const char* parse_tagged  (const char *p, const char *pe, VALUE& v);
 
         // defined in edn_parser_unicode.cc
         static bool to_utf8(const char *s, std::size_t len, std::string& rslt);
@@ -71,19 +67,20 @@ namespace edn
         // utility method to convert a primitive in string form to a
         // ruby type
         template <class T>
-        static Rice::Object buftotype(const char* p, std::size_t len) {
+        static T buftotype(const char* p, std::size_t len) {
             T val;
             std::string buf;
             buf.append(p, len);
             std::istringstream(buf) >> val;
-            return to_ruby<T>(val);
+            return val;
         }
 
     public:
         Parser() : line_number(1), p_save(NULL), eof(NULL) { }
 
-        Rice::Object process(const std::string& data) { return parse(data.c_str(), data.length()); }
+        VALUE process(const std::string& data) { return parse(data.c_str(), data.length()); }
 
+        static void throw_error(int error);
     }; // Engine
 
 } // namespace

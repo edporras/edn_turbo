@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <string>
 #include <limits>
+#include <exception>
 
 #include <ruby/ruby.h>
 #include <ruby/encoding.h>
@@ -20,8 +21,8 @@ namespace edn
         return s.str().length();
     }
 
-    static const std::size_t LL_max_chars = get_max_chars<>((long long) 1);
-    static const std::size_t LD_max_chars = get_max_chars<>((long double) 1);
+    static const std::size_t LL_max_chars = get_max_chars<>((long) 1);
+    static const std::size_t LD_max_chars = get_max_chars<>((double) 1);
 
     // =================================================================
     // work-around for idiotic rb_protect convention in order to avoid
@@ -58,7 +59,7 @@ namespace edn
         VALUE s;
         int error;
         s = rb_protect( func, args, &error );
-        if (error) std::cerr << "rb_protect error: " << error << std::endl;
+        if (error) Parser::throw_error(error);
         return s;
     }
 
@@ -66,8 +67,9 @@ namespace edn
     {
         VALUE s;
         int error;
-        s = rb_protect( (VALUE (*)(VALUE)) rb_str_new_cstr, reinterpret_cast<VALUE>(str), &error );
-        if (error) std::cerr << "rb_str_new_c_str error: " << error << std::endl;
+        s = rb_protect( reinterpret_cast<VALUE (*)(VALUE)>(rb_str_new_cstr),
+                        reinterpret_cast<VALUE>(str), &error );
+        if (error) Parser::throw_error(error);
         return s;
     }
 
@@ -86,7 +88,7 @@ namespace edn
     {
         if (len < LL_max_chars)
         {
-            return buftotype<long>(str, len);
+            return LONG2NUM(buftotype<long>(str, len));
         }
 
         // value is outside of range of long type. Use ruby to convert it
@@ -101,12 +103,12 @@ namespace edn
     {
         if (len < LD_max_chars)
         {
-            return buftotype<double>(str, len);
+            return rb_float_new(buftotype<double>(str, len));
         }
 
         // value is outside of range of long type. Use ruby to convert it
         prot_args args(EDNT_STR_DBL_TO_BIGNUM, edn_prot_rb_new_str(str));
-        return edn_prot_rb_funcall( edn_wrap_funcall2, (VALUE) &args );
+        return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
 
@@ -171,7 +173,7 @@ namespace edn
     VALUE Parser::make_edn_symbol(const std::string& name)
     {
         prot_args args(edn::EDNT_MAKE_EDN_SYMBOL, edn_prot_rb_new_str(name.c_str()));
-        return edn_prot_rb_funcall( edn_wrap_funcall2, (VALUE) &args );
+        return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
     //
@@ -179,7 +181,7 @@ namespace edn
     VALUE Parser::make_ruby_set(const VALUE elems)
     {
         prot_args args(edn::EDNT_MAKE_SET_METHOD, elems);
-        return edn_prot_rb_funcall( edn_wrap_funcall2, (VALUE) &args );
+        return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
     //
@@ -187,12 +189,25 @@ namespace edn
     VALUE Parser::tagged_element(const std::string& name, VALUE data)
     {
         prot_args args(edn::EDNT_TAGGED_ELEM, edn_prot_rb_new_str(name.c_str()), data);
-        return edn_prot_rb_funcall( edn_wrap_funcall2, (VALUE) &args );
+        return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
 
     //
     // error reporting
+    void Parser::throw_error(int error)
+    {
+        if (error == 0)
+            return;
+
+        VALUE err = rb_errinfo();
+        VALUE klass = rb_class_path(CLASS_OF(err));
+        VALUE message = rb_obj_as_string(err);
+        std::stringstream msg;
+        msg << RSTRING_PTR(klass) << " exception: " << RSTRING_PTR(message);
+        throw std::runtime_error(msg.str());
+    }
+
     void Parser::error(const std::string& func, const std::string& err, char c) const
     {
         std::cerr << "Parse error "
