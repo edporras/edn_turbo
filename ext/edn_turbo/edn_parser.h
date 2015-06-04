@@ -5,11 +5,11 @@
 #include <sstream>
 #include <stack>
 
-#include <rice/Module.hpp>
+// always include rice headers before ruby.h
 #include <rice/Object.hpp>
-#include <rice/Array.hpp>
-#include <rice/String.hpp>
 #include <rice/to_from_ruby.hpp>
+
+#include <ruby/ruby.h>
 
 
 namespace edn
@@ -54,15 +54,15 @@ namespace edn
         static bool to_utf8(const char *s, std::size_t len, std::string& rslt);
 
         // defined in edn_parser_util.cc
-        static Rice::Object integer_to_ruby(const char* str, std::size_t len);
-        static Rice::Object float_to_ruby  (const char* str, std::size_t len);
+        static VALUE integer_to_ruby(const char* str, std::size_t len);
+        static VALUE float_to_ruby  (const char* str, std::size_t len);
 
-        static bool parse_byte_stream (const char *p, const char *pe, Rice::String& s, bool encode);
-        static bool parse_escaped_char(const char *p, const char *pe, Rice::Object& s);
+        static bool parse_byte_stream (const char *p, const char *pe, VALUE& rslt, bool encode);
+        static bool parse_escaped_char(const char *p, const char *pe, VALUE& rslt);
 
-        static Rice::Object make_edn_symbol(const std::string& name);
-        static Rice::Object make_ruby_set(const Rice::Array& elems);
-        static Rice::Object tagged_element(const std::string& name, const Rice::Object& data);
+        static VALUE make_edn_symbol(const std::string& name);
+        static VALUE make_ruby_set(const VALUE elems);
+        static VALUE tagged_element(const std::string& name, VALUE data);
 
         void error(const std::string& f, const std::string& err, char c) const;
         void error(const std::string& f, char err_c) const { error(f, "", err_c); }

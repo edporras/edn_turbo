@@ -3,9 +3,6 @@
 #include <string>
 #include <limits>
 
-#include <rice/String.hpp>
-#include <rice/Array.hpp>
-
 #include <ruby/ruby.h>
 #include <ruby/encoding.h>
 
@@ -26,10 +23,66 @@ namespace edn
     static const std::size_t LL_max_chars = get_max_chars<>((long long) 1);
     static const std::size_t LD_max_chars = get_max_chars<>((long double) 1);
 
+    // =================================================================
+    // work-around for idiotic rb_protect convention in order to avoid
+    // using ruby/rice
+    //
+    typedef VALUE (edn_rb_f_type)( VALUE arg );
+
+    // we're using at most 2 args
+    struct prot_args {
+        prot_args(ID m, VALUE arg) :
+            method(m), count(1) {
+            args[0] = arg;
+        }
+        prot_args(ID m, VALUE arg1, VALUE arg2) :
+            method(m), count(2) {
+            args[0] = arg1;
+            args[1] = arg2;
+        }
+
+        ID method;
+        VALUE count;
+        VALUE args[2];
+    };
+
+    // this allows us to wrap with rb_protect()
+    static inline VALUE edn_wrap_funcall2( VALUE arg )
+    {
+        prot_args* a = reinterpret_cast<prot_args*>(arg);
+        return rb_funcall2( edn::rb_mEDNT, a->method, a->count, a->args );
+    }
+
+    static inline VALUE edn_prot_rb_funcall( edn_rb_f_type func, VALUE args )
+    {
+        VALUE s;
+        int error;
+        s = rb_protect( func, args, &error );
+        if (error) std::cerr << "rb_protect error: " << error << std::endl;
+        return s;
+    }
+
+    static inline VALUE edn_prot_rb_new_str( const char* str )
+    {
+        VALUE s;
+        int error;
+        s = rb_protect( (VALUE (*)(VALUE)) rb_str_new_cstr, reinterpret_cast<VALUE>(str), &error );
+        if (error) std::cerr << "rb_str_new_c_str error: " << error << std::endl;
+        return s;
+    }
+
+    static inline VALUE edn_rb_enc_associate_utf8(VALUE str)
+    {
+        return rb_enc_associate(str, rb_utf8_encoding() );
+    }
+
+    // =================================================================
+    // utils
+
     //
     // convert to int.. if string rep has more digits than long can
     // hold, call into ruby to get a big num
-    Rice::Object Parser::integer_to_ruby(const char* str, std::size_t len)
+    VALUE Parser::integer_to_ruby(const char* str, std::size_t len)
     {
         if (len < LL_max_chars)
         {
@@ -37,13 +90,14 @@ namespace edn
         }
 
         // value is outside of range of long type. Use ruby to convert it
-        VALUE rb_s = Rice::protect(rb_str_new2, str);
-        return Rice::protect(rb_funcall, rb_mEDNT, EDNT_STR_INT_TO_BIGNUM, 1, rb_s);
+        VALUE rb_s = edn_prot_rb_new_str( str );
+        prot_args args(EDNT_STR_INT_TO_BIGNUM, rb_s);
+        return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
     //
     // as above.. TODO: check exponential
-    Rice::Object Parser::float_to_ruby(const char* str, std::size_t len)
+    VALUE Parser::float_to_ruby(const char* str, std::size_t len)
     {
         if (len < LD_max_chars)
         {
@@ -51,15 +105,15 @@ namespace edn
         }
 
         // value is outside of range of long type. Use ruby to convert it
-        VALUE rb_s = Rice::protect(rb_str_new2, str);
-        return Rice::protect(rb_funcall, rb_mEDNT, EDNT_STR_DBL_TO_BIGNUM, 1, rb_s);
+        prot_args args(EDNT_STR_DBL_TO_BIGNUM, edn_prot_rb_new_str(str));
+        return edn_prot_rb_funcall( edn_wrap_funcall2, (VALUE) &args );
     }
 
 
     //
     // copies the string data, unescaping any present values that need to be replaced
     //
-    bool Parser::parse_byte_stream(const char *p_start, const char *p_end, Rice::String& s,
+    bool Parser::parse_byte_stream(const char *p_start, const char *p_end, VALUE& v_utf8,
                                    bool encode)
     {
         if (p_end > p_start) {
@@ -74,9 +128,12 @@ namespace edn
             }
 
             // utf-8 encode
-            VALUE vs = Rice::protect( rb_str_new2, buf.c_str() );
-            VALUE s_utf8 = Rice::protect( rb_enc_associate, vs, rb_utf8_encoding() );
-            s = Rice::String(s_utf8);
+            VALUE vs = edn_prot_rb_new_str( buf.c_str() );
+            int error;
+            v_utf8 = rb_protect( edn_rb_enc_associate_utf8, vs, &error);
+            return (error == 0);
+        } else if (p_end == p_start) {
+            v_utf8 = rb_str_new("", 0);
             return true;
         }
 
@@ -86,7 +143,7 @@ namespace edn
     //
     // handles things like \c, \newline
     //
-    bool Parser::parse_escaped_char(const char *p, const char *pe, Rice::Object& o)
+    bool Parser::parse_escaped_char(const char *p, const char *pe, VALUE& v)
     {
         std::string buf;
         std::size_t len = pe - p;
@@ -104,32 +161,33 @@ namespace edn
             else return false;
         }
 
-        o = Rice::String(buf);
+        v = edn_prot_rb_new_str( buf.c_str() );
         return true;
     }
 
 
     //
     // get a set representation from the ruby side. See edn_turbo.rb
-    Rice::Object Parser::make_edn_symbol(const std::string& name)
+    VALUE Parser::make_edn_symbol(const std::string& name)
     {
-        VALUE rb_s = Rice::protect(rb_str_new2, name.c_str());
-        return Rice::protect(rb_funcall, rb_mEDNT, EDNT_MAKE_EDN_SYMBOL, 1, rb_s);
+        prot_args args(edn::EDNT_MAKE_EDN_SYMBOL, edn_prot_rb_new_str(name.c_str()));
+        return edn_prot_rb_funcall( edn_wrap_funcall2, (VALUE) &args );
     }
 
     //
     // get a set representation from the ruby side. See edn_turbo.rb
-    Rice::Object Parser::make_ruby_set(const Rice::Array& elems)
+    VALUE Parser::make_ruby_set(const VALUE elems)
     {
-        return Rice::protect(rb_funcall, rb_mEDNT, EDNT_MAKE_SET_METHOD, 1, elems.value());
+        prot_args args(edn::EDNT_MAKE_SET_METHOD, elems);
+        return edn_prot_rb_funcall( edn_wrap_funcall2, (VALUE) &args );
     }
 
     //
     // get an object representation from the ruby side using the given symbol name
-    Rice::Object Parser::tagged_element(const std::string& name, const Rice::Object& data)
+    VALUE Parser::tagged_element(const std::string& name, VALUE data)
     {
-        VALUE rb_s = Rice::protect(rb_str_new2, name.c_str());
-        return Rice::protect(rb_funcall, rb_mEDNT, EDNT_TAGGED_ELEM, 2, rb_s, data.value());
+        prot_args args(edn::EDNT_TAGGED_ELEM, edn_prot_rb_new_str(name.c_str()), data);
+        return edn_prot_rb_funcall( edn_wrap_funcall2, (VALUE) &args );
     }
 
 

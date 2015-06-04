@@ -231,7 +231,7 @@ const char* edn::Parser::parse_string(const char *p, const char *pe, Rice::Objec
     int cs;
     bool encode = false;
     const char *eof = pe;
-    Rice::String s;
+    VALUE s;
 
     %% write init;
     p_save = p;
@@ -473,9 +473,11 @@ const char* edn::Parser::parse_esc_char(const char *p, const char *pe, Rice::Obj
 
     if (cs >= EDN_escaped_char_first_final) {
         // convert the escaped value to a character
-        if (!Parser::parse_escaped_char(p_save + 1, p, o)) {
+        VALUE v;
+        if (!Parser::parse_escaped_char(p_save + 1, p, v)) {
             return pe;
         }
+        o = Rice::Object(v);
         return p;
     }
     else if (cs == EDN_escaped_char_error) {
