@@ -256,7 +256,7 @@ const char* edn::Parser::parse_string(const char *p, const char *pe, VALUE& v)
 	}
 
 #line 232 "edn_parser.rl"
-    p_save = p;
+    const char* p_save = p;
 
 #line 262 "edn_parser.cc"
 	{
@@ -495,7 +495,7 @@ const char* edn::Parser::parse_keyword(const char *p, const char *pe, VALUE& v)
 	}
 
 #line 271 "edn_parser.rl"
-    p_save = p;
+    const char* p_save = p;
 
 #line 501 "edn_parser.cc"
 	{
@@ -616,7 +616,7 @@ const char* edn::Parser::parse_decimal(const char *p, const char *pe, VALUE& v)
 	}
 
 #line 314 "edn_parser.rl"
-    p_save = p;
+    const char* p_save = p;
 
 #line 622 "edn_parser.cc"
 	{
@@ -831,7 +831,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
 	}
 
 #line 346 "edn_parser.rl"
-    p_save = p;
+    const char* p_save = p;
 
 #line 837 "edn_parser.cc"
 	{
@@ -966,7 +966,7 @@ const char* edn::Parser::parse_operator(const char *p, const char *pe, VALUE& v)
 	}
 
 #line 426 "edn_parser.rl"
-    p_save = p;
+    const char* p_save = p;
 
 #line 972 "edn_parser.cc"
 	{
@@ -1344,7 +1344,7 @@ const char* edn::Parser::parse_esc_char(const char *p, const char *pe, VALUE& v)
 	}
 
 #line 465 "edn_parser.rl"
-    p_save = p;
+    const char* p_save = p;
 
 #line 1350 "edn_parser.cc"
 	{
@@ -1515,7 +1515,7 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, VALUE& s)
 	}
 
 #line 510 "edn_parser.rl"
-    p_save = p;
+    const char* p_save = p;
 
 #line 1521 "edn_parser.cc"
 	{
@@ -3073,6 +3073,7 @@ case 9:
 
 #line 3075 "edn_parser.cc"
 static const int EDN_start = 2;
+static const int EDN_first_final = 2;
 static const int EDN_error = 0;
 
 static const int EDN_en_main = 2;
@@ -3084,31 +3085,26 @@ static const int EDN_en_main = 2;
 //
 // TODO: Currently using a sequence to handle cases with a discard
 // but EDN's Reader allows token by token parsing
-VALUE edn::Parser::parse(const char* buf, std::size_t len)
+VALUE edn::Parser::parse(const char* src, std::size_t len)
 {
     int cs;
-    const char *p;
-    const char *pe;
     VALUE result = Qnil;
 
-    // init
-    line_number = 1;
-    p_save = NULL;
-    while (!discard.empty())
-        discard.pop();
+    // reset line counter & discard stack
+    reset();
 
 
-#line 3102 "edn_parser.cc"
+#line 3098 "edn_parser.cc"
 	{
 	cs = EDN_start;
 	}
 
-#line 984 "edn_parser.rl"
-    p = &buf[0];
+#line 979 "edn_parser.rl"
+    p = src;
     pe = p + len;
     eof = pe; // eof defined in Parser class
 
-#line 3112 "edn_parser.cc"
+#line 3108 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -3129,7 +3125,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 3133 "edn_parser.cc"
+#line 3129 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr1;
 		case 32: goto st2;
@@ -3171,15 +3167,28 @@ case 1:
 	_out: {}
 	}
 
-#line 988 "edn_parser.rl"
+#line 983 "edn_parser.rl"
 
     if (cs == EDN_error) {
         error(__FUNCTION__, *p);
         return Qnil;
     }
+    else if (cs == EDN_first_final) {
+        // whole source is parsed so reset
+        p = pe = eof = NULL;
+    }
     else if (cs == EDN_en_main) {} // silence ragel warning
     return result;
 }
+
+
+//
+//
+VALUE edn::Parser::next()
+{
+    return Qnil;
+}
+
 
 /*
  * Local variables:

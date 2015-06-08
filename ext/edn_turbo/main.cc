@@ -19,34 +19,56 @@ namespace edn {
     VALUE EDNT_STR_DBL_TO_BIGNUM = Qnil;
 
     template<class T>
-    void delete_obj(T *ptr) {
+    static void delete_obj(T *ptr) {
         delete ptr;
     }
 
     template<class T>
-    VALUE wrap_ptr(VALUE klass, T* ptr) {
+    static VALUE wrap_ptr(VALUE klass, T* ptr) {
         return Data_Wrap_Struct(klass, 0, delete_obj<T>, ptr);
     }
 
-    VALUE alloc_obj(VALUE self){
+    static VALUE alloc_obj(VALUE self){
         return wrap_ptr<edn::Parser>(self, new Parser());
     }
 
-    VALUE initialize(int argc, VALUE* argv, VALUE self)
+    static VALUE initialize(int argc, VALUE* argv, VALUE self)
     {
         edn::Parser *p;
         Data_Get_Struct( self, edn::Parser, p );
         return self;
     }
 
-    VALUE ext_read(VALUE self, VALUE data)
+
+    static Parser* get_parser(VALUE self)
     {
-        edn::Parser *p;
+        Parser *p;
         Data_Get_Struct( self, edn::Parser, p );
-        return p->process(StringValueCStr(data));
+        return p;
     }
 
-    void die(int sig)
+
+    static VALUE ext_read(VALUE self, VALUE data)
+    {
+        Parser *p = get_parser(self);
+
+        if (!p)
+            return Qnil;
+
+        return p->read(StringValueCStr(data));
+    }
+
+    static VALUE ext_next(VALUE self, VALUE data)
+    {
+        Parser *p = get_parser(self);
+
+        if (!p)
+            return Qnil;
+
+        return p->next();
+    }
+
+    static void die(int sig)
     {
         exit(-1);
     }
@@ -77,6 +99,7 @@ void Init_edn_turbo(void)
     rb_define_alloc_func(rb_cParser, edn::alloc_obj);
     rb_define_method(rb_cParser, "initialize", (VALUE(*)(ANYARGS)) &edn::initialize, -1 );
     rb_define_method(rb_cParser, "ext_read", (VALUE(*)(ANYARGS)) &edn::ext_read, 1 );
+    rb_define_method(rb_cParser, "ext_next", (VALUE(*)(ANYARGS)) &edn::ext_next, 0 );
 
     // bind ruby methods we'll call - these should be defined in edn_turbo.rb
     edn::EDNT_MAKE_EDN_SYMBOL = rb_intern("make_edn_symbol");

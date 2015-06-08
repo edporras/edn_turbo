@@ -21,13 +21,25 @@ namespace edn
     // C-extension EDN Parser class representation
     class Parser
     {
-    private:
+    public:
+        Parser() : p(NULL), pe(NULL), eof(NULL), line_number(1) { }
 
-        std::size_t line_number;
-        const char* p_save;
+        void source(const char* src, std::size_t len);
+
+        VALUE read(const std::string& data) { return parse(data.c_str(), data.length()); }
+        VALUE next();
+
+        static void throw_error(int error);
+
+    private:
+        // ragel needs these
+        const char* p;
+        const char* pe;
         const char* eof;
+        std::size_t line_number;
         std::stack<VALUE> discard;
 
+        void reset();
         VALUE parse(const char* s, std::size_t len);
 
         const char* parse_value   (const char *p, const char *pe, VALUE& v);
@@ -74,13 +86,6 @@ namespace edn
         void error(const std::string& f, const std::string& err, char c) const;
         void error(const std::string& f, char err_c) const { error(f, "", err_c); }
         void error(const std::string& f, const std::string& err_msg) const { error(f, err_msg, '\0'); }
-
-    public:
-        Parser() : line_number(1), p_save(NULL), eof(NULL) { }
-
-        VALUE process(const std::string& data) { return parse(data.c_str(), data.length()); }
-
-        static void throw_error(int error);
     }; // Engine
 
 } // namespace

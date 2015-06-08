@@ -24,6 +24,29 @@ namespace edn
     static const std::size_t LL_max_chars = get_max_chars<>((long) 1);
     static const std::size_t LD_max_chars = get_max_chars<>((double) 1);
 
+
+    // =================================================================
+    // reset parsing state
+    //
+    void Parser::reset()
+    {
+        line_number = 1;
+        while (!discard.empty())
+            discard.pop();
+    }
+
+    //
+    // set a new source
+    void Parser::source(const char* src, std::size_t len)
+    {
+        reset();
+
+        p = src;
+        pe = src + len;
+        eof = pe;
+    }
+
+
     // =================================================================
     // work-around for idiotic rb_protect convention in order to avoid
     // using ruby/rice

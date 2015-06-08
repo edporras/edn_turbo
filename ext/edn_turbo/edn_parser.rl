@@ -229,7 +229,7 @@ const char* edn::Parser::parse_string(const char *p, const char *pe, VALUE& v)
     bool encode = false;
 
     %% write init;
-    p_save = p;
+    const char* p_save = p;
     %% write exec;
 
     if (cs >= EDN_string_first_final) {
@@ -268,7 +268,7 @@ const char* edn::Parser::parse_keyword(const char *p, const char *pe, VALUE& v)
     int cs;
 
     %% write init;
-    p_save = p;
+    const char* p_save = p;
     %% write exec;
 
     if (cs >= EDN_keyword_first_final) {
@@ -311,7 +311,7 @@ const char* edn::Parser::parse_decimal(const char *p, const char *pe, VALUE& v)
     int cs;
 
     %% write init;
-    p_save = p;
+    const char* p_save = p;
     %% write exec;
 
     if (cs >= EDN_decimal_first_final) {
@@ -343,7 +343,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
     int cs;
 
     %% write init;
-    p_save = p;
+    const char* p_save = p;
     %% write exec;
 
     if (cs >= EDN_integer_first_final) {
@@ -423,7 +423,7 @@ const char* edn::Parser::parse_operator(const char *p, const char *pe, VALUE& v)
     int cs;
 
     %% write init;
-    p_save = p;
+    const char* p_save = p;
     %% write exec;
 
     if (cs >= EDN_operator_first_final) {
@@ -462,7 +462,7 @@ const char* edn::Parser::parse_esc_char(const char *p, const char *pe, VALUE& v)
     int cs;
 
     %% write init;
-    p_save = p;
+    const char* p_save = p;
     %% write exec;
 
     if (cs >= EDN_escaped_char_first_final) {
@@ -507,7 +507,7 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, VALUE& s)
     int cs;
 
     %% write init;
-    p_save = p;
+    const char* p_save = p;
     %% write exec;
 
     if (cs >= EDN_symbol_first_final) {
@@ -950,7 +950,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
     machine EDN;
     include EDN_common;
 
-    write data nofinal;
+    write data;
 
     action parse_value {
         const char* np = parse_value(fpc, pe, result);
@@ -967,21 +967,16 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
 //
 // TODO: Currently using a sequence to handle cases with a discard
 // but EDN's Reader allows token by token parsing
-VALUE edn::Parser::parse(const char* buf, std::size_t len)
+VALUE edn::Parser::parse(const char* src, std::size_t len)
 {
     int cs;
-    const char *p;
-    const char *pe;
     VALUE result = Qnil;
 
-    // init
-    line_number = 1;
-    p_save = NULL;
-    while (!discard.empty())
-        discard.pop();
+    // reset line counter & discard stack
+    reset();
 
     %% write init;
-    p = &buf[0];
+    p = src;
     pe = p + len;
     eof = pe; // eof defined in Parser class
     %% write exec;
@@ -990,9 +985,22 @@ VALUE edn::Parser::parse(const char* buf, std::size_t len)
         error(__FUNCTION__, *p);
         return Qnil;
     }
+    else if (cs == EDN_first_final) {
+        // whole source is parsed so reset
+        p = pe = eof = NULL;
+    }
     else if (cs == EDN_en_main) {} // silence ragel warning
     return result;
 }
+
+
+//
+//
+VALUE edn::Parser::next()
+{
+    return Qnil;
+}
+
 
 /*
  * Local variables:
