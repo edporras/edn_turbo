@@ -16,7 +16,7 @@ module EDNT
     begin
       data = input.instance_of?(String) ? input : input.read
 
-      Parser.new.read(data)
+      Parser.new.parse(data)
     rescue EOFError
     end
 

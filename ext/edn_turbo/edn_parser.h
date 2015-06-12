@@ -24,9 +24,11 @@ namespace edn
     public:
         Parser() : p(NULL), pe(NULL), eof(NULL), line_number(1) { }
 
-        void source(const char* src, std::size_t len);
+        void set_source(const char* src, std::size_t len);
 
-        VALUE read(const std::string& data) { return parse(data.c_str(), data.length()); }
+        bool is_eof() const { return (p != NULL && p == pe); }
+        VALUE parse(const char* s, std::size_t len);
+        //        VALUE read(const std::string& data) { return parse(data.c_str(), data.length()); }
         VALUE next();
 
         static void throw_error(int error);
@@ -40,7 +42,6 @@ namespace edn
         std::stack<VALUE> discard;
 
         void reset();
-        VALUE parse(const char* s, std::size_t len);
 
         const char* parse_value   (const char *p, const char *pe, VALUE& v);
         const char* parse_string  (const char *p, const char *pe, VALUE& v);

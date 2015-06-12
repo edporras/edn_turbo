@@ -37,10 +37,10 @@ namespace edn
 
     //
     // set a new source
-    void Parser::source(const char* src, std::size_t len)
+    void Parser::set_source(const char* src, std::size_t len)
     {
         reset();
-
+        // set ragel state
         p = src;
         pe = src + len;
         eof = pe;

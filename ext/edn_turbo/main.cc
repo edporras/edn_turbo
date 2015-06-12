@@ -18,6 +18,8 @@ namespace edn {
     VALUE EDNT_STR_INT_TO_BIGNUM = Qnil;
     VALUE EDNT_STR_DBL_TO_BIGNUM = Qnil;
 
+    //
+    // wrappers to hook the class w/ the C-api
     template<class T>
     static void delete_obj(T *ptr) {
         delete ptr;
@@ -32,15 +34,7 @@ namespace edn {
         return wrap_ptr<edn::Parser>(self, new Parser());
     }
 
-    static VALUE initialize(int argc, VALUE* argv, VALUE self)
-    {
-        edn::Parser *p;
-        Data_Get_Struct( self, edn::Parser, p );
-        return self;
-    }
-
-
-    static Parser* get_parser(VALUE self)
+    static inline Parser* get_parser(VALUE self)
     {
         Parser *p;
         Data_Get_Struct( self, edn::Parser, p );
@@ -48,26 +42,58 @@ namespace edn {
     }
 
 
-    static VALUE ext_read(VALUE self, VALUE data)
+    //
+    // called by the constructor - sets the source if passed
+    static VALUE initialize(int argc, VALUE* argv, VALUE self)
     {
-        Parser *p = get_parser(self);
+        Parser* p = get_parser(self);
 
-        if (!p)
-            return Qnil;
-
-        return p->read(StringValueCStr(data));
+        if (argc > 0)
+        {
+            const char* stream = StringValueCStr(argv[0]);
+            if (stream)
+                p->set_source( stream, std::strlen(stream) );
+        }
+        return self;
     }
 
-    static VALUE ext_next(VALUE self, VALUE data)
+    //
+    // change the input source
+    static VALUE set_source(VALUE self, VALUE data)
     {
-        Parser *p = get_parser(self);
+        Parser* p = get_parser(self);
 
-        if (!p)
-            return Qnil;
+        const char* stream = StringValueCStr(data);
+        if (stream)
+            p->set_source( stream, std::strlen(stream) );
 
-        return p->next();
+        return self;
     }
 
+    //
+    // eof?
+    static VALUE eof(VALUE self, VALUE data)
+    {
+        return get_parser(self)->is_eof();
+    }
+
+    //
+    // parses an entire stream
+    static VALUE read(VALUE self, VALUE data)
+    {
+        const char* stream = StringValueCStr(data);
+        return get_parser(self)->parse(stream, std::strlen(stream) );
+    }
+
+    //
+    // gets the next token in the current stream
+    static VALUE next(VALUE self, VALUE data)
+    {
+        return get_parser(self)->next();
+    }
+
+    //
+    // signal handler
     static void die(int sig)
     {
         exit(-1);
@@ -98,8 +124,10 @@ void Init_edn_turbo(void)
     VALUE rb_cParser = rb_define_class_under(edn::rb_mEDNT, "Parser", rb_cObject);
     rb_define_alloc_func(rb_cParser, edn::alloc_obj);
     rb_define_method(rb_cParser, "initialize", (VALUE(*)(ANYARGS)) &edn::initialize, -1 );
-    rb_define_method(rb_cParser, "ext_read", (VALUE(*)(ANYARGS)) &edn::ext_read, 1 );
-    rb_define_method(rb_cParser, "ext_next", (VALUE(*)(ANYARGS)) &edn::ext_next, 0 );
+    rb_define_method(rb_cParser, "ext_set_stream", (VALUE(*)(ANYARGS)) &edn::set_source, 1 );
+    rb_define_method(rb_cParser, "ext_eof", (VALUE(*)(ANYARGS)) &edn::eof, 0 );
+    rb_define_method(rb_cParser, "ext_read", (VALUE(*)(ANYARGS)) &edn::read, 1 );
+    rb_define_method(rb_cParser, "ext_next", (VALUE(*)(ANYARGS)) &edn::next, 0 );
 
     // bind ruby methods we'll call - these should be defined in edn_turbo.rb
     edn::EDNT_MAKE_EDN_SYMBOL = rb_intern("make_edn_symbol");

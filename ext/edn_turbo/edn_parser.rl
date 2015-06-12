@@ -817,9 +817,8 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, VALUE& v)
 
 // ============================================================
 // discard - consume the discard token and parse the next value to
-// discard. TODO: perhaps optimize this so no object data is built
-// by defining a new machine(s) to consume items within container
-// delimiters
+// discard. TODO: perhaps optimize this so no object data is built by
+// defining a machine to consume items within container delimiters
 //
 %%{
     machine EDN_discard;
@@ -944,10 +943,11 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
 
 
 // ============================================================
-// main parsing machine
+// parses entire input but expects single valid token at the
+// top-level, therefore, does not tokenize source stream
 //
 %%{
-    machine EDN;
+    machine EDN_parser;
     include EDN_common;
 
     write data;
@@ -964,9 +964,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
     main := ignore* sequence? ignore*;
 }%%
 
-//
-// TODO: Currently using a sequence to handle cases with a discard
-// but EDN's Reader allows token by token parsing
+
 VALUE edn::Parser::parse(const char* src, std::size_t len)
 {
     int cs;
@@ -978,27 +976,56 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
     %% write init;
     p = src;
     pe = p + len;
-    eof = pe; // eof defined in Parser class
+    eof = pe;
     %% write exec;
 
-    if (cs == EDN_error) {
+    if (cs == EDN_parser_error) {
         error(__FUNCTION__, *p);
         return Qnil;
     }
-    else if (cs == EDN_first_final) {
+    else if (cs == EDN_parser_first_final) {
         // whole source is parsed so reset
         p = pe = eof = NULL;
+        reset();
     }
-    else if (cs == EDN_en_main) {} // silence ragel warning
+    else if (cs == EDN_parser_en_main) {} // silence ragel warning
     return result;
 }
+
+
+// ============================================================
+// token-by-token machine
+//
+%%{
+    machine EDN_tokens;
+    include EDN_common;
+
+    write data noerror nofinal;
+
+    action parse_value {
+        const char* np = parse_value(fpc, pe, result);
+        if (np == NULL) { fhold; fbreak; } else { fexec np; }
+    }
+
+    element       = begin_value >parse_value;
+
+    main := ignore* element ignore*;
+}%%
 
 
 //
 //
 VALUE edn::Parser::next()
 {
-    return Qnil;
+    VALUE result = Qnil;
+    int cs;
+
+    %% write init;
+    %% write exec;
+
+    if (cs == EDN_tokens_en_main) {} // silence ragel warning
+
+    return result;
 }
 
 

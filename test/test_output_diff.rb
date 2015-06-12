@@ -13,17 +13,17 @@ class EDNT_Test < Minitest::Test
 
   def check_file(file, expected_output)
     File.open(file) { |file|
-      assert_equal(expected_output, @parser.read(file.read))
+      assert_equal(expected_output, @parser.parse(file.read))
     }
   end
 
   def test_basic
 
-    assert_equal(false, @parser.read('false'))
-    assert_equal(true, @parser.read('true'))
-    assert_equal("a string", @parser.read('"a string"'))
-    assert_equal(:"namespace.of.some.length/keyword-name", @parser.read(':namespace.of.some.length/keyword-name'))
-    assert_equal(:'/', @parser.read(':/'))
+    assert_equal(false, @parser.parse('false'))
+    assert_equal(true, @parser.parse('true'))
+    assert_equal("a string", @parser.parse('"a string"'))
+    assert_equal(:"namespace.of.some.length/keyword-name", @parser.parse(':namespace.of.some.length/keyword-name'))
+    assert_equal(:'/', @parser.parse(':/'))
   end
 
   def test_number
@@ -103,7 +103,7 @@ class EDNT_Test < Minitest::Test
   def test_read
 
     # check read for using string
-    assert_equal({:a=>1, :b=>2}, @parser.read('{:a 1 :b 2}'))
+    assert_equal({:a=>1, :b=>2}, @parser.parse('{:a 1 :b 2}'))
 
   end
 
@@ -148,7 +148,7 @@ class EDNT_Test < Minitest::Test
       Tagged.new(data).to_s
     end
 
-    assert_equal([345, :a], @parser.read('#edn_turbo/test_tagged { :item 345 :other :a }'))
+    assert_equal([345, :a], @parser.parse('#edn_turbo/test_tagged { :item 345 :other :a }'))
   end
 
   def test_symbols
