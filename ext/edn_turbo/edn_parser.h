@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <stack>
+#include <vector>
 
 #include <ruby/ruby.h>
 
@@ -24,12 +25,21 @@ namespace edn
     public:
         Parser() : p(NULL), pe(NULL), eof(NULL), line_number(1) { }
 
+        // change input source
         void set_source(const char* src, std::size_t len);
 
         bool is_eof() const { return (p != NULL && p == pe); }
+
+        // parses an entire stream
         VALUE parse(const char* s, std::size_t len);
-        //        VALUE read(const std::string& data) { return parse(data.c_str(), data.length()); }
+
+        // returns the next element in the current stream
         VALUE next();
+
+        // check if the most recent parse() / next() encountered
+        // metadata
+        bool has_meta() const { return !metadata.empty(); }
+        VALUE meta() const;
 
         static void throw_error(int error);
 
@@ -40,6 +50,7 @@ namespace edn
         const char* eof;
         std::size_t line_number;
         std::stack<VALUE> discard;
+        std::vector<VALUE> metadata;
 
         void reset();
 
@@ -58,6 +69,7 @@ namespace edn
         const char* parse_set     (const char *p, const char *pe, VALUE& v);
         const char* parse_discard (const char *p, const char *pe);
         const char* parse_tagged  (const char *p, const char *pe, VALUE& v);
+        const char* parse_meta    (const char *p, const char *pe);
 
         // defined in edn_parser_unicode.cc
         static bool to_utf8(const char *s, std::size_t len, std::string& rslt);

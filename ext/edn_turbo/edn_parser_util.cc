@@ -33,6 +33,7 @@ namespace edn
         line_number = 1;
         while (!discard.empty())
             discard.pop();
+        metadata.clear();
     }
 
     //
@@ -44,6 +45,24 @@ namespace edn
         p = src;
         pe = src + len;
         eof = pe;
+    }
+
+
+    //
+    // return the metadata value(s) saved
+    VALUE Parser::meta() const
+    {
+        VALUE m = rb_ary_new();
+
+        if (metadata.size() > 0) {
+            for (std::vector<VALUE>::const_iterator ii = metadata.begin();
+                 ii != metadata.end();
+                 ii++) {
+                rb_ary_push(m, *ii);
+            }
+        }
+
+        return m;
     }
 
 

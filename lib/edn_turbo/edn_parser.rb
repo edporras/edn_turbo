@@ -22,6 +22,15 @@ module EDNT
       ext_read(data)
     end
 
+    # check & get metadata
+    def meta?
+      ext_has_meta
+    end
+
+    def meta
+      ext_meta
+    end
+
   end
 
 end

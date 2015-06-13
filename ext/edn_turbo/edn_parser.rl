@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <stack>
+#include <vector>
 #include <exception>
 
 #include "edn_parser.h"
@@ -30,13 +31,14 @@
         begin_dispatch = '#';
         begin_keyword  = ':';
         begin_char     = '\\';
-        begin_value    = alnum | [:\"\{\[\(\\\#] | operators;
-        begin_symbol   = symbol_start;
         begin_vector   = '[';
         begin_map      = '{';
         begin_list     = '(';
+        begin_meta     = '^';
         string_delim   = '"';
         begin_number   = digit;
+        begin_value    = alnum | [:\"\{\[\(\\\#^] | operators;
+        begin_symbol   = symbol_start;
 
         symbol_name    = symbol_start (symbol_chars)*;
         symbol         = (symbol_name ('/' symbol_name)?);
@@ -145,6 +147,12 @@
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
+    action parse_meta {
+        // ^
+        const char *np = parse_meta(fpc, pe);
+        if (np == NULL) { fhold; fbreak; } else fexec np;
+    }
+
     action parse_dispatch {
         // handles tokens w/ leading # ("#_", "#{", and tagged elems)
         const char *np = parse_dispatch(fpc + 1, pe, v);
@@ -162,6 +170,7 @@
              begin_vector >parse_vector |
              begin_list >parse_list |
              begin_map >parse_map |
+             begin_meta >parse_meta |
              begin_dispatch >parse_dispatch
             ) %*exit;
 }%%
@@ -223,7 +232,6 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, VALUE& v)
 
 const char* edn::Parser::parse_string(const char *p, const char *pe, VALUE& v)
 {
-    //    std::cerr << __FUNCTION__ << "   -  p: '" << p << "'" << std::endl;
     static const char* EDN_TYPE = "string";
     int cs;
     bool encode = false;
@@ -943,6 +951,51 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
 
 
 // ============================================================
+// metadata - looks like ruby just discards this but we'll track it
+// and provide a means to retrive after each parse op - might be
+// useful?
+//
+%%{
+    machine EDN_meta;
+    include EDN_common;
+
+    write data;
+
+    action parse_meta {
+        const char *np = parse_value(fpc, pe, v);
+        if (np) { fexec np; } else { fhold; fbreak; }
+    }
+
+    main := begin_meta (
+                        begin_value >parse_meta
+                        ) @exit;
+}%%
+
+
+const char* edn::Parser::parse_meta(const char *p, const char *pe)
+{
+    int cs;
+    VALUE v;
+
+    %% write init;
+    %% write exec;
+
+    if (cs >= EDN_meta_first_final) {
+        metadata.push_back(v);
+        return p + 1;
+    }
+    else if (cs == EDN_meta_error) {
+        error(__FUNCTION__, *p);
+        return pe;
+    }
+    else if (cs == EDN_meta_en_main) {} // silence ragel warning
+
+    return NULL;
+}
+
+
+
+// ============================================================
 // parses entire input but expects single valid token at the
 // top-level, therefore, does not tokenize source stream
 //
@@ -984,9 +1037,7 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
         return Qnil;
     }
     else if (cs == EDN_parser_first_final) {
-        // whole source is parsed so reset
         p = pe = eof = NULL;
-        reset();
     }
     else if (cs == EDN_parser_en_main) {} // silence ragel warning
     return result;
@@ -1019,6 +1070,10 @@ VALUE edn::Parser::next()
 {
     VALUE result = Qnil;
     int cs;
+
+    // clear any previously saved metadata; only track if read during
+    // this op
+    metadata.clear();
 
     %% write init;
     %% write exec;

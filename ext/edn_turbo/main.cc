@@ -92,6 +92,21 @@ namespace edn {
         return get_parser(self)->next();
     }
 
+    // metadata
+    //
+    // was metadata read during the last op?
+    static VALUE has_meta(VALUE self, VALUE data)
+    {
+        return get_parser(self)->has_meta();
+    }
+
+    //
+    // gets an array of meta entries
+    static VALUE meta(VALUE self, VALUE data)
+    {
+        return get_parser(self)->meta();
+    }
+
     //
     // signal handler
     static void die(int sig)
@@ -128,6 +143,8 @@ void Init_edn_turbo(void)
     rb_define_method(rb_cParser, "ext_eof", (VALUE(*)(ANYARGS)) &edn::eof, 0 );
     rb_define_method(rb_cParser, "ext_read", (VALUE(*)(ANYARGS)) &edn::read, 1 );
     rb_define_method(rb_cParser, "ext_next", (VALUE(*)(ANYARGS)) &edn::next, 0 );
+    rb_define_method(rb_cParser, "ext_has_meta", (VALUE(*)(ANYARGS)) &edn::has_meta, 0 );
+    rb_define_method(rb_cParser, "ext_meta", (VALUE(*)(ANYARGS)) &edn::meta, 0 );
 
     // bind ruby methods we'll call - these should be defined in edn_turbo.rb
     edn::EDNT_MAKE_EDN_SYMBOL = rb_intern("make_edn_symbol");
