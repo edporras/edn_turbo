@@ -15,7 +15,13 @@ module EDNT
 
     # token-by-token read
     def read
-      ext_next
+      v = ext_next
+
+      if has_meta?
+        v.extend EDNT::Metadata
+        v.metadata = meta
+      end
+      v
     end
 
     # entire stream read
@@ -24,11 +30,11 @@ module EDNT
     end
 
     # check & get metadata
-    def has_metadata?
+    def has_meta?
       ext_has_meta
     end
 
-    def metadata
+    def meta
       meta = ext_meta
       metadata = meta.reduce({}) do |acc, m|
         case m

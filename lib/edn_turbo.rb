@@ -91,4 +91,12 @@ module EDNT
     str.to_f
   end
 
+
+  module Metadata
+    def self.extended(base)
+    end
+
+    attr_accessor :metadata
+  end
+
 end # EDN namespace
