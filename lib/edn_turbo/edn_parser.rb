@@ -22,11 +22,11 @@ module EDNT
     end
 
     # check & get metadata
-    def meta?
+    def has_metadata?
       ext_has_meta
     end
 
-    def meta
+    def metadata
       ext_meta
     end
 

@@ -1060,7 +1060,12 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
 
     action parse_value {
         const char* np = parse_value(fpc, pe, result);
-        if (np == NULL) { fhold; fbreak; } else { fexec np; }
+        if (np == NULL) { fhold; fbreak; } else {
+            // if metadata sequence grew, we read one
+            if (metadata.size() > meta_count)
+                is_meta = true;
+            fexec np;
+        }
     }
 
     main := ignore* begin_value >parse_value ignore*;
@@ -1069,15 +1074,15 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
 
 //
 //
-VALUE edn::Parser::parse_next()
+VALUE edn::Parser::parse_next(bool& is_meta)
 {
     VALUE result = EDNT_EOF;
     int cs;
+    std::size_t meta_count = metadata.size();
 
     // clear any previously saved metadata / discards; only track if
     // read during this op
     discard.clear();
-    metadata.clear();
 
     %% write init;
     %% write exec;

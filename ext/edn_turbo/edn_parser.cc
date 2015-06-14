@@ -3349,21 +3349,21 @@ static const int EDN_tokens_start = 1;
 static const int EDN_tokens_en_main = 1;
 
 
-#line 1067 "edn_parser.rl"
+#line 1071 "edn_parser.rl"
 
 
 
 //
 //
-VALUE edn::Parser::parse_next()
+VALUE edn::Parser::parse_next(bool& is_meta)
 {
     VALUE result = EDNT_EOF;
     int cs;
+    std::size_t meta_count = metadata.size();
 
     // clear any previously saved metadata / discards; only track if
     // read during this op
     discard.clear();
-    metadata.clear();
 
 
 #line 3370 "edn_parser.cc"
@@ -3371,7 +3371,7 @@ VALUE edn::Parser::parse_next()
 	cs = EDN_tokens_start;
 	}
 
-#line 1083 "edn_parser.rl"
+#line 1087 "edn_parser.rl"
 
 #line 3377 "edn_parser.cc"
 	{
@@ -3424,14 +3424,18 @@ tr3:
 #line 1061 "edn_parser.rl"
 	{
         const char* np = parse_value(p, pe, result);
-        if (np == NULL) { p--; {p++; cs = 4; goto _out;} } else { {p = (( np))-1;} }
+        if (np == NULL) { p--; {p++; cs = 4; goto _out;} } else {
+            if (metadata.size() > meta_count)
+                is_meta = true;
+            {p = (( np))-1;}
+        }
     }
 	goto st4;
 st4:
 	if ( ++p == pe )
 		goto _test_eof4;
 case 4:
-#line 3435 "edn_parser.cc"
+#line 3439 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr6;
 		case 32: goto st4;
@@ -3465,7 +3469,7 @@ case 3:
 	_out: {}
 	}
 
-#line 1084 "edn_parser.rl"
+#line 1088 "edn_parser.rl"
 
     if (cs == EDN_tokens_en_main) {} // silence ragel warning
 

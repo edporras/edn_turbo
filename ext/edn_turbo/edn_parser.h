@@ -71,7 +71,7 @@ namespace edn
         const char* parse_tagged  (const char *p, const char *pe, VALUE& v);
         const char* parse_meta    (const char *p, const char *pe);
 
-        VALUE parse_next();
+        VALUE parse_next(bool& is_meta);
 
         // defined in edn_parser_unicode.cc
         static bool to_utf8(const char *s, std::size_t len, std::string& rslt);

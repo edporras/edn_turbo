@@ -33,11 +33,12 @@ namespace edn
 
         while (!is_eof())
         {
-            VALUE v = parse_next();
+            bool is_meta = false;
+            VALUE v = parse_next(is_meta);
 
             // check if we've read a discard or metadata token which
             // we must ignore
-            if (discard.empty() && metadata.empty())
+            if (discard.empty() && !is_meta)
             {
                 // valid token
                 token = v;
@@ -70,14 +71,15 @@ namespace edn
 
 
     //
-    // return the metadata value(s) saved
+    // returns an array of metadata value(s) saved in reverse order
+    // (right to left) - the ruby side will interpret this
     VALUE Parser::meta() const
     {
         VALUE m = rb_ary_new();
 
-        if (metadata.size() > 0) {
-            for (std::vector<VALUE>::const_iterator ii = metadata.begin();
-                 ii != metadata.end();
+        if (!metadata.empty()) {
+            for (std::vector<VALUE>::const_reverse_iterator ii = metadata.rbegin();
+                 ii != metadata.rend();
                  ii++) {
                 rb_ary_push(m, *ii);
             }
