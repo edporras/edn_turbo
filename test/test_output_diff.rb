@@ -84,6 +84,18 @@ class EDNT_Test < Minitest::Test
 
   end
 
+  def test_symbol
+
+    check_file('test/symbol.edn',
+               [
+                 EDN::Type::Symbol.new("asymbol"),
+                 EDN::Type::Symbol.new("with'_a_'"),
+                 EDN::Type::Symbol.new("with.123"),
+               ]
+               )
+
+  end
+
   def test_unicode
 
     check_file('test/unicode.edn',
@@ -151,7 +163,7 @@ class EDNT_Test < Minitest::Test
     assert_equal([345, :a], @parser.parse('#edn_turbo/test_tagged { :item 345 :other :a }'))
   end
 
-  def test_symbols
+  def test_operators
 
     check_file('test/operators.edn',
                [EDN::Type::Symbol.new('/'),

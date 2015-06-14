@@ -25,7 +25,7 @@
 
         operators      = [/\.\*!_\?$%&<>\=+\-];
         symbol_start   = alpha;
-        symbol_chars   = symbol_start | digit | [\#:_\-\.];
+        symbol_chars   = symbol_start | digit | [\#:_\-\.\'];
 
         begin_dispatch = '#';
         begin_keyword  = ':';
