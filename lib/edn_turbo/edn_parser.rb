@@ -13,7 +13,6 @@ module EDNT
 
     # token-by-token read
     def read
-      return EOF if ext_eof
       ext_next
     end
 

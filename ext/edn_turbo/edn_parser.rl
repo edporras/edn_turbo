@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include <stack>
 #include <vector>
 #include <exception>
 
@@ -559,7 +558,7 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, VALUE& s)
             // object is not meant to be kept due to a #_ so don't
             // push it into the list of elements
             if (!discard.empty()) {
-                discard.pop();
+                discard.pop_back();
             }
             else {
                 // otherwise we add it to the list of elements for the
@@ -842,17 +841,23 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, VALUE& v)
             // this token is to be discard it so store it in the
             // discard stack - we really don't need to save it so this
             // could be simplified
-            discard.push(v);
+            discard.push_back(v);
             fexec np;
         } else {
             fhold; fbreak;
         }
     }
 
+    action discard_err {
+        std::stringstream s;
+        s << "discard sequence without element to discard";
+        error(__FUNCTION__, s.str());
+        fhold; fbreak;
+    }
 
     main := begin_discard ignore* (
                                    begin_value >discard_value
-                                   ) @exit;
+                                   ) @err(discard_err) @exit;
 }%%
 
 
@@ -1023,8 +1028,8 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
     int cs;
     VALUE result = Qnil;
 
-    // reset line counter & discard stack
-    reset();
+    // reset line counter & other state
+    reset_state();
 
     %% write init;
     p = src;
@@ -1058,21 +1063,20 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
         if (np == NULL) { fhold; fbreak; } else { fexec np; }
     }
 
-    element       = begin_value >parse_value;
-
-    main := ignore* element ignore*;
+    main := ignore* begin_value >parse_value ignore*;
 }%%
 
 
 //
 //
-VALUE edn::Parser::next()
+VALUE edn::Parser::parse_next()
 {
-    VALUE result = Qnil;
+    VALUE result = EDNT_EOF;
     int cs;
 
-    // clear any previously saved metadata; only track if read during
-    // this op
+    // clear any previously saved metadata / discards; only track if
+    // read during this op
+    discard.clear();
     metadata.clear();
 
     %% write init;

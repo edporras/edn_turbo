@@ -1,5 +1,4 @@
 #include <iostream>
-#include <iomanip>
 #include <string>
 #include <limits>
 #include <exception>
@@ -26,13 +25,35 @@ namespace edn
 
 
     // =================================================================
+    //
+    //
+    VALUE Parser::next()
+    {
+        VALUE token = EDNT_EOF;
+
+        while (!is_eof())
+        {
+            VALUE v = parse_next();
+
+            // check if we've read a discard or metadata token which
+            // we must ignore
+            if (discard.empty() && metadata.empty())
+            {
+                // valid token
+                token = v;
+                break;
+            }
+        }
+
+        return token;
+    }
+
     // reset parsing state
     //
-    void Parser::reset()
+    void Parser::reset_state()
     {
         line_number = 1;
-        while (!discard.empty())
-            discard.pop();
+        discard.clear();
         metadata.clear();
     }
 
@@ -40,7 +61,7 @@ namespace edn
     // set a new source
     void Parser::set_source(const char* src, std::size_t len)
     {
-        reset();
+        reset_state();
         // set ragel state
         p = src;
         pe = src + len;

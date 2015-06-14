@@ -3,7 +3,6 @@
 
 #include <string>
 #include <sstream>
-#include <stack>
 #include <vector>
 
 #include <ruby/ruby.h>
@@ -17,6 +16,7 @@ namespace edn
     extern VALUE EDNT_TAGGED_ELEM;
     extern VALUE EDNT_STR_INT_TO_BIGNUM;
     extern VALUE EDNT_STR_DBL_TO_BIGNUM;
+    extern VALUE EDNT_EOF;
 
     //
     // C-extension EDN Parser class representation
@@ -28,7 +28,7 @@ namespace edn
         // change input source
         void set_source(const char* src, std::size_t len);
 
-        bool is_eof() const { return (p != NULL && p == pe); }
+        bool is_eof() const { return (p == pe); }
 
         // parses an entire stream
         VALUE parse(const char* s, std::size_t len);
@@ -49,10 +49,10 @@ namespace edn
         const char* pe;
         const char* eof;
         std::size_t line_number;
-        std::stack<VALUE> discard;
+        std::vector<VALUE> discard;
         std::vector<VALUE> metadata;
 
-        void reset();
+        void reset_state();
 
         const char* parse_value   (const char *p, const char *pe, VALUE& v);
         const char* parse_string  (const char *p, const char *pe, VALUE& v);
@@ -70,6 +70,8 @@ namespace edn
         const char* parse_discard (const char *p, const char *pe);
         const char* parse_tagged  (const char *p, const char *pe, VALUE& v);
         const char* parse_meta    (const char *p, const char *pe);
+
+        VALUE parse_next();
 
         // defined in edn_parser_unicode.cc
         static bool to_utf8(const char *s, std::size_t len, std::string& rslt);

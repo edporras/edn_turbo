@@ -18,6 +18,9 @@ namespace edn {
     VALUE EDNT_STR_INT_TO_BIGNUM = Qnil;
     VALUE EDNT_STR_DBL_TO_BIGNUM = Qnil;
 
+    // return this when EOF
+    VALUE EDNT_EOF = Qnil;
+
     //
     // wrappers to hook the class w/ the C-api
     template<class T>
@@ -152,6 +155,9 @@ void Init_edn_turbo(void)
     edn::EDNT_TAGGED_ELEM = rb_intern("tagged_element");
     edn::EDNT_STR_INT_TO_BIGNUM = rb_intern("string_int_to_bignum");
     edn::EDNT_STR_DBL_TO_BIGNUM = rb_intern("string_double_to_bignum");
+
+    // so we can return EOF directly
+    edn::EDNT_EOF = rb_const_get(edn::rb_mEDNT, rb_intern("EOF"));
 
     // import whatever else we've defined in the ruby side
     rb_require("edn_turbo/edn_parser");
