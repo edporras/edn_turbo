@@ -11,6 +11,11 @@ options = {}
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: #{$0} [options] filename"
 
+  options[:use_parse] = false
+  opts.on( '-p', '--use_parse', 'User single-shot parse() instead of token-wise read()' ) do
+    options[:use_parse] = true
+  end
+
   opts.on( '-v', '--version', 'Display version information and exit' ) do
     $stderr.puts "EDN parsing C++-extension version #{EDNt::VERSION}"
     exit
@@ -34,8 +39,25 @@ if !File.exist? filename
   exit 1
 end
 
-# mimic edn-ruby usage
+p = EDNT::Parser.new
+
+
 File.open(filename) do |file|
-  output = EDNT.read(file)
-  pp output if output != nil
+
+  if options[:use_parse]
+    pp p.parse(file.read)
+    puts "\tmeta read: #{p.meta}" if p.meta?
+  else
+    p.set_input(file.read)
+
+    loop do
+      output = p.read
+
+      break if output == EDNT::EOF
+
+      pp output
+
+      puts "\tmeta read: #{p.meta}" if p.meta?
+    end
+  end
 end
