@@ -97,16 +97,20 @@ namespace edn
 
     // we're using at most 2 args
     struct prot_args {
-        prot_args(ID m, VALUE arg) :
-            method(m), count(1) {
+        prot_args(ID r, ID m, VALUE arg) :
+            receiver(r), method(m), count(1) {
             args[0] = arg;
         }
-        prot_args(ID m, VALUE arg1, VALUE arg2) :
-            method(m), count(2) {
+        prot_args(ID r, ID m, VALUE arg1, VALUE arg2) :
+            receiver(r), method(m), count(2) {
             args[0] = arg1;
             args[1] = arg2;
         }
 
+        VALUE call() const { return rb_funcall2( receiver, method, count, args ); }
+
+    private:
+        ID receiver;
         ID method;
         VALUE count;
         VALUE args[2];
@@ -115,8 +119,10 @@ namespace edn
     // this allows us to wrap with rb_protect()
     static inline VALUE edn_wrap_funcall2( VALUE arg )
     {
-        prot_args* a = reinterpret_cast<prot_args*>(arg);
-        return rb_funcall2( edn::rb_mEDNT, a->method, a->count, a->args );
+        const prot_args* a = reinterpret_cast<const prot_args*>(arg);
+        if (a)
+            return a->call();
+        return Qnil;
     }
 
     static inline VALUE edn_prot_rb_funcall( edn_rb_f_type func, VALUE args )
@@ -155,7 +161,7 @@ namespace edn
 
         // value is outside of range of long type. Use ruby to convert it
         VALUE rb_s = edn_prot_rb_new_str( str );
-        prot_args args(EDNT_STR_INT_TO_BIGNUM, rb_s);
+        prot_args args(rb_mEDNT, EDNT_STR_INT_TO_BIGNUM, rb_s);
         return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
@@ -169,7 +175,7 @@ namespace edn
         }
 
         // value is outside of range of long type. Use ruby to convert it
-        prot_args args(EDNT_STR_DBL_TO_BIGNUM, edn_prot_rb_new_str(str));
+        prot_args args(rb_mEDNT, EDNT_STR_DBL_TO_BIGNUM, edn_prot_rb_new_str(str));
         return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
@@ -235,7 +241,7 @@ namespace edn
     // get a set representation from the ruby side. See edn_turbo.rb
     VALUE Parser::make_edn_symbol(VALUE sym)
     {
-        prot_args args(edn::EDNT_MAKE_EDN_SYMBOL, sym);
+        prot_args args(rb_mEDNT, EDNT_MAKE_EDN_SYMBOL, sym);
         return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
@@ -243,7 +249,7 @@ namespace edn
     // get a set representation from the ruby side. See edn_turbo.rb
     VALUE Parser::make_ruby_set(VALUE elems)
     {
-        prot_args args(edn::EDNT_MAKE_SET_METHOD, elems);
+        prot_args args(rb_mEDNT, EDNT_MAKE_SET_METHOD, elems);
         return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
@@ -251,7 +257,7 @@ namespace edn
     // get an object representation from the ruby side using the given symbol name
     VALUE Parser::tagged_element(VALUE name, VALUE data)
     {
-        prot_args args(edn::EDNT_TAGGED_ELEM, name, data);
+        prot_args args(rb_mEDNT, EDNT_TAGGED_ELEM, name, data);
         return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
