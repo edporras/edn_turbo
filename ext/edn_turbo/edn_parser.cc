@@ -3330,8 +3330,9 @@ case 1:
 #line 1039 "edn_parser.rl"
 
     if (cs == EDN_parser_error) {
-        error(__FUNCTION__, *p);
-        return Qnil;
+        if (p)
+            error(__FUNCTION__, *p);
+        return EDNT_EOF;
     }
     else if (cs == EDN_parser_first_final) {
         p = pe = eof = NULL;
@@ -3345,13 +3346,14 @@ case 1:
 // token-by-token machine
 //
 
-#line 3349 "edn_parser.cc"
+#line 3350 "edn_parser.cc"
 static const int EDN_tokens_start = 1;
+static const int EDN_tokens_error = 0;
 
 static const int EDN_tokens_en_main = 1;
 
 
-#line 1072 "edn_parser.rl"
+#line 1073 "edn_parser.rl"
 
 
 
@@ -3359,23 +3361,23 @@ static const int EDN_tokens_en_main = 1;
 //
 VALUE edn::Parser::parse_next(bool& is_meta)
 {
-    VALUE result = EDNT_EOF;
+    VALUE result;
     int cs;
     std::size_t meta_count = metadata.size();
 
-    // clear any previously saved metadata / discards; only track if
-    // read during this op
+    // clear any previously saved discards; only track if read during
+    // this op
     discard.clear();
 
 
-#line 3372 "edn_parser.cc"
+#line 3374 "edn_parser.cc"
 	{
 	cs = EDN_tokens_start;
 	}
 
-#line 1088 "edn_parser.rl"
+#line 1089 "edn_parser.rl"
 
-#line 3379 "edn_parser.cc"
+#line 3381 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -3389,7 +3391,7 @@ st1:
 	if ( ++p == pe )
 		goto _test_eof1;
 case 1:
-#line 3393 "edn_parser.cc"
+#line 3395 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr2;
 		case 32: goto st1;
@@ -3423,7 +3425,7 @@ tr6:
 	{ line_number++; }
 	goto st4;
 tr3:
-#line 1061 "edn_parser.rl"
+#line 1062 "edn_parser.rl"
 	{
         const char* np = parse_value(p, pe, result);
         if (np == NULL) { p--; {p++; cs = 4; goto _out;} } else {
@@ -3438,7 +3440,7 @@ st4:
 	if ( ++p == pe )
 		goto _test_eof4;
 case 4:
-#line 3442 "edn_parser.cc"
+#line 3444 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr6;
 		case 32: goto st4;
@@ -3472,9 +3474,12 @@ case 3:
 	_out: {}
 	}
 
-#line 1089 "edn_parser.rl"
+#line 1090 "edn_parser.rl"
 
-    if (cs == EDN_tokens_en_main) {} // silence ragel warning
+    if (cs == EDN_parser_error) {
+        return EDNT_EOF;
+    }
+    else if (cs == EDN_tokens_en_main) {} // silence ragel warning
 
     return result;
 }

@@ -15,35 +15,12 @@ module EDNT
 
     # token-by-token read
     def read
-      v = ext_next
-
-      if has_meta?
-        v.extend EDNT::Metadata
-        v.metadata = meta
-      end
-      v
+      ext_next
     end
 
     # entire stream read
     def parse(data)
       ext_read(data)
-    end
-
-    # check & get metadata
-    def has_meta?
-      ext_has_meta
-    end
-
-    def meta
-      meta = ext_meta
-      metadata = meta.reduce({}) do |acc, m|
-        case m
-        when Symbol then acc.merge(m => true)
-        when EDN::Type::Symbol then acc.merge(:tag => m)
-        else acc.merge(m)
-        end
-      end
-      metadata.empty? ? nil : metadata
     end
 
   end

@@ -12,14 +12,14 @@ namespace edn {
     VALUE rb_mEDNT;
 
     // methods on the ruby side we'll call from here
-    VALUE EDNT_MAKE_EDN_SYMBOL = Qnil;
-    VALUE EDNT_MAKE_SET_METHOD = Qnil;
-    VALUE EDNT_TAGGED_ELEM = Qnil;
+    VALUE EDNT_MAKE_EDN_SYMBOL   = Qnil;
+    VALUE EDNT_MAKE_SET_METHOD   = Qnil;
+    VALUE EDNT_TAGGED_ELEM       = Qnil;
     VALUE EDNT_STR_INT_TO_BIGNUM = Qnil;
     VALUE EDNT_STR_DBL_TO_BIGNUM = Qnil;
 
-    // return this when EOF
-    VALUE EDNT_EOF = Qnil;
+    // returned when EOF - defined as a constant in EDN module
+    VALUE EDNT_EOF               = Qnil;
 
     //
     // wrappers to hook the class w/ the C-api
@@ -85,7 +85,9 @@ namespace edn {
     static VALUE read(VALUE self, VALUE data)
     {
         const char* stream = StringValueCStr(data);
-        return get_parser(self)->parse(stream, std::strlen(stream) );
+        if (stream)
+            return get_parser(self)->parse(stream, std::strlen(stream) );
+        return Qnil;
     }
 
     //
@@ -93,21 +95,6 @@ namespace edn {
     static VALUE next(VALUE self, VALUE data)
     {
         return get_parser(self)->next();
-    }
-
-    // metadata
-    //
-    // was metadata read during the last op?
-    static VALUE has_meta(VALUE self, VALUE data)
-    {
-        return get_parser(self)->has_meta();
-    }
-
-    //
-    // gets an array of meta entries
-    static VALUE meta(VALUE self, VALUE data)
-    {
-        return get_parser(self)->meta();
     }
 
     //
@@ -146,8 +133,6 @@ void Init_edn_turbo(void)
     rb_define_method(rb_cParser, "ext_eof", (VALUE(*)(ANYARGS)) &edn::eof, 0 );
     rb_define_method(rb_cParser, "ext_read", (VALUE(*)(ANYARGS)) &edn::read, 1 );
     rb_define_method(rb_cParser, "ext_next", (VALUE(*)(ANYARGS)) &edn::next, 0 );
-    rb_define_method(rb_cParser, "ext_has_meta", (VALUE(*)(ANYARGS)) &edn::has_meta, 0 );
-    rb_define_method(rb_cParser, "ext_meta", (VALUE(*)(ANYARGS)) &edn::meta, 0 );
 
     // bind ruby methods we'll call - these should be defined in edn_turbo.rb
     edn::EDNT_MAKE_EDN_SYMBOL = rb_intern("make_edn_symbol");

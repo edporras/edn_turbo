@@ -70,25 +70,6 @@ namespace edn
     }
 
 
-    //
-    // returns an array of metadata value(s) saved in reverse order
-    // (right to left) - the ruby side will interpret this
-    VALUE Parser::meta() const
-    {
-        VALUE m = rb_ary_new();
-
-        if (!metadata.empty()) {
-            for (std::vector<VALUE>::const_reverse_iterator ii = metadata.rbegin();
-                 ii != metadata.rend();
-                 ii++) {
-                rb_ary_push(m, *ii);
-            }
-        }
-
-        return m;
-    }
-
-
     // =================================================================
     // work-around for idiotic rb_protect convention in order to avoid
     // using ruby/rice
@@ -259,6 +240,22 @@ namespace edn
     {
         prot_args args(rb_mEDNT, EDNT_TAGGED_ELEM, name, data);
         return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
+    }
+
+
+    //
+    // returns an array of metadata value(s) saved in reverse order
+    // (right to left) - the ruby side will interpret this
+    VALUE Parser::ruby_meta()
+    {
+        VALUE m = rb_ary_new();
+
+        while (!metadata.empty()) {
+            rb_ary_push(m, metadata.back());
+            metadata.pop_back();
+        }
+
+        return m;
     }
 
 

@@ -46,7 +46,6 @@ File.open(filename) do |file|
 
   if options[:use_parse]
     pp p.parse(file.read)
-    puts "\tparse() meta: #{p.metadata}" if p.has_metadata?
   else
     p.set_input(file.read)
 
@@ -57,7 +56,7 @@ File.open(filename) do |file|
 
       pp output
 
-      puts "\tread() meta: #{p.metadata}" if p.has_metadata?
+#      puts "\tread() meta: #{p.metadata}" if p.has_metadata?
     end
   end
 end

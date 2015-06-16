@@ -91,12 +91,36 @@ module EDNT
     str.to_f
   end
 
-
+  # ============================================================================
+  # emulate EDN::Metadata
   module Metadata
-    def self.extended(base)
-    end
+#    def self.extended(base)
+#    end
 
     attr_accessor :metadata
   end
+
+  # ----------------------------------------------------------------------------
+  # bind the given meta to the value
+  #
+  def bind_meta(value, ext_meta)
+    meta = ext_meta
+
+    metadata = meta.reduce({}) do |acc, m|
+      case m
+      when Symbol then acc.merge(m => true)
+      when EDN::Type::Symbol then acc.merge(:tag => m)
+      else acc.merge(m)
+      end
+    end
+
+    if !metadata.empty?
+      value.extend Metadata
+      value.metadata = metadata
+    end
+
+    value
+  end
+
 
 end # EDN namespace

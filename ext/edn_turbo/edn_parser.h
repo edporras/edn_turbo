@@ -1,5 +1,5 @@
-#ifndef EDN_TURBO_PARSER_H
-#define EDN_TURBO_PARSER_H
+#ifndef EDN_RAGEL_PARSER_H
+#define EDN_RAGEL_PARSER_H
 
 #include <string>
 #include <sstream>
@@ -28,18 +28,13 @@ namespace edn
         // change input source
         void set_source(const char* src, std::size_t len);
 
-        bool is_eof() const { return (p == pe); }
+        bool is_eof() const { return (p == eof); }
 
         // parses an entire stream
         VALUE parse(const char* s, std::size_t len);
 
         // returns the next element in the current stream
         VALUE next();
-
-        // check if the most recent parse() / next() encountered
-        // metadata
-        bool has_meta() const { return !metadata.empty(); }
-        VALUE meta() const;
 
         static void throw_error(int error);
 
@@ -86,6 +81,9 @@ namespace edn
         static VALUE make_edn_symbol(VALUE sym);
         static VALUE make_ruby_set(VALUE elems);
         static VALUE tagged_element(VALUE name, VALUE data);
+
+        // metadata
+        VALUE ruby_meta();
 
         // utility method to convert a primitive in string form to a
         // ruby type

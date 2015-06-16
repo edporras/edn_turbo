@@ -1038,8 +1038,9 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
     %% write exec;
 
     if (cs == EDN_parser_error) {
-        error(__FUNCTION__, *p);
-        return Qnil;
+        if (p)
+            error(__FUNCTION__, *p);
+        return EDNT_EOF;
     }
     else if (cs == EDN_parser_first_final) {
         p = pe = eof = NULL;
@@ -1056,7 +1057,7 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
     machine EDN_tokens;
     include EDN_common;
 
-    write data noerror nofinal;
+    write data nofinal;
 
     action parse_value {
         const char* np = parse_value(fpc, pe, result);
@@ -1076,18 +1077,21 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
 //
 VALUE edn::Parser::parse_next(bool& is_meta)
 {
-    VALUE result = EDNT_EOF;
+    VALUE result;
     int cs;
     std::size_t meta_count = metadata.size();
 
-    // clear any previously saved metadata / discards; only track if
-    // read during this op
+    // clear any previously saved discards; only track if read during
+    // this op
     discard.clear();
 
     %% write init;
     %% write exec;
 
-    if (cs == EDN_tokens_en_main) {} // silence ragel warning
+    if (cs == EDN_parser_error) {
+        return EDNT_EOF;
+    }
+    else if (cs == EDN_tokens_en_main) {} // silence ragel warning
 
     return result;
 }
