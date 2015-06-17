@@ -141,6 +141,17 @@ class EDNT_Test < Minitest::Test
               )
   end
 
+
+  def test_metadata
+    f = EDNT::read(File.open('test/metadata.edn').read)
+    assert_equal([98.6, 99.7], f)
+    assert_equal({:doc=>"This is my vector", :rel=>:temps}, f.metadata)
+
+    f = EDNT::read(File.open('test/metadata2.edn').read)
+    assert_equal([1, 2], f)
+    assert_equal({:foo=>true, :tag=>EDN::Type::Symbol.new('String'), :bar=>2}, f.metadata)
+  end
+
   #
   # for testing tagged element #edn_turbo/test_tagged
   class Tagged

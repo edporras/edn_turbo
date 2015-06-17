@@ -1011,8 +1011,21 @@ const char* edn::Parser::parse_meta(const char *p, const char *pe)
     write data;
 
     action parse_value {
+        // save the count of metadata items before we parse this value
+        // so we can determine if we've read another metadata value or
+        // an actual data item
+        std::size_t meta_size = metadata.size();
         const char* np = parse_value(fpc, pe, result);
-        if (np == NULL) { fexec pe; fbreak; } else fexec np;
+        if (np == NULL) { fexec pe; fbreak; } else {
+            // if we have metadata saved and it matches the count we
+            // saved before we parsed a value, then we must bind the
+            // metadata sequence to it
+            if (!metadata.empty() && metadata.size() == meta_size) {
+                // this will empty the metadata sequence too
+                result = bind_meta_to_value(result);
+            }
+            fexec np;
+        }
     }
 
     element       = begin_value >parse_value;
@@ -1028,13 +1041,8 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
     int cs;
     VALUE result = Qnil;
 
-    // reset line counter & other state
-    reset_state();
-
     %% write init;
-    p = src;
-    pe = p + len;
-    eof = pe;
+    set_source(src, len);
     %% write exec;
 
     if (cs == EDN_parser_error) {
@@ -1060,11 +1068,30 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
     write data nofinal;
 
     action parse_value {
-        const char* np = parse_value(fpc, pe, result);
+        // we won't know if we've parsed a discard or a metadata until
+        // after parse_value() is done. Save the current number of
+        // elements in the metadata sequence; then we can check if it
+        // grew or if the discard sequence grew
+        meta_size = metadata.size();
+
+        const char* np = parse_value(fpc, pe, value);
+
         if (np == NULL) { fhold; fbreak; } else {
-            // if metadata sequence grew, we read one
-            if (metadata.size() > meta_count)
-                is_meta = true;
+            if (metadata.size() > 0) {
+                // was anotheran additional metadata entry read? if
+                // so, don't return a value
+                if (metadata.size() > meta_size) {
+                    is_value = false;
+                }
+                else {
+                    // a value was read and there's a pending metadata
+                    // sequence. Bind them.
+                    value = bind_meta_to_value(value);
+                }
+            } else if (!discard.empty()) {
+                // a discard read. Don't return a value
+                is_value = false;
+            }
             fexec np;
         }
     }
@@ -1075,11 +1102,13 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
 
 //
 //
-VALUE edn::Parser::parse_next(bool& is_meta)
+bool edn::Parser::parse_next(VALUE& value)
 {
-    VALUE result;
     int cs;
-    std::size_t meta_count = metadata.size();
+    bool is_value = true;
+    // need to track metadada read and bind it to the next value read
+    // - but must account for sequences of metadata values
+    std::size_t meta_size;
 
     // clear any previously saved discards; only track if read during
     // this op
@@ -1089,11 +1118,11 @@ VALUE edn::Parser::parse_next(bool& is_meta)
     %% write exec;
 
     if (cs == EDN_parser_error) {
-        return EDNT_EOF;
+        value = EDNT_EOF;
     }
     else if (cs == EDN_tokens_en_main) {} // silence ragel warning
 
-    return result;
+    return is_value;
 }
 
 

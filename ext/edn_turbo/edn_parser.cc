@@ -3239,7 +3239,7 @@ static const int EDN_parser_error = 0;
 static const int EDN_parser_en_main = 2;
 
 
-#line 1023 "edn_parser.rl"
+#line 1036 "edn_parser.rl"
 
 
 
@@ -3248,21 +3248,16 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
     int cs;
     VALUE result = Qnil;
 
-    // reset line counter & other state
-    reset_state();
 
-
-#line 3256 "edn_parser.cc"
+#line 3253 "edn_parser.cc"
 	{
 	cs = EDN_parser_start;
 	}
 
-#line 1035 "edn_parser.rl"
-    p = src;
-    pe = p + len;
-    eof = pe;
+#line 1045 "edn_parser.rl"
+    set_source(src, len);
 
-#line 3266 "edn_parser.cc"
+#line 3261 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -3275,15 +3270,28 @@ tr1:
 tr4:
 #line 1013 "edn_parser.rl"
 	{
+        // save the count of metadata items before we parse this value
+        // so we can determine if we've read another metadata value or
+        // an actual data item
+        std::size_t meta_size = metadata.size();
         const char* np = parse_value(p, pe, result);
-        if (np == NULL) { {p = (( pe))-1;} {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
+        if (np == NULL) { {p = (( pe))-1;} {p++; cs = 2; goto _out;} } else {
+            // if we have metadata saved and it matches the count we
+            // saved before we parsed a value, then we must bind the
+            // metadata sequence to it
+            if (!metadata.empty() && metadata.size() == meta_size) {
+                // this will empty the metadata sequence too
+                result = bind_meta_to_value(result);
+            }
+            {p = (( np))-1;}
+        }
     }
 	goto st2;
 st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 3287 "edn_parser.cc"
+#line 3295 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr1;
 		case 32: goto st2;
@@ -3327,7 +3335,7 @@ case 1:
 	_out: {}
 	}
 
-#line 1039 "edn_parser.rl"
+#line 1047 "edn_parser.rl"
 
     if (cs == EDN_parser_error) {
         if (p)
@@ -3346,38 +3354,40 @@ case 1:
 // token-by-token machine
 //
 
-#line 3350 "edn_parser.cc"
+#line 3358 "edn_parser.cc"
 static const int EDN_tokens_start = 1;
 static const int EDN_tokens_error = 0;
 
 static const int EDN_tokens_en_main = 1;
 
 
-#line 1073 "edn_parser.rl"
+#line 1100 "edn_parser.rl"
 
 
 
 //
 //
-VALUE edn::Parser::parse_next(bool& is_meta)
+bool edn::Parser::parse_next(VALUE& value)
 {
-    VALUE result;
     int cs;
-    std::size_t meta_count = metadata.size();
+    bool is_value = true;
+    // need to track metadada read and bind it to the next value read
+    // - but must account for sequences of metadata values
+    std::size_t meta_size;
 
     // clear any previously saved discards; only track if read during
     // this op
     discard.clear();
 
 
-#line 3374 "edn_parser.cc"
+#line 3384 "edn_parser.cc"
 	{
 	cs = EDN_tokens_start;
 	}
 
-#line 1089 "edn_parser.rl"
+#line 1118 "edn_parser.rl"
 
-#line 3381 "edn_parser.cc"
+#line 3391 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -3391,7 +3401,7 @@ st1:
 	if ( ++p == pe )
 		goto _test_eof1;
 case 1:
-#line 3395 "edn_parser.cc"
+#line 3405 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr2;
 		case 32: goto st1;
@@ -3425,13 +3435,32 @@ tr6:
 	{ line_number++; }
 	goto st4;
 tr3:
-#line 1062 "edn_parser.rl"
+#line 1070 "edn_parser.rl"
 	{
-        const char* np = parse_value(p, pe, result);
+        // we won't know if we've parsed a discard or a metadata until
+        // after parse_value() is done. Save the current number of
+        // elements in the metadata sequence; then we can check if it
+        // grew or if the discard sequence grew
+        meta_size = metadata.size();
+
+        const char* np = parse_value(p, pe, value);
+
         if (np == NULL) { p--; {p++; cs = 4; goto _out;} } else {
-            // if metadata sequence grew, we read one
-            if (metadata.size() > meta_count)
-                is_meta = true;
+            if (metadata.size() > 0) {
+                // was anotheran additional metadata entry read? if
+                // so, don't return a value
+                if (metadata.size() > meta_size) {
+                    is_value = false;
+                }
+                else {
+                    // a value was read and there's a pending metadata
+                    // sequence. Bind them.
+                    value = bind_meta_to_value(value);
+                }
+            } else if (!discard.empty()) {
+                // a discard read. Don't return a value
+                is_value = false;
+            }
             {p = (( np))-1;}
         }
     }
@@ -3440,7 +3469,7 @@ st4:
 	if ( ++p == pe )
 		goto _test_eof4;
 case 4:
-#line 3444 "edn_parser.cc"
+#line 3473 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr6;
 		case 32: goto st4;
@@ -3474,14 +3503,14 @@ case 3:
 	_out: {}
 	}
 
-#line 1090 "edn_parser.rl"
+#line 1119 "edn_parser.rl"
 
     if (cs == EDN_parser_error) {
-        return EDNT_EOF;
+        value = EDNT_EOF;
     }
     else if (cs == EDN_tokens_en_main) {} // silence ragel warning
 
-    return result;
+    return is_value;
 }
 
 

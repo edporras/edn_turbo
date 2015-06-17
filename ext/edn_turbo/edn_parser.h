@@ -14,6 +14,7 @@ namespace edn
     extern VALUE EDNT_MAKE_EDN_SYMBOL;
     extern VALUE EDNT_MAKE_SET_METHOD;
     extern VALUE EDNT_TAGGED_ELEM;
+    extern VALUE EDNT_BIND_META_TO_VALUE;
     extern VALUE EDNT_STR_INT_TO_BIGNUM;
     extern VALUE EDNT_STR_DBL_TO_BIGNUM;
     extern VALUE EDNT_EOF;
@@ -66,7 +67,7 @@ namespace edn
         const char* parse_tagged  (const char *p, const char *pe, VALUE& v);
         const char* parse_meta    (const char *p, const char *pe);
 
-        VALUE parse_next(bool& is_meta);
+        bool parse_next(VALUE& value);
 
         // defined in edn_parser_unicode.cc
         static bool to_utf8(const char *s, std::size_t len, std::string& rslt);
@@ -84,6 +85,7 @@ namespace edn
 
         // metadata
         VALUE ruby_meta();
+        VALUE bind_meta_to_value(VALUE value);
 
         // utility method to convert a primitive in string form to a
         // ruby type

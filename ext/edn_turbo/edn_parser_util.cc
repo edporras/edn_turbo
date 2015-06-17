@@ -25,7 +25,8 @@ namespace edn
 
 
     // =================================================================
-    //
+    // for token-by-token parsing. If a discard or metadata is parsed,
+    // attempt to get the following value
     //
     VALUE Parser::next()
     {
@@ -33,12 +34,9 @@ namespace edn
 
         while (!is_eof())
         {
-            bool is_meta = false;
-            VALUE v = parse_next(is_meta);
-
-            // check if we've read a discard or metadata token which
-            // we must ignore
-            if (discard.empty() && !is_meta)
+            // fetch a token. If it's metadata or discard
+            VALUE v;
+            if (parse_next(v))
             {
                 // valid token
                 token = v;
@@ -243,6 +241,8 @@ namespace edn
     }
 
 
+    // =================================================================
+    // METADATA
     //
     // returns an array of metadata value(s) saved in reverse order
     // (right to left) - the ruby side will interpret this
@@ -258,7 +258,16 @@ namespace edn
         return m;
     }
 
+    //
+    // calls the ruby-side bind_meta to bind the metadata to the value
+    VALUE Parser::bind_meta_to_value(VALUE value)
+    {
+        prot_args args(rb_mEDNT, EDNT_BIND_META_TO_VALUE, value, ruby_meta());
+        return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
+    }
 
+
+    // =================================================================
     //
     // error reporting
     void Parser::throw_error(int error)

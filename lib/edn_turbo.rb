@@ -94,16 +94,14 @@ module EDNT
   # ============================================================================
   # emulate EDN::Metadata
   module Metadata
-#    def self.extended(base)
-#    end
-
     attr_accessor :metadata
   end
 
   # ----------------------------------------------------------------------------
   # bind the given meta to the value
   #
-  def bind_meta(value, ext_meta)
+  def self.bind_metadata_to_value(value, ext_meta)
+
     meta = ext_meta
 
     metadata = meta.reduce({}) do |acc, m|
