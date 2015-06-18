@@ -63,6 +63,11 @@ Simlar to `edn-ruby`:
     # also accepts a string
     pp EDNT.read("[ 1 2 3 abc ]")
 
+	# metadata
+	e = EDNT.read('^String ^:foo ^{:foo false :tag Boolean :bar 2} [1 2]')
+	pp e          # -> [1, 2]
+	pp e.metadata # -> {:foo=>true, :tag=>#<EDN::Type::Symbol:0x007fdbea8a29b0 @symbol=:String>, :bar=>2}
+
 ```
 
 Or instantiate and reuse an instance of a parser:
@@ -96,8 +101,8 @@ Or instantiate and reuse an instance of a parser:
 
 Known problems
 ==============
-v0.3.0:
+v0.3.1:
 
-- No checks for valid characters in #uuid or #inst are performed by
-  the parser. However, DateTime will throw an error if the date can't
-  be parsed and this is reported.
+- Some unhandled corner cases with operators and spacing
+  remain. `edn_turbo` handles things like `1 / 12` and `1/ 12` but
+  parse errors occur with `1/12` and `1 /12`.
