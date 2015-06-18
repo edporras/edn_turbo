@@ -191,6 +191,10 @@ class EDNT_Test < Minitest::Test
                 EDN::Type::Symbol.new('='),
                 EDN::Type::Symbol.new('-'),
                 EDN::Type::Symbol.new('+'),
+#                [1, EDN::Type::Symbol.new('/'), 2],
+#                [3, EDN::Type::Symbol.new('/'), 4],
+                [5, EDN::Type::Symbol.new('/'), 6],
+                [7, EDN::Type::Symbol.new('/'), 8]
                ]
               )
 
