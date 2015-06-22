@@ -5,7 +5,7 @@ require 'minitest/autorun'
 require 'edn_turbo'
 require 'date'
 
-class EDNT_Test < Minitest::Test
+class EDNT_Test < Minitest::Unit::TestCase
 
   def setup
     @parser = EDNT::Parser.new
@@ -23,7 +23,6 @@ class EDNT_Test < Minitest::Test
     assert_equal(true, @parser.parse('true'))
     assert_equal("a string", @parser.parse('"a string"'))
     assert_equal(:"namespace.of.some.length/keyword-name", @parser.parse(':namespace.of.some.length/keyword-name'))
-    assert_equal(:'/', @parser.parse(':/'))
   end
 
   def test_number
@@ -39,7 +38,7 @@ class EDNT_Test < Minitest::Test
   def test_keyword
 
     check_file('test/keyword.edn',
-               [:key1, :"key_2/adsd2", :key_3, :"key-4", :"key_5/asd-32_ee"]
+               [:key1, :"key_2/adsd2", :key_3, :"key-4", :"key_5/asd-32_ee", :"#/:a"]
               )
   end
 
@@ -89,8 +88,12 @@ class EDNT_Test < Minitest::Test
     check_file('test/symbol.edn',
                [
                  EDN::Type::Symbol.new("asymbol"),
+                 EDN::Type::Symbol.new(".asymbol"),
                  EDN::Type::Symbol.new("with'_a_'"),
                  EDN::Type::Symbol.new("with.123"),
+                 EDN::Type::Symbol.new("-with.123"),
+                 EDN::Type::Symbol.new("/"),
+                 EDN::Type::Symbol.new(">:FOuy/+"),
                ]
                )
 

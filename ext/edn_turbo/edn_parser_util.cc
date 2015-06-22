@@ -36,10 +36,15 @@ namespace edn
         {
             // fetch a token. If it's metadata or discard
             VALUE v;
-            if (parse_next(v))
-            {
+            eTokenState state = parse_next(v);
+
+            if (state == TOKEN_OK) {
                 // valid token
                 token = v;
+                break;
+            }
+            else if (state == TOKEN_ERROR) {
+                token = EDNT_EOF;
                 break;
             }
         }

@@ -23,9 +23,7 @@
         comment        = ';' cr_neg* counter;
         ignore         = ws | comment;
 
-        operators      = [/\.\*!_\?$%&<>\=+\-];
-        symbol_start   = alpha;
-        symbol_chars   = symbol_start | digit | [\#:_\-\.\'];
+        operators      = [/\.\*!_\?$%&<>\=+\-\'];
 
         begin_dispatch = '#';
         begin_keyword  = ':';
@@ -37,10 +35,7 @@
         string_delim   = '"';
         begin_number   = digit;
         begin_value    = alnum | [:\"\{\[\(\\\#^] | operators;
-        begin_symbol   = symbol_start;
-
-        symbol_name    = symbol_start (symbol_chars)*;
-        symbol         = (symbol_name ('/' symbol_name)?);
+        begin_symbol   = alpha;
 
         # int / decimal rules
         integer        = ('0' | [1-9] digit*);
@@ -258,15 +253,16 @@ const char* edn::Parser::parse_string(const char *p, const char *pe, VALUE& v)
     machine EDN_keyword;
     include EDN_common;
 
-    keyword_chars = symbol_chars | operators;
-    keyword_start = symbol_start | [\#\./];
+    keyword_start = alpha | [\.\*!_\?$%&<>\=+\-\'\#];
+    keyword_chars = (keyword_start | digit | ':');
 
-    keyword_name    = keyword_start (keyword_chars)*;
+    keyword_name  = keyword_start keyword_chars*;
+    keyword       = keyword_name ('/' keyword_chars*)?;
 
     write data;
 
 
-    main := begin_keyword keyword_name (^keyword_chars? @exit);
+    main := begin_keyword keyword (^(keyword_chars | '/')? @exit);
 }%%
 
 
@@ -287,7 +283,7 @@ const char* edn::Parser::parse_keyword(const char *p, const char *pe, VALUE& v)
         return p;
     }
     else if (cs == EDN_keyword_error) {
-        error(__FUNCTION__, *p);
+        error(__FUNCTION__, "Invalid keyword", *p);
         return pe;
     }
     else if (cs == EDN_keyword_en_main) {} // silence ragel warning
@@ -418,10 +414,10 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
 
 
     main := (
-             ('-'|'+'|'.') alpha >parse_symbol |
              ('-'|'+') begin_number >parse_number |
+             operators (alpha|operators|':') >parse_symbol |
              operators ignore* >parse_operator
-             ) ^(operators|alpha|digit)? @exit;
+             ) ^(operators|alpha|digit|':')? @exit;
 }%%
 
 
@@ -502,10 +498,20 @@ const char* edn::Parser::parse_esc_char(const char *p, const char *pe, VALUE& v)
 
     write data;
 
+    symbol_start = alpha | [\.\*!_\?$%&<>\=+\-\'];
+    symbol_chars = symbol_start | digit | ':' | '#';
+    symbol_name  = (
+                    (alpha symbol_chars*) |
+                    ([\-\+\.] symbol_start symbol_chars*) |
+                    ([/\*!_\?$%&<>\=\'] symbol_chars+) |
+                    operators{1}
+                    );
+    symbol       = '/' | (symbol_name ('/' symbol_name)?);
+
 
     main := (
-             operators? symbol
-             ) ignore* (^(symbol_chars | operators)? @exit);
+             symbol
+             ) ignore* (^(symbol_chars | '/')? @exit);
 }%%
 
 
@@ -901,6 +907,11 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
     machine EDN_tagged;
     include EDN_common;
 
+    tag_symbol_chars_start = alpha;
+    tag_symbol_chars       = tag_symbol_chars_start | [\-_];
+    tag_symbol_name        = tag_symbol_chars_start (tag_symbol_chars)*;
+    tag_symbol             = (tag_symbol_name ('/' tag_symbol_name)?);
+
 #    inst = (string_delim [0-9+\-:\.TZ]* string_delim);
 #    uuid = (string_delim [a-f0-9\-]* string_delim);
 
@@ -918,7 +929,7 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
     }
 
 
-    main := (symbol >parse_symbol ignore* begin_value >parse_value) @exit;
+    main := (tag_symbol >parse_symbol ignore* begin_value >parse_value) @exit;
 }%%
 
 
@@ -1081,16 +1092,19 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
                 // was anotheran additional metadata entry read? if
                 // so, don't return a value
                 if (metadata.size() > meta_size) {
-                    is_value = false;
+                    state = TOKEN_IS_META;
                 }
                 else {
                     // a value was read and there's a pending metadata
                     // sequence. Bind them.
                     value = bind_meta_to_value(value);
+                    state = TOKEN_OK;
                 }
             } else if (!discard.empty()) {
                 // a discard read. Don't return a value
-                is_value = false;
+                state = TOKEN_IS_DISCARD;
+            } else {
+                state = TOKEN_OK;
             }
             fexec np;
         }
@@ -1102,10 +1116,10 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
 
 //
 //
-bool edn::Parser::parse_next(VALUE& value)
+edn::Parser::eTokenState edn::Parser::parse_next(VALUE& value)
 {
     int cs;
-    bool is_value = true;
+    eTokenState state = TOKEN_ERROR;
     // need to track metadada read and bind it to the next value read
     // - but must account for sequences of metadata values
     std::size_t meta_size;
@@ -1118,11 +1132,9 @@ bool edn::Parser::parse_next(VALUE& value)
     %% write exec;
 
     if (cs == EDN_parser_error) {
-        value = EDNT_EOF;
     }
     else if (cs == EDN_tokens_en_main) {} // silence ragel warning
-
-    return is_value;
+    return state;
 }
 
 
