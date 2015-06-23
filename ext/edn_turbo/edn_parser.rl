@@ -843,14 +843,12 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, VALUE& v)
 
     action discard_value {
         const char *np = parse_value(fpc, pe, v);
-        if (np) {
-            // this token is to be discard it so store it in the
+        if (np == NULL) { fhold; fbreak; } else {
+            // this token is to be discarded so store it in the
             // discard stack - we really don't need to save it so this
             // could be simplified
             discard.push_back(v);
             fexec np;
-        } else {
-            fhold; fbreak;
         }
     }
 
@@ -979,7 +977,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
 
     action parse_meta {
         const char *np = parse_value(fpc, pe, v);
-        if (np) { fexec np; } else { fhold; fbreak; }
+        if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
     main := begin_meta (
@@ -1076,9 +1074,9 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
     machine EDN_tokens;
     include EDN_common;
 
-    write data nofinal;
+    write data nofinal noerror;
 
-    action parse_value {
+    action parse_token {
         // we won't know if we've parsed a discard or a metadata until
         // after parse_value() is done. Save the current number of
         // elements in the metadata sequence; then we can check if it
@@ -1086,11 +1084,10 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
         meta_size = metadata.size();
 
         const char* np = parse_value(fpc, pe, value);
-
         if (np == NULL) { fhold; fbreak; } else {
             if (metadata.size() > 0) {
-                // was anotheran additional metadata entry read? if
-                // so, don't return a value
+                // was an additional metadata entry read? if so, don't
+                // return a value
                 if (metadata.size() > meta_size) {
                     state = TOKEN_IS_META;
                 }
@@ -1110,7 +1107,7 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
         }
     }
 
-    main := ignore* begin_value >parse_value ignore*;
+    main := ignore* begin_value >parse_token ignore*;
 }%%
 
 
@@ -1131,9 +1128,7 @@ edn::Parser::eTokenState edn::Parser::parse_next(VALUE& value)
     %% write init;
     %% write exec;
 
-    if (cs == EDN_parser_error) {
-    }
-    else if (cs == EDN_tokens_en_main) {} // silence ragel warning
+    if (cs == EDN_tokens_en_main) {} // silence ragel warning
     return state;
 }
 
