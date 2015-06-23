@@ -136,7 +136,7 @@ void Init_edn_turbo(void)
     rb_define_method(rb_cParser, "ext_next", (VALUE(*)(ANYARGS)) &edn::next, 0 );
 
     // bind ruby methods we'll call - these should be defined in edn_turbo.rb
-    edn::EDNT_MAKE_EDN_SYMBOL    = rb_intern("make_edn_symbol");
+    edn::EDNT_MAKE_EDN_SYMBOL    = rb_intern("symbol");
     edn::EDNT_MAKE_SET_METHOD    = rb_intern("make_set");
     edn::EDNT_TAGGED_ELEM        = rb_intern("tagged_element");
     edn::EDNT_BIND_META_TO_VALUE = rb_intern("bind_metadata_to_value");

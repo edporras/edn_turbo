@@ -73,7 +73,7 @@ module EDNT
   # ----------------------------------------------------------------------------
   # handles creation of an EDN::Type::Symbol
   #
-  def self.make_edn_symbol(elem)
+  def self.symbol(elem)
     EDN::Type::Symbol.new(elem)
   end
 
