@@ -5,24 +5,54 @@ require 'minitest/autorun'
 require 'edn_turbo'
 require 'date'
 
-class EDNT_Test < Minitest::Unit::TestCase
+class EDNT_Test < Minitest::Test
 
   def setup
     @parser = EDNT::Parser.new
   end
 
   def check_file(file, expected_output)
-    File.open(file) { |file|
-      assert_equal(expected_output, @parser.parse(file.read))
+    output = nil
+    File.open(file) { |source|
+      input = source.instance_of?(String) ? source : source.read
+
+      # test using parse() first
+      output = @parser.parse(input)
+      assert_equal(expected_output, output)
+
+      # now test setting the source and using read (although one-shot)
+      @parser.set_input(input)
+      output = @parser.read
+      assert_equal(expected_output, output)
     }
+    output
   end
 
-  def test_basic
+  # ========================================================================================
+  # tests start here
+  #
+  def test_false
+    check_file('test/false.edn', false)
+  end
 
-    assert_equal(false, @parser.parse('false'))
-    assert_equal(true, @parser.parse('true'))
-    assert_equal("a string", @parser.parse('"a string"'))
-    assert_equal(:"namespace.of.some.length/keyword-name", @parser.parse(':namespace.of.some.length/keyword-name'))
+  def test_tru
+    check_file('test/true.edn', true)
+  end
+
+  def test_nil
+    check_file('test/nil.edn', nil)
+  end
+
+  def test_char
+    check_file('test/char.edn', "\f")
+  end
+
+  def test_string
+    check_file('test/string.edn', "abc\"➪\u8226")
+  end
+
+  def test_keyword_with_namespace
+    check_file('test/keyword_with_namespace.edn', :"namespace.of.some.length/keyword-name")
   end
 
   def test_number
@@ -115,13 +145,6 @@ class EDNT_Test < Minitest::Unit::TestCase
               )
   end
 
-  def test_read
-
-    # check read for using string
-    assert_equal({:a=>1, :b=>2}, @parser.parse('{:a 1 :b 2}'))
-
-  end
-
   def test_list
 
     check_file('test/list_1.edn',
@@ -146,12 +169,10 @@ class EDNT_Test < Minitest::Unit::TestCase
 
 
   def test_metadata
-    f = EDNT::read(File.open('test/metadata.edn').read)
-    assert_equal([98.6, 99.7], f)
+    f = check_file('test/metadata.edn', [98.6, 99.7])
     assert_equal({:doc=>"This is my vector", :rel=>:temps}, f.metadata)
 
-    f = EDNT::read(File.open('test/metadata2.edn').read)
-    assert_equal([1, 2], f)
+    f = check_file('test/metadata2.edn', [1, 2])
     assert_equal({:foo=>true, :tag=>EDN::Type::Symbol.new('String'), :bar=>2}, f.metadata)
   end
 
@@ -174,7 +195,7 @@ class EDNT_Test < Minitest::Unit::TestCase
       Tagged.new(data).to_s
     end
 
-    assert_equal([345, :a], @parser.parse('#edn_turbo/test_tagged { :item 345 :other :a }'))
+    check_file('test/tagged_elem.edn', [345, :a])
   end
 
   def test_operators
@@ -194,10 +215,6 @@ class EDNT_Test < Minitest::Unit::TestCase
                 EDN::Type::Symbol.new('='),
                 EDN::Type::Symbol.new('-'),
                 EDN::Type::Symbol.new('+'),
-#                [1, EDN::Type::Symbol.new('/'), 2],
-#                [3, EDN::Type::Symbol.new('/'), 4],
-                [5, EDN::Type::Symbol.new('/'), 6],
-                [7, EDN::Type::Symbol.new('/'), 8]
                ]
               )
 
