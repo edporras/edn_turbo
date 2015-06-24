@@ -415,7 +415,8 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
 
     main := (
              ('-'|'+') begin_number >parse_number |
-             operators (alpha|operators|':') >parse_symbol |
+             (operators - [\-\+\.]) (alnum|operators|':') >parse_symbol |
+             [\-\+\.] (alpha|operators|':') >parse_symbol |
              operators ignore* >parse_operator
              ) ^(operators|alpha|digit|':')? @exit;
 }%%
