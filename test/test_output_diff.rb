@@ -171,9 +171,19 @@ class EDNT_Test < Minitest::Test
   def test_metadata
     f = check_file('test/metadata.edn', [98.6, 99.7])
     assert_equal({:doc=>"This is my vector", :rel=>:temps}, f.metadata)
+  end
 
+  def test_metadata2
     f = check_file('test/metadata2.edn', [1, 2])
     assert_equal({:foo=>true, :tag=>EDN::Type::Symbol.new('String'), :bar=>2}, f.metadata)
+  end
+
+  def test_metadata_in_vector
+    check_file('test/meta_in_vector.edn',
+               [ [ EDN::Type::Symbol.new('c'), :d, true ],
+                 DateTime.rfc3339("1390-09-07T21:27:03+00:00")
+               ]
+              )
   end
 
   #
