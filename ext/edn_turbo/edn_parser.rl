@@ -550,25 +550,48 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, VALUE& s)
     machine EDN_sequence_common;
     include EDN_common;
 
+    action open_seq {
+        // sequences store elements in an array, then process it to
+        // convert it to a list, set, or map as needed once the
+        // sequence end is reached
+        elems = rb_ary_new();
+        // additionally, metadata for elements in the sequence may be
+        // carried so we must push a new level in the metadata stack
+        new_meta_list();
+    }
+
+    action close_seq {
+        // remove the current metadata level
+        del_cur_meta_list();
+    }
+
     action parse_item {
         // reads an item within a sequence (vector, list, map, or
         // set). Regardless of the sequence type, an array of the
         // items is built. Once done, the sequence parser will convert
         // if needed
         VALUE e;
+        std::size_t meta_sz = meta_size();
         const char *np = parse_value(fpc, pe, e);
-        if (np == NULL) {
-            fhold; fbreak;
-        } else {
+        if (np == NULL) { fhold; fbreak; } else {
             // if there's an entry in the discard list, the current
             // object is not meant to be kept due to a #_ so don't
             // push it into the list of elements
             if (!discard.empty()) {
                 discard.pop_back();
             }
-            else {
-                // otherwise we add it to the list of elements for the
-                // corresponding container
+            else if (!meta_empty()) {
+                // check if parse_value added metadata
+                if (meta_size() == meta_sz) {
+                    // there's metadata and it didn't increase so
+                    // parse_value() read an element we care
+                    // about. Bind the metadata to it and add it to
+                    // the sequence
+                    e = bind_meta_to_value(e);
+                    rb_ary_push(elems, e);
+                }
+            } else {
+                // no metadata.. just push it
                 rb_ary_push(elems, e);
             }
             fexec np;
@@ -590,10 +613,9 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, VALUE& s)
 
     write data;
 
-    main := begin_vector (
-                          ignore* sequence? :>> end_vector
-                          )
-                          @err(close_err) @exit;
+    main := begin_vector @open_seq (
+                                    ignore* sequence? :>> end_vector @close_seq
+                                    ) @err(close_err) @exit;
 }%%
 
 
@@ -605,7 +627,7 @@ const char* edn::Parser::parse_vector(const char *p, const char *pe, VALUE& v)
     static const char* EDN_TYPE = "vector";
 
     int cs;
-    VALUE elems = rb_ary_new(); // will store the vector's elements
+    VALUE elems; // will store the vector's elements - allocated in @open_seq
 
     %% write init;
     %% write exec;
@@ -635,9 +657,9 @@ const char* edn::Parser::parse_vector(const char *p, const char *pe, VALUE& v)
 
     write data;
 
-    main := begin_list (
-                        ignore* sequence? :>> end_list
-                        ) @err(close_err) @exit;
+    main := begin_list @open_seq (
+                                  ignore* sequence? :>> end_list @close_seq
+                                  ) @err(close_err) @exit;
 }%%
 
 //
@@ -648,7 +670,7 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, VALUE& v)
     static const char* EDN_TYPE = "list";
 
     int cs;
-    VALUE elems = rb_ary_new();
+    VALUE elems; // stores the list's elements - allocated in @open_seq
 
     %% write init;
     %% write exec;
@@ -679,9 +701,9 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, VALUE& v)
     write data;
 
 
-    main := begin_map (
-                       ignore* (sequence)? :>> end_map
-                       ) @err(close_err) @exit;
+    main := begin_map @open_seq (
+                                 ignore* (sequence)? :>> end_map @close_seq
+                                 ) @err(close_err) @exit;
 }%%
 
 
@@ -691,8 +713,8 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, VALUE& v)
 
     int cs;
     // since we don't know whether we're looking at a key or value,
-    // initially store all elements in a list
-    VALUE elems = rb_ary_new();
+    // initially store all elements in an array (allocated in @open_seq)
+    VALUE elems;
 
     %% write init;
     %% write exec;
@@ -795,9 +817,9 @@ const char* edn::Parser::parse_dispatch(const char *p, const char *pe, VALUE& v)
     begin_set    = '{';
     end_set      = '}';
 
-    main := begin_set (
-                       ignore* sequence? :>> end_set
-                       ) @err(close_err) @exit;
+    main := begin_set @open_seq (
+                                 ignore* sequence? :>> end_set @close_seq
+                                 ) @err(close_err) @exit;
 }%%
 
 //
@@ -808,7 +830,7 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, VALUE& v)
     static const char* EDN_TYPE = "set";
 
     int cs;
-    VALUE elems = rb_ary_new(); // stored as an array
+    VALUE elems; // holds the set's elements as an array allocated in @open_seq
 
     %% write init;
     %% write exec;
@@ -995,7 +1017,7 @@ const char* edn::Parser::parse_meta(const char *p, const char *pe)
     %% write exec;
 
     if (cs >= EDN_meta_first_final) {
-        metadata.push_back(v);
+        append_to_meta(v);
         return p + 1;
     }
     else if (cs == EDN_meta_error) {
@@ -1023,13 +1045,13 @@ const char* edn::Parser::parse_meta(const char *p, const char *pe)
         // save the count of metadata items before we parse this value
         // so we can determine if we've read another metadata value or
         // an actual data item
-        std::size_t meta_size = metadata.size();
+        std::size_t meta_sz = meta_size();
         const char* np = parse_value(fpc, pe, result);
         if (np == NULL) { fexec pe; fbreak; } else {
             // if we have metadata saved and it matches the count we
             // saved before we parsed a value, then we must bind the
             // metadata sequence to it
-            if (!metadata.empty() && metadata.size() == meta_size) {
+            if (!meta_empty() && meta_size() == meta_sz) {
                 // this will empty the metadata sequence too
                 result = bind_meta_to_value(result);
             }
@@ -1081,14 +1103,14 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
         // after parse_value() is done. Save the current number of
         // elements in the metadata sequence; then we can check if it
         // grew or if the discard sequence grew
-        meta_size = metadata.size();
+        meta_sz = meta_size();
 
         const char* np = parse_value(fpc, pe, value);
         if (np == NULL) { fhold; fbreak; } else {
-            if (metadata.size() > 0) {
+            if (!meta_empty()) {
                 // was an additional metadata entry read? if so, don't
                 // return a value
-                if (metadata.size() > meta_size) {
+                if (meta_size() > meta_sz) {
                     state = TOKEN_IS_META;
                 }
                 else {
@@ -1119,7 +1141,7 @@ edn::Parser::eTokenState edn::Parser::parse_next(VALUE& value)
     eTokenState state = TOKEN_ERROR;
     // need to track metadada read and bind it to the next value read
     // - but must account for sequences of metadata values
-    std::size_t meta_size;
+    std::size_t meta_sz;
 
     // clear any previously saved discards; only track if read during
     // this op

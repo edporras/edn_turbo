@@ -58,7 +58,10 @@ namespace edn
     {
         line_number = 1;
         discard.clear();
-        metadata.clear();
+        while (metadata.size() > 1) {
+            delete metadata.back();
+            metadata.pop_back();
+        }
     }
 
     //
@@ -253,14 +256,17 @@ namespace edn
     // (right to left) - the ruby side will interpret this
     VALUE Parser::ruby_meta()
     {
-        VALUE m = rb_ary_new();
+        VALUE m_ary = rb_ary_new();
 
-        while (!metadata.empty()) {
-            rb_ary_push(m, metadata.back());
-            metadata.pop_back();
+        if (metadata.empty()) {
+            std::cerr << "WTF" << std::endl;
+        } else
+        while (!metadata.back()->empty()) {
+            rb_ary_push(m_ary, metadata.back()->back());
+            metadata.back()->pop_back();
         }
 
-        return m;
+        return m_ary;
     }
 
     //
