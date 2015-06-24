@@ -1340,13 +1340,13 @@ case 8:
 
 #line 1342 "edn_parser.cc"
 static const int EDN_escaped_char_start = 1;
-static const int EDN_escaped_char_first_final = 4;
+static const int EDN_escaped_char_first_final = 26;
 static const int EDN_escaped_char_error = 0;
 
 static const int EDN_escaped_char_en_main = 1;
 
 
-#line 460 "edn_parser.rl"
+#line 461 "edn_parser.rl"
 
 
 
@@ -1360,7 +1360,7 @@ const char* edn::Parser::parse_esc_char(const char *p, const char *pe, VALUE& v)
 	cs = EDN_escaped_char_start;
 	}
 
-#line 468 "edn_parser.rl"
+#line 469 "edn_parser.rl"
     const char* p_save = p;
 
 #line 1367 "edn_parser.cc"
@@ -1380,109 +1380,368 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-	if ( (*p) > 90 ) {
-		if ( 97 <= (*p) && (*p) <= 122 )
-			goto st4;
-	} else if ( (*p) >= 65 )
-		goto st4;
-	goto st0;
-st4:
-	if ( ++p == pe )
-		goto _test_eof4;
-case 4:
 	switch( (*p) ) {
-		case 10: goto tr7;
-		case 32: goto tr6;
-		case 44: goto tr6;
-		case 59: goto tr8;
-		case 92: goto st0;
+		case 98: goto st29;
+		case 102: goto st30;
+		case 110: goto st31;
+		case 114: goto st32;
+		case 115: goto st33;
+		case 116: goto st34;
 	}
-	if ( (*p) < 65 ) {
-		if ( 9 <= (*p) && (*p) <= 13 )
-			goto tr6;
-	} else if ( (*p) > 90 ) {
-		if ( 97 <= (*p) && (*p) <= 122 )
-			goto st4;
-	} else
-		goto st4;
-	goto tr5;
-tr5:
-#line 53 "edn_parser.rl"
-	{ p--; {p++; cs = 5; goto _out;} }
-	goto st5;
-st5:
+	goto st26;
+st26:
 	if ( ++p == pe )
-		goto _test_eof5;
-case 5:
-#line 1418 "edn_parser.cc"
+		goto _test_eof26;
+case 26:
+	switch( (*p) ) {
+		case 10: goto tr10;
+		case 32: goto tr28;
+		case 41: goto tr29;
+		case 44: goto tr28;
+		case 59: goto st3;
+		case 93: goto tr29;
+		case 125: goto tr29;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr28;
 	goto st0;
-tr4:
-#line 20 "edn_parser.rl"
-	{ line_number++; }
-	goto st6;
-tr6:
-#line 53 "edn_parser.rl"
-	{ p--; {p++; cs = 6; goto _out;} }
-	goto st6;
-tr7:
+tr10:
 #line 20 "edn_parser.rl"
 	{ line_number++; }
 #line 53 "edn_parser.rl"
-	{ p--; {p++; cs = 6; goto _out;} }
-	goto st6;
-st6:
-	if ( ++p == pe )
-		goto _test_eof6;
-case 6:
-#line 1438 "edn_parser.cc"
-	switch( (*p) ) {
-		case 10: goto tr7;
-		case 32: goto tr6;
-		case 44: goto tr6;
-		case 59: goto tr8;
-		case 92: goto st0;
-	}
-	if ( (*p) < 65 ) {
-		if ( 9 <= (*p) && (*p) <= 13 )
-			goto tr6;
-	} else if ( (*p) > 90 ) {
-		if ( 97 <= (*p) && (*p) <= 122 )
-			goto st0;
-	} else
-		goto st0;
-	goto tr5;
-tr8:
+	{ p--; {p++; cs = 27; goto _out;} }
+	goto st27;
+tr28:
 #line 53 "edn_parser.rl"
-	{ p--; {p++; cs = 7; goto _out;} }
-	goto st7;
-st7:
+	{ p--; {p++; cs = 27; goto _out;} }
+	goto st27;
+st27:
 	if ( ++p == pe )
-		goto _test_eof7;
-case 7:
-#line 1463 "edn_parser.cc"
-	if ( (*p) == 10 )
-		goto tr4;
-	goto st3;
+		goto _test_eof27;
+case 27:
+#line 1423 "edn_parser.cc"
+	switch( (*p) ) {
+		case 10: goto tr10;
+		case 32: goto tr28;
+		case 44: goto tr28;
+		case 59: goto st3;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr28;
+	goto st0;
 st3:
 	if ( ++p == pe )
 		goto _test_eof3;
 case 3:
 	if ( (*p) == 10 )
-		goto tr4;
+		goto tr10;
 	goto st3;
+tr29:
+#line 53 "edn_parser.rl"
+	{ p--; {p++; cs = 28; goto _out;} }
+	goto st28;
+st28:
+	if ( ++p == pe )
+		goto _test_eof28;
+case 28:
+#line 1448 "edn_parser.cc"
+	goto st0;
+st29:
+	if ( ++p == pe )
+		goto _test_eof29;
+case 29:
+	switch( (*p) ) {
+		case 10: goto tr10;
+		case 32: goto tr28;
+		case 41: goto tr29;
+		case 44: goto tr28;
+		case 59: goto st3;
+		case 93: goto tr29;
+		case 97: goto st4;
+		case 125: goto tr29;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr28;
+	goto st0;
+st4:
+	if ( ++p == pe )
+		goto _test_eof4;
+case 4:
+	if ( (*p) == 99 )
+		goto st5;
+	goto st0;
+st5:
+	if ( ++p == pe )
+		goto _test_eof5;
+case 5:
+	if ( (*p) == 107 )
+		goto st6;
+	goto st0;
+st6:
+	if ( ++p == pe )
+		goto _test_eof6;
+case 6:
+	if ( (*p) == 115 )
+		goto st7;
+	goto st0;
+st7:
+	if ( ++p == pe )
+		goto _test_eof7;
+case 7:
+	if ( (*p) == 112 )
+		goto st8;
+	goto st0;
+st8:
+	if ( ++p == pe )
+		goto _test_eof8;
+case 8:
+	if ( (*p) == 97 )
+		goto st9;
+	goto st0;
+st9:
+	if ( ++p == pe )
+		goto _test_eof9;
+case 9:
+	if ( (*p) == 99 )
+		goto st10;
+	goto st0;
+st10:
+	if ( ++p == pe )
+		goto _test_eof10;
+case 10:
+	if ( (*p) == 101 )
+		goto st26;
+	goto st0;
+st30:
+	if ( ++p == pe )
+		goto _test_eof30;
+case 30:
+	switch( (*p) ) {
+		case 10: goto tr10;
+		case 32: goto tr28;
+		case 41: goto tr29;
+		case 44: goto tr28;
+		case 59: goto st3;
+		case 93: goto tr29;
+		case 111: goto st11;
+		case 125: goto tr29;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr28;
+	goto st0;
+st11:
+	if ( ++p == pe )
+		goto _test_eof11;
+case 11:
+	if ( (*p) == 114 )
+		goto st12;
+	goto st0;
+st12:
+	if ( ++p == pe )
+		goto _test_eof12;
+case 12:
+	if ( (*p) == 109 )
+		goto st13;
+	goto st0;
+st13:
+	if ( ++p == pe )
+		goto _test_eof13;
+case 13:
+	if ( (*p) == 102 )
+		goto st14;
+	goto st0;
+st14:
+	if ( ++p == pe )
+		goto _test_eof14;
+case 14:
+	if ( (*p) == 101 )
+		goto st15;
+	goto st0;
+st15:
+	if ( ++p == pe )
+		goto _test_eof15;
+case 15:
+	if ( (*p) == 101 )
+		goto st16;
+	goto st0;
+st16:
+	if ( ++p == pe )
+		goto _test_eof16;
+case 16:
+	if ( (*p) == 100 )
+		goto st26;
+	goto st0;
+st31:
+	if ( ++p == pe )
+		goto _test_eof31;
+case 31:
+	switch( (*p) ) {
+		case 10: goto tr10;
+		case 32: goto tr28;
+		case 41: goto tr29;
+		case 44: goto tr28;
+		case 59: goto st3;
+		case 93: goto tr29;
+		case 101: goto st17;
+		case 125: goto tr29;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr28;
+	goto st0;
+st17:
+	if ( ++p == pe )
+		goto _test_eof17;
+case 17:
+	if ( (*p) == 119 )
+		goto st18;
+	goto st0;
+st18:
+	if ( ++p == pe )
+		goto _test_eof18;
+case 18:
+	if ( (*p) == 108 )
+		goto st19;
+	goto st0;
+st19:
+	if ( ++p == pe )
+		goto _test_eof19;
+case 19:
+	if ( (*p) == 105 )
+		goto st20;
+	goto st0;
+st20:
+	if ( ++p == pe )
+		goto _test_eof20;
+case 20:
+	if ( (*p) == 110 )
+		goto st10;
+	goto st0;
+st32:
+	if ( ++p == pe )
+		goto _test_eof32;
+case 32:
+	switch( (*p) ) {
+		case 10: goto tr10;
+		case 32: goto tr28;
+		case 41: goto tr29;
+		case 44: goto tr28;
+		case 59: goto st3;
+		case 93: goto tr29;
+		case 101: goto st21;
+		case 125: goto tr29;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr28;
+	goto st0;
+st21:
+	if ( ++p == pe )
+		goto _test_eof21;
+case 21:
+	if ( (*p) == 116 )
+		goto st22;
+	goto st0;
+st22:
+	if ( ++p == pe )
+		goto _test_eof22;
+case 22:
+	if ( (*p) == 117 )
+		goto st23;
+	goto st0;
+st23:
+	if ( ++p == pe )
+		goto _test_eof23;
+case 23:
+	if ( (*p) == 114 )
+		goto st24;
+	goto st0;
+st24:
+	if ( ++p == pe )
+		goto _test_eof24;
+case 24:
+	if ( (*p) == 110 )
+		goto st26;
+	goto st0;
+st33:
+	if ( ++p == pe )
+		goto _test_eof33;
+case 33:
+	switch( (*p) ) {
+		case 10: goto tr10;
+		case 32: goto tr28;
+		case 41: goto tr29;
+		case 44: goto tr28;
+		case 59: goto st3;
+		case 93: goto tr29;
+		case 112: goto st8;
+		case 125: goto tr29;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr28;
+	goto st0;
+st34:
+	if ( ++p == pe )
+		goto _test_eof34;
+case 34:
+	switch( (*p) ) {
+		case 10: goto tr10;
+		case 32: goto tr28;
+		case 41: goto tr29;
+		case 44: goto tr28;
+		case 59: goto st3;
+		case 93: goto tr29;
+		case 97: goto st25;
+		case 125: goto tr29;
+	}
+	if ( 9 <= (*p) && (*p) <= 13 )
+		goto tr28;
+	goto st0;
+st25:
+	if ( ++p == pe )
+		goto _test_eof25;
+case 25:
+	if ( (*p) == 98 )
+		goto st26;
+	goto st0;
 	}
 	_test_eof2: cs = 2; goto _test_eof;
+	_test_eof26: cs = 26; goto _test_eof;
+	_test_eof27: cs = 27; goto _test_eof;
+	_test_eof3: cs = 3; goto _test_eof;
+	_test_eof28: cs = 28; goto _test_eof;
+	_test_eof29: cs = 29; goto _test_eof;
 	_test_eof4: cs = 4; goto _test_eof;
 	_test_eof5: cs = 5; goto _test_eof;
 	_test_eof6: cs = 6; goto _test_eof;
 	_test_eof7: cs = 7; goto _test_eof;
-	_test_eof3: cs = 3; goto _test_eof;
+	_test_eof8: cs = 8; goto _test_eof;
+	_test_eof9: cs = 9; goto _test_eof;
+	_test_eof10: cs = 10; goto _test_eof;
+	_test_eof30: cs = 30; goto _test_eof;
+	_test_eof11: cs = 11; goto _test_eof;
+	_test_eof12: cs = 12; goto _test_eof;
+	_test_eof13: cs = 13; goto _test_eof;
+	_test_eof14: cs = 14; goto _test_eof;
+	_test_eof15: cs = 15; goto _test_eof;
+	_test_eof16: cs = 16; goto _test_eof;
+	_test_eof31: cs = 31; goto _test_eof;
+	_test_eof17: cs = 17; goto _test_eof;
+	_test_eof18: cs = 18; goto _test_eof;
+	_test_eof19: cs = 19; goto _test_eof;
+	_test_eof20: cs = 20; goto _test_eof;
+	_test_eof32: cs = 32; goto _test_eof;
+	_test_eof21: cs = 21; goto _test_eof;
+	_test_eof22: cs = 22; goto _test_eof;
+	_test_eof23: cs = 23; goto _test_eof;
+	_test_eof24: cs = 24; goto _test_eof;
+	_test_eof33: cs = 33; goto _test_eof;
+	_test_eof34: cs = 34; goto _test_eof;
+	_test_eof25: cs = 25; goto _test_eof;
 
 	_test_eof: {}
 	_out: {}
 	}
 
-#line 470 "edn_parser.rl"
+#line 471 "edn_parser.rl"
 
     if (cs >= EDN_escaped_char_first_final) {
         // convert the escaped value to a character
@@ -1509,7 +1768,7 @@ case 3:
 //
 //
 
-#line 1513 "edn_parser.cc"
+#line 1772 "edn_parser.cc"
 static const int EDN_symbol_start = 1;
 static const int EDN_symbol_first_final = 4;
 static const int EDN_symbol_error = 0;
@@ -1517,7 +1776,7 @@ static const int EDN_symbol_error = 0;
 static const int EDN_symbol_en_main = 1;
 
 
-#line 515 "edn_parser.rl"
+#line 516 "edn_parser.rl"
 
 
 
@@ -1526,15 +1785,15 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, VALUE& s)
     int cs;
 
 
-#line 1530 "edn_parser.cc"
+#line 1789 "edn_parser.cc"
 	{
 	cs = EDN_symbol_start;
 	}
 
-#line 523 "edn_parser.rl"
+#line 524 "edn_parser.rl"
     const char* p_save = p;
 
-#line 1538 "edn_parser.cc"
+#line 1797 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -1602,7 +1861,7 @@ st5:
 	if ( ++p == pe )
 		goto _test_eof5;
 case 5:
-#line 1606 "edn_parser.cc"
+#line 1865 "edn_parser.cc"
 	goto st0;
 tr4:
 #line 20 "edn_parser.rl"
@@ -1622,7 +1881,7 @@ st6:
 	if ( ++p == pe )
 		goto _test_eof6;
 case 6:
-#line 1626 "edn_parser.cc"
+#line 1885 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr9;
 		case 32: goto tr8;
@@ -1654,7 +1913,7 @@ st7:
 	if ( ++p == pe )
 		goto _test_eof7;
 case 7:
-#line 1658 "edn_parser.cc"
+#line 1917 "edn_parser.cc"
 	if ( (*p) == 10 )
 		goto tr4;
 	goto st2;
@@ -1803,7 +2062,7 @@ case 10:
 	_out: {}
 	}
 
-#line 525 "edn_parser.rl"
+#line 526 "edn_parser.rl"
 
     if (cs >= EDN_symbol_first_final) {
         // copy the symbol text
@@ -1829,13 +2088,13 @@ case 10:
 // sets the same array is used)
 //
 
-#line 604 "edn_parser.rl"
+#line 605 "edn_parser.rl"
 
 
 //
 // vector-specific machine
 
-#line 1839 "edn_parser.cc"
+#line 2098 "edn_parser.cc"
 static const int EDN_vector_start = 1;
 static const int EDN_vector_first_final = 4;
 static const int EDN_vector_error = 0;
@@ -1843,7 +2102,7 @@ static const int EDN_vector_error = 0;
 static const int EDN_vector_en_main = 1;
 
 
-#line 619 "edn_parser.rl"
+#line 620 "edn_parser.rl"
 
 
 
@@ -1858,14 +2117,14 @@ const char* edn::Parser::parse_vector(const char *p, const char *pe, VALUE& v)
     VALUE elems; // will store the vector's elements - allocated in @open_seq
 
 
-#line 1862 "edn_parser.cc"
+#line 2121 "edn_parser.cc"
 	{
 	cs = EDN_vector_start;
 	}
 
-#line 633 "edn_parser.rl"
+#line 634 "edn_parser.rl"
 
-#line 1869 "edn_parser.cc"
+#line 2128 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -1884,12 +2143,12 @@ tr2:
             p--; {p++; cs = 0; goto _out;}
         }
 	goto st0;
-#line 1888 "edn_parser.cc"
+#line 2147 "edn_parser.cc"
 st0:
 cs = 0;
 	goto _out;
 tr0:
-#line 553 "edn_parser.rl"
+#line 554 "edn_parser.rl"
 	{
         // sequences store elements in an array, then process it to
         // convert it to a list, set, or map as needed once the
@@ -1905,7 +2164,7 @@ tr4:
 	{ line_number++; }
 	goto st2;
 tr5:
-#line 568 "edn_parser.rl"
+#line 569 "edn_parser.rl"
 	{
         // reads an item within a sequence (vector, list, map, or
         // set). Regardless of the sequence type, an array of the
@@ -1943,7 +2202,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 1947 "edn_parser.cc"
+#line 2206 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr4;
 		case 32: goto st2;
@@ -1974,7 +2233,7 @@ case 3:
 		goto tr4;
 	goto st3;
 tr7:
-#line 563 "edn_parser.rl"
+#line 564 "edn_parser.rl"
 	{
         // remove the current metadata level
         del_top_meta_list();
@@ -1986,7 +2245,7 @@ st4:
 	if ( ++p == pe )
 		goto _test_eof4;
 case 4:
-#line 1990 "edn_parser.cc"
+#line 2249 "edn_parser.cc"
 	goto st0;
 	}
 	_test_eof2: cs = 2; goto _test_eof;
@@ -2007,14 +2266,14 @@ case 4:
             p--; {p++; cs = 0; goto _out;}
         }
 	break;
-#line 2011 "edn_parser.cc"
+#line 2270 "edn_parser.cc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 634 "edn_parser.rl"
+#line 635 "edn_parser.rl"
 
     if (cs >= EDN_vector_first_final) {
         v = elems;
@@ -2034,7 +2293,7 @@ case 4:
 // list parsing machine
 //
 
-#line 2038 "edn_parser.cc"
+#line 2297 "edn_parser.cc"
 static const int EDN_list_start = 1;
 static const int EDN_list_first_final = 4;
 static const int EDN_list_error = 0;
@@ -2042,7 +2301,7 @@ static const int EDN_list_error = 0;
 static const int EDN_list_en_main = 1;
 
 
-#line 663 "edn_parser.rl"
+#line 664 "edn_parser.rl"
 
 
 //
@@ -2056,14 +2315,14 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, VALUE& v)
     VALUE elems; // stores the list's elements - allocated in @open_seq
 
 
-#line 2060 "edn_parser.cc"
+#line 2319 "edn_parser.cc"
 	{
 	cs = EDN_list_start;
 	}
 
-#line 676 "edn_parser.rl"
+#line 677 "edn_parser.rl"
 
-#line 2067 "edn_parser.cc"
+#line 2326 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -2082,12 +2341,12 @@ tr2:
             p--; {p++; cs = 0; goto _out;}
         }
 	goto st0;
-#line 2086 "edn_parser.cc"
+#line 2345 "edn_parser.cc"
 st0:
 cs = 0;
 	goto _out;
 tr0:
-#line 553 "edn_parser.rl"
+#line 554 "edn_parser.rl"
 	{
         // sequences store elements in an array, then process it to
         // convert it to a list, set, or map as needed once the
@@ -2103,7 +2362,7 @@ tr4:
 	{ line_number++; }
 	goto st2;
 tr5:
-#line 568 "edn_parser.rl"
+#line 569 "edn_parser.rl"
 	{
         // reads an item within a sequence (vector, list, map, or
         // set). Regardless of the sequence type, an array of the
@@ -2141,7 +2400,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 2145 "edn_parser.cc"
+#line 2404 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr4;
 		case 32: goto st2;
@@ -2165,7 +2424,7 @@ case 2:
 		goto tr5;
 	goto tr2;
 tr6:
-#line 563 "edn_parser.rl"
+#line 564 "edn_parser.rl"
 	{
         // remove the current metadata level
         del_top_meta_list();
@@ -2177,7 +2436,7 @@ st4:
 	if ( ++p == pe )
 		goto _test_eof4;
 case 4:
-#line 2181 "edn_parser.cc"
+#line 2440 "edn_parser.cc"
 	goto st0;
 st3:
 	if ( ++p == pe )
@@ -2205,14 +2464,14 @@ case 3:
             p--; {p++; cs = 0; goto _out;}
         }
 	break;
-#line 2209 "edn_parser.cc"
+#line 2468 "edn_parser.cc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 677 "edn_parser.rl"
+#line 678 "edn_parser.rl"
 
     if (cs >= EDN_list_first_final) {
         v = elems;
@@ -2232,7 +2491,7 @@ case 3:
 // hash parsing
 //
 
-#line 2236 "edn_parser.cc"
+#line 2495 "edn_parser.cc"
 static const int EDN_map_start = 1;
 static const int EDN_map_first_final = 4;
 static const int EDN_map_error = 0;
@@ -2240,7 +2499,7 @@ static const int EDN_map_error = 0;
 static const int EDN_map_en_main = 1;
 
 
-#line 707 "edn_parser.rl"
+#line 708 "edn_parser.rl"
 
 
 
@@ -2254,14 +2513,14 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, VALUE& v)
     VALUE elems;
 
 
-#line 2258 "edn_parser.cc"
+#line 2517 "edn_parser.cc"
 	{
 	cs = EDN_map_start;
 	}
 
-#line 720 "edn_parser.rl"
+#line 721 "edn_parser.rl"
 
-#line 2265 "edn_parser.cc"
+#line 2524 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -2280,12 +2539,12 @@ tr2:
             p--; {p++; cs = 0; goto _out;}
         }
 	goto st0;
-#line 2284 "edn_parser.cc"
+#line 2543 "edn_parser.cc"
 st0:
 cs = 0;
 	goto _out;
 tr0:
-#line 553 "edn_parser.rl"
+#line 554 "edn_parser.rl"
 	{
         // sequences store elements in an array, then process it to
         // convert it to a list, set, or map as needed once the
@@ -2301,7 +2560,7 @@ tr4:
 	{ line_number++; }
 	goto st2;
 tr5:
-#line 568 "edn_parser.rl"
+#line 569 "edn_parser.rl"
 	{
         // reads an item within a sequence (vector, list, map, or
         // set). Regardless of the sequence type, an array of the
@@ -2339,7 +2598,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 2343 "edn_parser.cc"
+#line 2602 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr4;
 		case 32: goto st2;
@@ -2373,7 +2632,7 @@ case 3:
 		goto tr4;
 	goto st3;
 tr7:
-#line 563 "edn_parser.rl"
+#line 564 "edn_parser.rl"
 	{
         // remove the current metadata level
         del_top_meta_list();
@@ -2385,7 +2644,7 @@ st4:
 	if ( ++p == pe )
 		goto _test_eof4;
 case 4:
-#line 2389 "edn_parser.cc"
+#line 2648 "edn_parser.cc"
 	goto st0;
 	}
 	_test_eof2: cs = 2; goto _test_eof;
@@ -2406,14 +2665,14 @@ case 4:
             p--; {p++; cs = 0; goto _out;}
         }
 	break;
-#line 2410 "edn_parser.cc"
+#line 2669 "edn_parser.cc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 721 "edn_parser.rl"
+#line 722 "edn_parser.rl"
 
     if (cs >= EDN_map_first_final) {
 
@@ -2449,7 +2708,7 @@ case 4:
 // the remaining data to the correct parser
 //
 
-#line 2453 "edn_parser.cc"
+#line 2712 "edn_parser.cc"
 static const int EDN_dispatch_start = 1;
 static const int EDN_dispatch_first_final = 2;
 static const int EDN_dispatch_error = 0;
@@ -2457,7 +2716,7 @@ static const int EDN_dispatch_error = 0;
 static const int EDN_dispatch_en_main = 1;
 
 
-#line 785 "edn_parser.rl"
+#line 786 "edn_parser.rl"
 
 
 
@@ -2466,14 +2725,14 @@ const char* edn::Parser::parse_dispatch(const char *p, const char *pe, VALUE& v)
     int cs;
 
 
-#line 2470 "edn_parser.cc"
+#line 2729 "edn_parser.cc"
 	{
 	cs = EDN_dispatch_start;
 	}
 
-#line 793 "edn_parser.rl"
+#line 794 "edn_parser.rl"
 
-#line 2477 "edn_parser.cc"
+#line 2736 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -2494,7 +2753,7 @@ st0:
 cs = 0;
 	goto _out;
 tr0:
-#line 773 "edn_parser.rl"
+#line 774 "edn_parser.rl"
 	{
         // #inst, #uuid, or #user/tag
         const char *np = parse_tagged(p, pe, v);
@@ -2504,7 +2763,7 @@ tr0:
 	{ p--; {p++; cs = 2; goto _out;} }
 	goto st2;
 tr2:
-#line 767 "edn_parser.rl"
+#line 768 "edn_parser.rl"
 	{
         // discard token #_
         const char *np = parse_discard(p, pe);
@@ -2514,7 +2773,7 @@ tr2:
 	{ p--; {p++; cs = 2; goto _out;} }
 	goto st2;
 tr3:
-#line 761 "edn_parser.rl"
+#line 762 "edn_parser.rl"
 	{
         // #{ }
         const char *np = parse_set(p, pe, v);
@@ -2527,7 +2786,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 2531 "edn_parser.cc"
+#line 2790 "edn_parser.cc"
 	goto st0;
 	}
 	_test_eof2: cs = 2; goto _test_eof;
@@ -2536,7 +2795,7 @@ case 2:
 	_out: {}
 	}
 
-#line 794 "edn_parser.rl"
+#line 795 "edn_parser.rl"
 
     if (cs >= EDN_dispatch_first_final) {
         return p + 1;
@@ -2555,7 +2814,7 @@ case 2:
 // set parsing machine
 //
 
-#line 2559 "edn_parser.cc"
+#line 2818 "edn_parser.cc"
 static const int EDN_set_start = 1;
 static const int EDN_set_first_final = 4;
 static const int EDN_set_error = 0;
@@ -2563,7 +2822,7 @@ static const int EDN_set_error = 0;
 static const int EDN_set_en_main = 1;
 
 
-#line 823 "edn_parser.rl"
+#line 824 "edn_parser.rl"
 
 
 //
@@ -2577,14 +2836,14 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, VALUE& v)
     VALUE elems; // holds the set's elements as an array allocated in @open_seq
 
 
-#line 2581 "edn_parser.cc"
+#line 2840 "edn_parser.cc"
 	{
 	cs = EDN_set_start;
 	}
 
-#line 836 "edn_parser.rl"
+#line 837 "edn_parser.rl"
 
-#line 2588 "edn_parser.cc"
+#line 2847 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -2603,12 +2862,12 @@ tr2:
             p--; {p++; cs = 0; goto _out;}
         }
 	goto st0;
-#line 2607 "edn_parser.cc"
+#line 2866 "edn_parser.cc"
 st0:
 cs = 0;
 	goto _out;
 tr0:
-#line 553 "edn_parser.rl"
+#line 554 "edn_parser.rl"
 	{
         // sequences store elements in an array, then process it to
         // convert it to a list, set, or map as needed once the
@@ -2624,7 +2883,7 @@ tr4:
 	{ line_number++; }
 	goto st2;
 tr5:
-#line 568 "edn_parser.rl"
+#line 569 "edn_parser.rl"
 	{
         // reads an item within a sequence (vector, list, map, or
         // set). Regardless of the sequence type, an array of the
@@ -2662,7 +2921,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 2666 "edn_parser.cc"
+#line 2925 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr4;
 		case 32: goto st2;
@@ -2696,7 +2955,7 @@ case 3:
 		goto tr4;
 	goto st3;
 tr7:
-#line 563 "edn_parser.rl"
+#line 564 "edn_parser.rl"
 	{
         // remove the current metadata level
         del_top_meta_list();
@@ -2708,7 +2967,7 @@ st4:
 	if ( ++p == pe )
 		goto _test_eof4;
 case 4:
-#line 2712 "edn_parser.cc"
+#line 2971 "edn_parser.cc"
 	goto st0;
 	}
 	_test_eof2: cs = 2; goto _test_eof;
@@ -2729,14 +2988,14 @@ case 4:
             p--; {p++; cs = 0; goto _out;}
         }
 	break;
-#line 2733 "edn_parser.cc"
+#line 2992 "edn_parser.cc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 837 "edn_parser.rl"
+#line 838 "edn_parser.rl"
 
     if (cs >= EDN_set_first_final) {
         // all elements collected; now convert to a set
@@ -2759,7 +3018,7 @@ case 4:
 // defining a machine to consume items within container delimiters
 //
 
-#line 2763 "edn_parser.cc"
+#line 3022 "edn_parser.cc"
 static const int EDN_discard_start = 1;
 static const int EDN_discard_first_final = 4;
 static const int EDN_discard_error = 0;
@@ -2767,7 +3026,7 @@ static const int EDN_discard_error = 0;
 static const int EDN_discard_en_main = 1;
 
 
-#line 887 "edn_parser.rl"
+#line 888 "edn_parser.rl"
 
 
 
@@ -2777,14 +3036,14 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
     VALUE v;
 
 
-#line 2781 "edn_parser.cc"
+#line 3040 "edn_parser.cc"
 	{
 	cs = EDN_discard_start;
 	}
 
-#line 896 "edn_parser.rl"
+#line 897 "edn_parser.rl"
 
-#line 2788 "edn_parser.cc"
+#line 3047 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -2795,7 +3054,7 @@ case 1:
 		goto st2;
 	goto st0;
 tr2:
-#line 877 "edn_parser.rl"
+#line 878 "edn_parser.rl"
 	{
         std::stringstream s;
         s << "discard sequence without element to discard";
@@ -2803,7 +3062,7 @@ tr2:
         p--; {p++; cs = 0; goto _out;}
     }
 	goto st0;
-#line 2807 "edn_parser.cc"
+#line 3066 "edn_parser.cc"
 st0:
 cs = 0;
 	goto _out;
@@ -2815,7 +3074,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 2819 "edn_parser.cc"
+#line 3078 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr3;
 		case 32: goto st2;
@@ -2841,7 +3100,7 @@ case 2:
 		goto tr4;
 	goto tr2;
 tr4:
-#line 866 "edn_parser.rl"
+#line 867 "edn_parser.rl"
 	{
         const char *np = parse_value(p, pe, v);
         if (np == NULL) { p--; {p++; cs = 4; goto _out;} } else {
@@ -2859,7 +3118,7 @@ st4:
 	if ( ++p == pe )
 		goto _test_eof4;
 case 4:
-#line 2863 "edn_parser.cc"
+#line 3122 "edn_parser.cc"
 	goto st0;
 st3:
 	if ( ++p == pe )
@@ -2878,7 +3137,7 @@ case 3:
 	{
 	switch ( cs ) {
 	case 2:
-#line 877 "edn_parser.rl"
+#line 878 "edn_parser.rl"
 	{
         std::stringstream s;
         s << "discard sequence without element to discard";
@@ -2886,14 +3145,14 @@ case 3:
         p--; {p++; cs = 0; goto _out;}
     }
 	break;
-#line 2890 "edn_parser.cc"
+#line 3149 "edn_parser.cc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 897 "edn_parser.rl"
+#line 898 "edn_parser.rl"
 
     if (cs >= EDN_discard_first_final) {
         return p + 1;
@@ -2924,7 +3183,7 @@ case 3:
 // 2. add parse checks for uuid and inst for better error reporting
 //
 
-#line 2928 "edn_parser.cc"
+#line 3187 "edn_parser.cc"
 static const int EDN_tagged_start = 1;
 static const int EDN_tagged_first_final = 6;
 static const int EDN_tagged_error = 0;
@@ -2932,7 +3191,7 @@ static const int EDN_tagged_error = 0;
 static const int EDN_tagged_en_main = 1;
 
 
-#line 953 "edn_parser.rl"
+#line 954 "edn_parser.rl"
 
 
 
@@ -2944,14 +3203,14 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
     int cs;
 
 
-#line 2948 "edn_parser.cc"
+#line 3207 "edn_parser.cc"
 	{
 	cs = EDN_tagged_start;
 	}
 
-#line 964 "edn_parser.rl"
+#line 965 "edn_parser.rl"
 
-#line 2955 "edn_parser.cc"
+#line 3214 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -2968,7 +3227,7 @@ st0:
 cs = 0;
 	goto _out;
 tr0:
-#line 940 "edn_parser.rl"
+#line 941 "edn_parser.rl"
 	{
         // parses the symbol portion of the pair
         const char *np = parse_symbol(p, pe, sym_name);
@@ -2979,7 +3238,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 2983 "edn_parser.cc"
+#line 3242 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr3;
 		case 32: goto st3;
@@ -3017,7 +3276,7 @@ st3:
 	if ( ++p == pe )
 		goto _test_eof3;
 case 3:
-#line 3021 "edn_parser.cc"
+#line 3280 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr3;
 		case 32: goto st3;
@@ -3043,7 +3302,7 @@ case 3:
 		goto tr4;
 	goto st0;
 tr4:
-#line 945 "edn_parser.rl"
+#line 946 "edn_parser.rl"
 	{
         // parses the value portion
         const char *np = parse_value(p, pe, data);
@@ -3056,7 +3315,7 @@ st6:
 	if ( ++p == pe )
 		goto _test_eof6;
 case 6:
-#line 3060 "edn_parser.cc"
+#line 3319 "edn_parser.cc"
 	goto st0;
 st4:
 	if ( ++p == pe )
@@ -3066,7 +3325,7 @@ case 4:
 		goto tr3;
 	goto st4;
 tr5:
-#line 945 "edn_parser.rl"
+#line 946 "edn_parser.rl"
 	{
         // parses the value portion
         const char *np = parse_value(p, pe, data);
@@ -3079,7 +3338,7 @@ st7:
 	if ( ++p == pe )
 		goto _test_eof7;
 case 7:
-#line 3083 "edn_parser.cc"
+#line 3342 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr3;
 		case 32: goto st3;
@@ -3110,7 +3369,7 @@ case 7:
 		goto tr4;
 	goto st0;
 tr6:
-#line 945 "edn_parser.rl"
+#line 946 "edn_parser.rl"
 	{
         // parses the value portion
         const char *np = parse_value(p, pe, data);
@@ -3123,7 +3382,7 @@ st8:
 	if ( ++p == pe )
 		goto _test_eof8;
 case 8:
-#line 3127 "edn_parser.cc"
+#line 3386 "edn_parser.cc"
 	if ( (*p) > 90 ) {
 		if ( 97 <= (*p) && (*p) <= 122 )
 			goto st5;
@@ -3163,7 +3422,7 @@ case 5:
 		goto tr4;
 	goto st0;
 tr8:
-#line 945 "edn_parser.rl"
+#line 946 "edn_parser.rl"
 	{
         // parses the value portion
         const char *np = parse_value(p, pe, data);
@@ -3176,7 +3435,7 @@ st9:
 	if ( ++p == pe )
 		goto _test_eof9;
 case 9:
-#line 3180 "edn_parser.cc"
+#line 3439 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr3;
 		case 32: goto st3;
@@ -3219,7 +3478,7 @@ case 9:
 	_out: {}
 	}
 
-#line 965 "edn_parser.rl"
+#line 966 "edn_parser.rl"
 
     if (cs >= EDN_tagged_first_final) {
         //std::cerr << __FUNCTION__ << " parse symbol name as '" << sym_name << "', value is: " << data << std::endl;
@@ -3250,7 +3509,7 @@ case 9:
 // useful?
 //
 
-#line 3254 "edn_parser.cc"
+#line 3513 "edn_parser.cc"
 static const int EDN_meta_start = 1;
 static const int EDN_meta_first_final = 3;
 static const int EDN_meta_error = 0;
@@ -3258,7 +3517,7 @@ static const int EDN_meta_error = 0;
 static const int EDN_meta_en_main = 1;
 
 
-#line 1008 "edn_parser.rl"
+#line 1009 "edn_parser.rl"
 
 
 
@@ -3268,14 +3527,14 @@ const char* edn::Parser::parse_meta(const char *p, const char *pe)
     VALUE v;
 
 
-#line 3272 "edn_parser.cc"
+#line 3531 "edn_parser.cc"
 	{
 	cs = EDN_meta_start;
 	}
 
-#line 1017 "edn_parser.rl"
+#line 1018 "edn_parser.rl"
 
-#line 3279 "edn_parser.cc"
+#line 3538 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -3314,7 +3573,7 @@ case 2:
 		goto tr2;
 	goto st0;
 tr2:
-#line 1000 "edn_parser.rl"
+#line 1001 "edn_parser.rl"
 	{
         const char *np = parse_value(p, pe, v);
         if (np == NULL) { p--; {p++; cs = 3; goto _out;} } else { {p = (( np))-1;} }
@@ -3326,7 +3585,7 @@ st3:
 	if ( ++p == pe )
 		goto _test_eof3;
 case 3:
-#line 3330 "edn_parser.cc"
+#line 3589 "edn_parser.cc"
 	goto st0;
 	}
 	_test_eof2: cs = 2; goto _test_eof;
@@ -3336,7 +3595,7 @@ case 3:
 	_out: {}
 	}
 
-#line 1018 "edn_parser.rl"
+#line 1019 "edn_parser.rl"
 
     if (cs >= EDN_meta_first_final) {
         append_to_meta(v);
@@ -3358,7 +3617,7 @@ case 3:
 // top-level, therefore, does not tokenize source stream
 //
 
-#line 3362 "edn_parser.cc"
+#line 3621 "edn_parser.cc"
 static const int EDN_parser_start = 2;
 static const int EDN_parser_first_final = 2;
 static const int EDN_parser_error = 0;
@@ -3366,7 +3625,7 @@ static const int EDN_parser_error = 0;
 static const int EDN_parser_en_main = 2;
 
 
-#line 1067 "edn_parser.rl"
+#line 1068 "edn_parser.rl"
 
 
 
@@ -3376,15 +3635,15 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
     VALUE result = Qnil;
 
 
-#line 3380 "edn_parser.cc"
+#line 3639 "edn_parser.cc"
 	{
 	cs = EDN_parser_start;
 	}
 
-#line 1076 "edn_parser.rl"
+#line 1077 "edn_parser.rl"
     set_source(src, len);
 
-#line 3388 "edn_parser.cc"
+#line 3647 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -3395,7 +3654,7 @@ tr1:
 	{ line_number++; }
 	goto st2;
 tr4:
-#line 1044 "edn_parser.rl"
+#line 1045 "edn_parser.rl"
 	{
         // save the count of metadata items before we parse this value
         // so we can determine if we've read another metadata value or
@@ -3418,7 +3677,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 3422 "edn_parser.cc"
+#line 3681 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr1;
 		case 32: goto st2;
@@ -3461,7 +3720,7 @@ case 1:
 	_out: {}
 	}
 
-#line 1078 "edn_parser.rl"
+#line 1079 "edn_parser.rl"
 
     if (cs == EDN_parser_error) {
         if (p)
@@ -3480,13 +3739,13 @@ case 1:
 // token-by-token machine
 //
 
-#line 3484 "edn_parser.cc"
+#line 3743 "edn_parser.cc"
 static const int EDN_tokens_start = 1;
 
 static const int EDN_tokens_en_main = 1;
 
 
-#line 1133 "edn_parser.rl"
+#line 1134 "edn_parser.rl"
 
 
 
@@ -3505,14 +3764,14 @@ edn::Parser::eTokenState edn::Parser::parse_next(VALUE& value)
     discard.clear();
 
 
-#line 3509 "edn_parser.cc"
+#line 3768 "edn_parser.cc"
 	{
 	cs = EDN_tokens_start;
 	}
 
-#line 1151 "edn_parser.rl"
+#line 1152 "edn_parser.rl"
 
-#line 3516 "edn_parser.cc"
+#line 3775 "edn_parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -3526,7 +3785,7 @@ st1:
 	if ( ++p == pe )
 		goto _test_eof1;
 case 1:
-#line 3530 "edn_parser.cc"
+#line 3789 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr2;
 		case 32: goto st1;
@@ -3559,7 +3818,7 @@ tr6:
 	{ line_number++; }
 	goto st4;
 tr3:
-#line 1101 "edn_parser.rl"
+#line 1102 "edn_parser.rl"
 	{
         // we won't know if we've parsed a discard or a metadata until
         // after parse_value() is done. Save the current number of
@@ -3595,7 +3854,7 @@ st4:
 	if ( ++p == pe )
 		goto _test_eof4;
 case 4:
-#line 3599 "edn_parser.cc"
+#line 3858 "edn_parser.cc"
 	switch( (*p) ) {
 		case 10: goto tr6;
 		case 32: goto st4;
@@ -3629,7 +3888,7 @@ case 3:
 	_out: {}
 	}
 
-#line 1152 "edn_parser.rl"
+#line 1153 "edn_parser.rl"
 
     if (cs == EDN_tokens_en_main) {} // silence ragel warning
     return state;

@@ -4,8 +4,8 @@
  nil,
  "this is a test"
  "this\tis\\only\ta\ttest\rof\"various\nescaped\\values"
- \c
- \newline
- \tab
+ [\c
+  \newline
+  \tab]
  "123➪456®789"
 ]

@@ -451,12 +451,13 @@ const char* edn::Parser::parse_operator(const char *p, const char *pe, VALUE& v)
 
     write data;
 
-    valid_chars = alpha;
+    valid_chars = extend;
 
 
-    main := (
-             begin_char valid_chars+ ignore*
-             ) (^(valid_chars | '\\')? @exit);
+    main := begin_char (
+                        'space' | 'newline' | 'tab' | 'return' | 'formfeed' | 'backspace' |
+                        valid_chars
+                        ) (ignore* | [\]\}\)])? @exit;
 }%%
 
 
