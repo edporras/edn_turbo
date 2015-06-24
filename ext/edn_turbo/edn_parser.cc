@@ -3217,7 +3217,7 @@ tr2:
 #line 978 "edn_parser.rl"
 	{
         const char *np = parse_value(p, pe, v);
-        if (np == NULL) { p--; {p++; cs = 3; goto _out;} } else {p = (( np))-1;}
+        if (np == NULL) { p--; {p++; cs = 3; goto _out;} } else { {p = (( np))-1;} }
     }
 #line 53 "edn_parser.rl"
 	{ p--; {p++; cs = 3; goto _out;} }

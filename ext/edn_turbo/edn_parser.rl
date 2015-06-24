@@ -915,19 +915,19 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
 
     write data;
 
-    action parse_symbol {
+    action parse_tag {
         // parses the symbol portion of the pair
         const char *np = parse_symbol(fpc, pe, sym_name);
         if (np == NULL) { fhold; fbreak; } else { fexec np; }
     }
-    action parse_value {
+    action parse_data {
         // parses the value portion
         const char *np = parse_value(fpc, pe, data);
         if (np == NULL) { fhold; fbreak; } else { fexec np; }
     }
 
 
-    main := (tag_symbol >parse_symbol ignore* begin_value >parse_value) @exit;
+    main := (tag_symbol >parse_tag ignore* begin_value >parse_data) @exit;
 }%%
 
 
@@ -977,7 +977,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
 
     action parse_meta {
         const char *np = parse_value(fpc, pe, v);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
+        if (np == NULL) { fhold; fbreak; } else { fexec np; }
     }
 
     main := begin_meta (
@@ -1019,7 +1019,7 @@ const char* edn::Parser::parse_meta(const char *p, const char *pe)
 
     write data;
 
-    action parse_value {
+    action parse_elem {
         // save the count of metadata items before we parse this value
         // so we can determine if we've read another metadata value or
         // an actual data item
@@ -1037,7 +1037,7 @@ const char* edn::Parser::parse_meta(const char *p, const char *pe)
         }
     }
 
-    element       = begin_value >parse_value;
+    element       = begin_value >parse_elem;
     next_element  = ignore* element;
     sequence      = ((element ignore*) (next_element ignore*)*);
 
