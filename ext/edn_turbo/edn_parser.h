@@ -27,7 +27,7 @@ namespace edn
         Parser() : p(NULL), pe(NULL), eof(NULL), line_number(1) {
             new_meta_list();
         }
-        ~Parser() { del_cur_meta_list(); }
+        ~Parser() { reset_state(); del_top_meta_list(); }
 
         // change input source
         void set_source(const char* src, std::size_t len);
@@ -90,8 +90,8 @@ namespace edn
 
         // metadata
         VALUE ruby_meta();
-        void  new_meta_list() { metadata.push_back(new std::vector<VALUE>()); }
-        void  del_cur_meta_list() { delete metadata.back(); metadata.pop_back(); }
+        void  new_meta_list() { metadata.push_back( new std::vector<VALUE>() ); }
+        void  del_top_meta_list() { delete metadata.back(); metadata.pop_back(); }
         void  append_to_meta(VALUE m) { metadata.back()->push_back(m); }
         bool  meta_empty() const { return metadata.back()->empty(); }
         std::size_t meta_size() const { return metadata.back()->size(); }

@@ -58,10 +58,13 @@ namespace edn
     {
         line_number = 1;
         discard.clear();
+
+        // remove any remaining levels except for the first
         while (metadata.size() > 1) {
-            delete metadata.back();
-            metadata.pop_back();
+            del_top_meta_list();
         }
+        // but clear any metadata on the first
+        metadata.back()->clear();
     }
 
     //
@@ -258,9 +261,7 @@ namespace edn
     {
         VALUE m_ary = rb_ary_new();
 
-        if (metadata.empty()) {
-            std::cerr << "WTF" << std::endl;
-        } else
+        // pop from the back of the top-most list
         while (!metadata.back()->empty()) {
             rb_ary_push(m_ary, metadata.back()->back());
             metadata.back()->pop_back();

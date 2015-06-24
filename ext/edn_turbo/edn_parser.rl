@@ -562,7 +562,7 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, VALUE& s)
 
     action close_seq {
         // remove the current metadata level
-        del_cur_meta_list();
+        del_top_meta_list();
     }
 
     action parse_item {
