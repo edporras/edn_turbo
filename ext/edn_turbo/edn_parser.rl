@@ -112,7 +112,7 @@
         // user identifiers and reserved keywords (true, false, nil)
         VALUE sym = Qnil;
         const char *np = parse_symbol(fpc, pe, sym);
-        if (np == NULL) { fhold; fbreak; } else {
+        if (np == NULL) { fexec pe; } else {
             // parse_symbol will make 'sym' a ruby string
             if      (std::strcmp(RSTRING_PTR(sym), "true") == 0)  { v = Qtrue; }
             else if (std::strcmp(RSTRING_PTR(sym), "false") == 0) { v = Qfalse; }
@@ -377,7 +377,8 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
         // parse a symbol including the leading operator (-, +, .)
         VALUE sym = Qnil;
         const char *np = parse_symbol(p_save, pe, sym);
-        if (np == NULL) { fhold; fbreak; } else {
+        if (np == NULL) { fexec pe; } else {
+            if (sym != Qnil)
             v = Parser::make_edn_symbol(sym);
             fexec np;
         }
@@ -536,8 +537,7 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, VALUE& s)
         return p;
     }
     else if (cs == EDN_symbol_error) {
-        error(__FUNCTION__, *p);
-        return pe;
+        error(__FUNCTION__, "invalid symbol sequence", *p);
     }
     else if (cs == EDN_symbol_en_main) {} // silence ragel warning
     return NULL;
@@ -1082,8 +1082,7 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
     %% write exec;
 
     if (cs == EDN_parser_error) {
-        if (p)
-            error(__FUNCTION__, *p);
+        error(__FUNCTION__, *p);
         return EDNT_EOF;
     }
     else if (cs == EDN_parser_first_final) {
