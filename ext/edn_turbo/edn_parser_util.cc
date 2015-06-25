@@ -35,7 +35,7 @@ namespace edn
         while (!is_eof())
         {
             // fetch a token. If it's metadata or discard
-            VALUE v;
+            VALUE v = EDNT_EOF;
             eTokenState state = parse_next(v);
 
             if (state == TOKEN_OK) {
