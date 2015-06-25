@@ -284,7 +284,7 @@ const char* edn::Parser::parse_keyword(const char *p, const char *pe, VALUE& v)
         return p;
     }
     else if (cs == EDN_keyword_error) {
-        error(__FUNCTION__, "Invalid keyword", *p);
+        error(__FUNCTION__, "invalid keyword", *p);
         return pe;
     }
     else if (cs == EDN_keyword_en_main) {} // silence ragel warning
@@ -417,7 +417,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
     main := (
              ('-'|'+') begin_number >parse_number |
              (operators - [\-\+\.]) (alnum|operators|':') >parse_symbol |
-             [\-\+\.] (alpha|operators|':') >parse_symbol |
+             [\-\+\.] (alpha|operators|':') (alnum|operators|':') >parse_symbol |
              operators ignore* >parse_operator
              ) ^(operators|alpha|digit|':')? @exit;
 }%%
@@ -479,7 +479,7 @@ const char* edn::Parser::parse_esc_char(const char *p, const char *pe, VALUE& v)
         return p;
     }
     else if (cs == EDN_escaped_char_error) {
-        error(__FUNCTION__, "Unexpected value", *p);
+        error(__FUNCTION__, "unexpected value", *p);
         return pe;
     }
     else if (cs == EDN_escaped_char_en_main) {} // silence ragel warning
