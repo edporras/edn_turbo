@@ -216,11 +216,11 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, VALUE& v)
     }
 
     main := string_delim (
-                          (^([\"\\] | 0..0x1f | 0xc2..0xf5) |
+                          (^([\"\\] | 0xc2..0xf5) |
                            ((0xc2..0xf5) |
                             '\\'[\"\\/bfnrt] |
                             '\\u'[0-9a-fA-F]{4}) $mark_for_encoding |
-                           '\\'^([\"\\/bfnrtu]|0..0x1f))* %parse_string
+                           '\\'^([\"\\/bfnrtu]))* %parse_string
                           ) :>> string_delim @err(close_err) @exit;
 }%%
 
