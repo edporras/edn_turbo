@@ -64,19 +64,19 @@
 
     write data;
 
-    action parse_string {
+    action parse_val_string {
         // string types within double-quotes
         const char *np = parse_string(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
-    action parse_keyword {
+    action parse_val_keyword {
         // tokens with a leading ':'
         const char *np = parse_keyword(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
-    action parse_number {
+    action parse_val_number {
         // tokens w/ leading digits: non-negative integers & decimals.
         // try to parse a decimal first
         const char *np = parse_decimal(fpc, pe, v);
@@ -96,19 +96,19 @@
         }
     }
 
-    action parse_operator {
+    action parse_val_operator {
         // stand-alone operators *, +, -, etc.
         const char *np = parse_operator(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
-    action parse_char {
+    action parse_val_char {
         // tokens w/ leading \ (escaped characters \newline, \c, etc.)
         const char *np = parse_esc_char(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
-    action parse_symbol {
+    action parse_val_symbol {
         // user identifiers and reserved keywords (true, false, nil)
         VALUE sym = Qnil;
         const char *np = parse_symbol(fpc, pe, sym);
@@ -124,31 +124,31 @@
         }
     }
 
-    action parse_vector {
+    action parse_val_vector {
         // [
         const char *np = parse_vector(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
-    action parse_list {
+    action parse_val_list {
         // (
         const char *np = parse_list(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
-    action parse_map {
+    action parse_val_map {
         // {
         const char *np = parse_map(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
-    action parse_meta {
+    action parse_val_meta {
         // ^
         const char *np = parse_meta(fpc, pe);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
-    action parse_dispatch {
+    action parse_val_dispatch {
         // handles tokens w/ leading # ("#_", "#{", and tagged elems)
         const char *np = parse_dispatch(fpc + 1, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
@@ -156,17 +156,17 @@
 
 
     main := (
-             string_delim >parse_string |
-             begin_keyword >parse_keyword |
-             begin_number >parse_number |
-             operators >parse_operator |
-             begin_char >parse_char |
-             begin_symbol >parse_symbol |
-             begin_vector >parse_vector |
-             begin_list >parse_list |
-             begin_map >parse_map |
-             begin_meta >parse_meta |
-             begin_dispatch >parse_dispatch
+             string_delim >parse_val_string |
+             begin_keyword >parse_val_keyword |
+             begin_number >parse_val_number |
+             operators >parse_val_operator |
+             begin_char >parse_val_char |
+             begin_symbol >parse_val_symbol |
+             begin_vector >parse_val_vector |
+             begin_list >parse_val_list |
+             begin_map >parse_val_map |
+             begin_meta >parse_val_meta |
+             begin_dispatch >parse_val_dispatch
             ) %*exit;
 }%%
 
@@ -203,7 +203,7 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, VALUE& v)
 
     write data;
 
-    action parse_string {
+    action parse_chars {
         if (Parser::parse_byte_stream(p_save + 1, p, v, encode)) {
             fexec p + 1;
         } else {
@@ -220,7 +220,7 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, VALUE& v)
                            ((0xc2..0xf5) |
                             '\\'[\"\\/bfnrt] |
                             '\\u'[0-9a-fA-F]{4}) $mark_for_encoding |
-                           '\\'^([\"\\/bfnrtu]))* %parse_string
+                           '\\'^([\"\\/bfnrtu]))* %parse_chars
                           ) :>> string_delim @err(close_err) @exit;
 }%%
 
@@ -373,7 +373,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
 
     write data;
 
-    action parse_symbol {
+    action parse_op_symbol {
         // parse a symbol including the leading operator (-, +, .)
         VALUE sym = Qnil;
         const char *np = parse_symbol(p_save, pe, sym);
@@ -384,7 +384,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
         }
     }
 
-    action parse_number {
+    action parse_op_number {
         // parse a number with the leading symbol - this is slightly
         // different than the one within EDN_value since it includes
         // the leading - or +
@@ -407,7 +407,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
         }
     }
 
-    action parse_operator {
+    action parse_op {
         // stand-alone operators (-, +, /, ... etc)
         char op[2] = { *p_save, 0 };
         VALUE sym = rb_str_new2(op);
@@ -418,10 +418,10 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
     valid_chars             = valid_non_numeric_chars | digit;
 
     main := (
-             ('-'|'+') begin_number >parse_number |
-             (operators - [\-\+\.]) valid_chars >parse_symbol |
-             [\-\+\.] valid_non_numeric_chars valid_chars >parse_symbol |
-             operators ignore* >parse_operator
+             ('-'|'+') begin_number >parse_op_number |
+             (operators - [\-\+\.]) valid_chars >parse_op_symbol |
+             [\-\+\.] valid_non_numeric_chars valid_chars >parse_op_symbol |
+             operators ignore* >parse_op
              ) ^(valid_chars)? @exit;
 }%%
 
@@ -763,19 +763,19 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, VALUE& v)
 
     write data;
 
-    action parse_set {
+    action parse_disp_set {
         // #{ }
         const char *np = parse_set(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
-    action parse_discard {
+    action parse_disp_discard {
         // discard token #_
         const char *np = parse_discard(fpc, pe);
         if (np == NULL) { fhold; fbreak; } else fexec np;
     }
 
-    action parse_tagged {
+    action parse_disp_tagged {
         // #inst, #uuid, or #user/tag
         const char *np = parse_tagged(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else fexec np;
@@ -783,9 +783,9 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, VALUE& v)
 
 
     main := (
-             ('{' >parse_set |
-              '_' >parse_discard |
-              alpha >parse_tagged)
+             ('{' >parse_disp_set |
+              '_' >parse_disp_discard |
+              alpha >parse_disp_tagged)
              ) @exit;
 }%%
 
@@ -932,10 +932,14 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
     machine EDN_tagged;
     include EDN_common;
 
-    tag_symbol_chars_start = alpha;
-    tag_symbol_chars       = tag_symbol_chars_start | [\-_];
-    tag_symbol_name        = tag_symbol_chars_start (tag_symbol_chars)*;
-    tag_symbol             = (tag_symbol_name ('/' tag_symbol_name)?);
+    tag_symbol_chars_start       = alpha;
+    tag_symbol_chars_non_numeric = tag_symbol_chars_start | [\.\*!_\?$%&<>\=+\-\'\:\#];
+    tag_symbol_chars             = tag_symbol_chars_non_numeric | digit;
+
+    tag_symbol_namespace         = tag_symbol_chars_start (tag_symbol_chars)*;
+    tag_symbol_name              = tag_symbol_chars_non_numeric (tag_symbol_chars)*;
+
+    tag_symbol                   = (tag_symbol_namespace ('/' tag_symbol_name)?);
 
 #    inst = (string_delim [0-9+\-:\.TZ]* string_delim);
 #    uuid = (string_delim [a-f0-9\-]* string_delim);
@@ -982,7 +986,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
         return p + 1;
     }
     else if (cs == EDN_tagged_error) {
-        return pe;
+        error(__FUNCTION__, "tagged element symbol error", *p);
     }
     else if (cs == EDN_tagged_en_main) {} // silence ragel warning
     return NULL;
@@ -1002,13 +1006,13 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
 
     write data;
 
-    action parse_meta {
+    action parse_data {
         const char *np = parse_value(fpc, pe, v);
         if (np == NULL) { fhold; fbreak; } else { fexec np; }
     }
 
     main := begin_meta (
-                        begin_value >parse_meta
+                        begin_value >parse_data
                         ) @exit;
 }%%
 
