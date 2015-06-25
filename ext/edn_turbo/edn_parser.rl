@@ -413,13 +413,15 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
         v = Parser::make_edn_symbol(sym);
     }
 
+    valid_non_numeric_chars = alpha|operators|':'|'#';
+    valid_chars             = valid_non_numeric_chars | digit;
 
     main := (
              ('-'|'+') begin_number >parse_number |
-             (operators - [\-\+\.]) (alnum|operators|':') >parse_symbol |
-             [\-\+\.] (alpha|operators|':') (alnum|operators|':') >parse_symbol |
+             (operators - [\-\+\.]) valid_chars >parse_symbol |
+             [\-\+\.] valid_non_numeric_chars valid_chars >parse_symbol |
              operators ignore* >parse_operator
-             ) ^(operators|alpha|digit|':')? @exit;
+             ) ^(valid_chars)? @exit;
 }%%
 
 
