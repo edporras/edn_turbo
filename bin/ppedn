@@ -45,7 +45,9 @@ p = EDNT::Parser.new
 File.open(filename) do |file|
 
   if options[:use_parse]
-    pp p.parse(file.read)
+    output = p.parse(file.read)
+
+    pp output if output != EDNT::EOF
   else
     p.set_input(file.read)
 
