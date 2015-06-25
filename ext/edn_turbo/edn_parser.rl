@@ -47,7 +47,6 @@
             std::stringstream s;
             s << "unterminated " << EDN_TYPE;
             error(__FUNCTION__, s.str());
-            // need these?
             fhold; fbreak;
         }
 
@@ -91,7 +90,7 @@
             fbreak;
         }
         else {
-            error(__FUNCTION__, *p);
+            error(__FUNCTION__, "number format error", *p);
             fexec pe;
         }
     }
@@ -173,6 +172,7 @@
 
 const char *edn::Parser::parse_value(const char *p, const char *pe, VALUE& v)
 {
+    //    std::cerr << __FUNCTION__ << "() p: \"" << p << "\"" << std::endl;
     int cs;
 
     %% write init;
@@ -182,7 +182,7 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, VALUE& v)
         return p;
     }
     else if (cs == EDN_value_error) {
-        error(__FUNCTION__, *p);
+        error(__FUNCTION__, "token error", *p);
         return pe;
     }
     else if (cs == EDN_value_en_main) {} // silence ragel warning
@@ -402,7 +402,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
             fbreak;
         }
         else {
-            error(__FUNCTION__, *p);
+            error(__FUNCTION__, "number format error", *p);
             fexec pe;
         }
     }
@@ -438,7 +438,7 @@ const char* edn::Parser::parse_operator(const char *p, const char *pe, VALUE& v)
         return p;
     }
     else if (cs == EDN_operator_error) {
-        error(__FUNCTION__, *p);
+        error(__FUNCTION__, "symbol syntax error", *p);
         return pe;
     }
     else if (cs == EDN_operator_en_main) {} // silence ragel warning
@@ -648,7 +648,7 @@ const char* edn::Parser::parse_vector(const char *p, const char *pe, VALUE& v)
         return p + 1;
     }
     else if (cs == EDN_vector_error) {
-        error(__FUNCTION__, *p);
+        error(__FUNCTION__, "vector format error", *p);
         return pe;
     }
     else if (cs == EDN_vector_en_main) {} // silence ragel warning
@@ -807,7 +807,7 @@ const char* edn::Parser::parse_dispatch(const char *p, const char *pe, VALUE& v)
         return p + 1;
     }
     else if (cs == EDN_dispatch_error) {
-        error(__FUNCTION__, *p);
+        error(__FUNCTION__, "dispatch extend error", *p);
         return pe;
     }
     else if (cs == EDN_dispatch_en_main) {} // silence ragel warning
@@ -938,6 +938,8 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
     machine EDN_tagged;
     include EDN_common;
 
+    write data;
+
     tag_symbol_chars_start       = alpha;
     tag_symbol_chars_non_numeric = tag_symbol_chars_start | [\.\*!_\?$%&<>\=+\-\'\:\#];
     tag_symbol_chars             = tag_symbol_chars_non_numeric | digit;
@@ -950,21 +952,27 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
 #    inst = (string_delim [0-9+\-:\.TZ]* string_delim);
 #    uuid = (string_delim [a-f0-9\-]* string_delim);
 
-    write data;
-
     action parse_tag {
         // parses the symbol portion of the pair
         const char *np = parse_symbol(fpc, pe, sym_name);
-        if (np == NULL) { fhold; fbreak; } else { fexec np; }
+        if (np == NULL) { fhold; fbreak; } else {
+            sym_ok = true;
+            fexec np;
+        }
     }
     action parse_data {
         // parses the value portion
         const char *np = parse_value(fpc, pe, data);
-        if (np == NULL) { fhold; fbreak; } else { fexec np; }
+        if (np == NULL) { fhold; fbreak; } else {
+            data_ok = true;
+            fexec np;
+        }
     }
 
-
-    main := (tag_symbol >parse_tag ignore* begin_value >parse_data) @exit;
+    main := (
+             tag_symbol >parse_tag ignore+
+             begin_value >parse_data
+             ) @exit;
 }%%
 
 
@@ -972,6 +980,8 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
 {
     VALUE sym_name = Qnil;
     VALUE data = Qnil;
+    bool sym_ok = false;
+    bool data_ok = false;
 
     int cs;
 
@@ -981,20 +991,27 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
     if (cs >= EDN_tagged_first_final) {
         //std::cerr << __FUNCTION__ << " parse symbol name as '" << sym_name << "', value is: " << data << std::endl;
 
+        if (!sym_ok || !data_ok) {
+            error(__FUNCTION__, "tagged element symbol error", *p);
+            v =  EDNT_EOF;
+            return NULL;
+        }
+
         try {
             // tagged_element makes a call to ruby which may throw an
             // exception when parsing the data
             v = Parser::tagged_element(sym_name, data);
+            return p + 1;
         } catch (std::exception& e) {
             error(__FUNCTION__, e.what());
             return pe;
         }
-        return p + 1;
     }
     else if (cs == EDN_tagged_error) {
         error(__FUNCTION__, "tagged element symbol error", *p);
     }
     else if (cs == EDN_tagged_en_main) {} // silence ragel warning
+    v =  EDNT_EOF;
     return NULL;
 }
 
