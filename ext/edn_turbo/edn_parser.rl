@@ -47,6 +47,7 @@
             std::stringstream s;
             s << "unterminated " << EDN_TYPE;
             error(__FUNCTION__, s.str());
+            // need these?
             fhold; fbreak;
         }
 
@@ -458,7 +459,7 @@ const char* edn::Parser::parse_operator(const char *p, const char *pe, VALUE& v)
     main := begin_char (
                         'space' | 'newline' | 'tab' | 'return' | 'formfeed' | 'backspace' |
                         valid_chars
-                        ) (ignore* | [\]\}\)])? @exit;
+                        ) (ignore* | [\\\]\}\)])? @exit;
 }%%
 
 
@@ -478,7 +479,7 @@ const char* edn::Parser::parse_esc_char(const char *p, const char *pe, VALUE& v)
         return p;
     }
     else if (cs == EDN_escaped_char_error) {
-        error(__FUNCTION__, *p);
+        error(__FUNCTION__, "Unexpected value", *p);
         return pe;
     }
     else if (cs == EDN_escaped_char_en_main) {} // silence ragel warning
@@ -1072,7 +1073,7 @@ const char* edn::Parser::parse_meta(const char *p, const char *pe)
 VALUE edn::Parser::parse(const char* src, std::size_t len)
 {
     int cs;
-    VALUE result = Qnil;
+    VALUE result = EDNT_EOF;
 
     %% write init;
     set_source(src, len);
