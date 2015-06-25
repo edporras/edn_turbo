@@ -420,7 +420,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
     main := (
              ('-'|'+') begin_number >parse_op_number |
              (operators - [\-\+\.]) valid_chars >parse_op_symbol |
-             [\-\+\.] valid_non_numeric_chars valid_chars >parse_op_symbol |
+             [\-\+\.] valid_non_numeric_chars valid_chars* >parse_op_symbol |
              operators ignore* >parse_op
              ) ^(valid_chars)? @exit;
 }%%
@@ -504,12 +504,18 @@ const char* edn::Parser::parse_esc_char(const char *p, const char *pe, VALUE& v)
 
     write data;
 
-    symbol_start = alpha | [\.\*!_\?$%&<>\=+\-\'];
-    symbol_chars = symbol_start | digit | ':' | '#';
+    symbol_ops_1 = [\.\-\+];
+    symbol_ops_2 = [\*!_\?$%&<>\=\'];
+    symbol_ops_3 = [:\#];
+
+    symbol_start = alpha | symbol_ops_1 | symbol_ops_2;
+
+    symbol_chars = symbol_start | digit | symbol_ops_3;
+
     symbol_name  = (
                     (alpha symbol_chars*) |
-                    ([\-\+\.] symbol_start symbol_chars*) |
-                    ([/\*!_\?$%&<>\=\'] symbol_chars+) |
+                    (symbol_ops_1 (symbol_start | symbol_ops_3) symbol_chars*) |
+                    (symbol_start symbol_chars+) |
                     operators{1}
                     );
     symbol       = '/' | (symbol_name ('/' symbol_name)?);
