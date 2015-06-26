@@ -12,15 +12,16 @@ namespace edn {
     VALUE rb_mEDNT;
 
     // methods on the ruby side we'll call from here
-    VALUE EDNT_MAKE_EDN_SYMBOL    = Qnil;
-    VALUE EDNT_MAKE_SET_METHOD    = Qnil;
-    VALUE EDNT_TAGGED_ELEM        = Qnil;
-    VALUE EDNT_BIND_META_TO_VALUE = Qnil;
-    VALUE EDNT_STR_INT_TO_BIGNUM  = Qnil;
-    VALUE EDNT_STR_DBL_TO_BIGNUM  = Qnil;
+    VALUE EDNT_MAKE_SYMBOL_METHOD       = Qnil;
+    VALUE EDNT_MAKE_LIST_METHOD         = Qnil;
+    VALUE EDNT_MAKE_SET_METHOD          = Qnil;
+    VALUE EDNT_TAGGED_ELEM_METHOD       = Qnil;
+    VALUE EDNT_EXTENDED_VALUE_METHOD    = Qnil;
+    VALUE EDNT_STR_INT_TO_BIGNUM_METHOD = Qnil;
+    VALUE EDNT_STR_DBL_TO_BIGNUM_METHOD = Qnil;
 
     // returned when EOF - defined as a constant in EDN module
-    VALUE EDNT_EOF                = Qnil;
+    VALUE EDNT_EOF_CONST                = Qnil;
 
     //
     // wrappers to hook the class w/ the C-api
@@ -136,15 +137,16 @@ void Init_edn_turbo(void)
     rb_define_method(rb_cParser, "ext_next", (VALUE(*)(ANYARGS)) &edn::next, 0 );
 
     // bind ruby methods we'll call - these should be defined in edn_turbo.rb
-    edn::EDNT_MAKE_EDN_SYMBOL    = rb_intern("symbol");
-    edn::EDNT_MAKE_SET_METHOD    = rb_intern("make_set");
-    edn::EDNT_TAGGED_ELEM        = rb_intern("tagged_element");
-    edn::EDNT_BIND_META_TO_VALUE = rb_intern("bind_metadata_to_value");
-    edn::EDNT_STR_INT_TO_BIGNUM  = rb_intern("string_int_to_bignum");
-    edn::EDNT_STR_DBL_TO_BIGNUM  = rb_intern("string_double_to_bignum");
+    edn::EDNT_MAKE_SYMBOL_METHOD       = rb_intern("symbol");
+    edn::EDNT_MAKE_LIST_METHOD         = rb_intern("list");
+    edn::EDNT_MAKE_SET_METHOD          = rb_intern("set");
+    edn::EDNT_TAGGED_ELEM_METHOD       = rb_intern("tagged_element");
+    edn::EDNT_EXTENDED_VALUE_METHOD    = rb_intern("extend_for_meta");
+    edn::EDNT_STR_INT_TO_BIGNUM_METHOD = rb_intern("string_int_to_bignum");
+    edn::EDNT_STR_DBL_TO_BIGNUM_METHOD = rb_intern("string_double_to_bignum");
 
     // so we can return EOF directly
-    edn::EDNT_EOF = rb_const_get(edn::rb_mEDNT, rb_intern("EOF"));
+    edn::EDNT_EOF_CONST                = rb_const_get(edn::rb_mEDNT, rb_intern("EOF"));
 
     // import whatever else we've defined in the ruby side
     rb_require("edn_turbo/edn_parser");

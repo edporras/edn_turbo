@@ -30,12 +30,12 @@ namespace edn
     //
     VALUE Parser::next()
     {
-        VALUE token = EDNT_EOF;
+        VALUE token = EDNT_EOF_CONST;
 
         while (!is_eof())
         {
             // fetch a token. If it's metadata or discard
-            VALUE v = EDNT_EOF;
+            VALUE v = EDNT_EOF_CONST;
             eTokenState state = parse_next(v);
 
             if (state == TOKEN_OK) {
@@ -44,7 +44,7 @@ namespace edn
                 break;
             }
             else if (state == TOKEN_ERROR) {
-                token = EDNT_EOF;
+                token = EDNT_EOF_CONST;
                 break;
             }
         }
@@ -151,7 +151,7 @@ namespace edn
 
         // value is outside of range of long type. Use ruby to convert it
         VALUE rb_s = edn_prot_rb_new_str( str );
-        prot_args args(rb_mEDNT, EDNT_STR_INT_TO_BIGNUM, rb_s);
+        prot_args args(rb_mEDNT, EDNT_STR_INT_TO_BIGNUM_METHOD, rb_s);
         return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
@@ -165,7 +165,7 @@ namespace edn
         }
 
         // value is outside of range of long type. Use ruby to convert it
-        prot_args args(rb_mEDNT, EDNT_STR_DBL_TO_BIGNUM, edn_prot_rb_new_str(str));
+        prot_args args(rb_mEDNT, EDNT_STR_DBL_TO_BIGNUM_METHOD, edn_prot_rb_new_str(str));
         return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
@@ -229,25 +229,15 @@ namespace edn
 
     //
     // get a set representation from the ruby side. See edn_turbo.rb
-    VALUE Parser::make_edn_symbol(VALUE sym)
+    VALUE Parser::make_edn_type(ID method, VALUE sym)
     {
-        prot_args args(rb_mEDNT, EDNT_MAKE_EDN_SYMBOL, sym);
+        prot_args args(rb_mEDNT, method, sym);
         return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
-    //
-    // get a set representation from the ruby side. See edn_turbo.rb
-    VALUE Parser::make_ruby_set(VALUE elems)
+    VALUE Parser::make_edn_type(ID method, VALUE name, VALUE data)
     {
-        prot_args args(rb_mEDNT, EDNT_MAKE_SET_METHOD, elems);
-        return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
-    }
-
-    //
-    // get an object representation from the ruby side using the given symbol name
-    VALUE Parser::tagged_element(VALUE name, VALUE data)
-    {
-        prot_args args(rb_mEDNT, EDNT_TAGGED_ELEM, name, data);
+        prot_args args(rb_mEDNT, method, name, data);
         return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
@@ -268,14 +258,6 @@ namespace edn
         }
 
         return m_ary;
-    }
-
-    //
-    // calls the ruby-side bind_meta to bind the metadata to the value
-    VALUE Parser::bind_meta_to_value(VALUE value)
-    {
-        prot_args args(rb_mEDNT, EDNT_BIND_META_TO_VALUE, value, ruby_meta());
-        return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
 

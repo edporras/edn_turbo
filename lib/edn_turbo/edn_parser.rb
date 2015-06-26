@@ -2,8 +2,6 @@ require 'edn'
 
 module EDNT
 
-  EOF = Object.new
-
   class Parser
 
     # initialize() is defined in the c-side (main.cc)

@@ -11,13 +11,14 @@
 namespace edn
 {
     extern VALUE rb_mEDNT;
-    extern VALUE EDNT_MAKE_EDN_SYMBOL;
+    extern VALUE EDNT_MAKE_SYMBOL_METHOD;
+    extern VALUE EDNT_MAKE_LIST_METHOD;
     extern VALUE EDNT_MAKE_SET_METHOD;
-    extern VALUE EDNT_TAGGED_ELEM;
-    extern VALUE EDNT_BIND_META_TO_VALUE;
-    extern VALUE EDNT_STR_INT_TO_BIGNUM;
-    extern VALUE EDNT_STR_DBL_TO_BIGNUM;
-    extern VALUE EDNT_EOF;
+    extern VALUE EDNT_TAGGED_ELEM_METHOD;
+    extern VALUE EDNT_EXTENDED_VALUE_METHOD;
+    extern VALUE EDNT_STR_INT_TO_BIGNUM_METHOD;
+    extern VALUE EDNT_STR_DBL_TO_BIGNUM_METHOD;
+    extern VALUE EDNT_EOF_CONST;
 
     //
     // C-extension EDN Parser class representation
@@ -84,9 +85,8 @@ namespace edn
         static bool parse_byte_stream (const char *p, const char *pe, VALUE& rslt, bool encode);
         static bool parse_escaped_char(const char *p, const char *pe, VALUE& rslt);
 
-        static VALUE make_edn_symbol(VALUE sym);
-        static VALUE make_ruby_set(VALUE elems);
-        static VALUE tagged_element(VALUE name, VALUE data);
+        static VALUE make_edn_type(ID method, VALUE value);
+        static VALUE make_edn_type(ID method, VALUE value1, VALUE value2);
 
         // metadata
         VALUE ruby_meta();
@@ -95,7 +95,6 @@ namespace edn
         void  append_to_meta(VALUE m) { metadata.back()->push_back(m); }
         bool  meta_empty() const { return metadata.back()->empty(); }
         std::size_t meta_size() const { return metadata.back()->size(); }
-        VALUE bind_meta_to_value(VALUE value);
 
         // utility method to convert a primitive in string form to a
         // ruby type

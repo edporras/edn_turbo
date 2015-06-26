@@ -117,7 +117,7 @@
             else if (std::strcmp(RSTRING_PTR(sym), "false") == 0) { v = Qfalse; }
             else if (std::strcmp(RSTRING_PTR(sym), "nil") == 0)   { v = Qnil; }
             else {
-                v = Parser::make_edn_symbol(sym);
+                v = Parser::make_edn_type(EDNT_MAKE_SYMBOL_METHOD, sym);
             }
             fexec np;
         }
@@ -379,7 +379,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
         const char *np = parse_symbol(p_save, pe, sym);
         if (np == NULL) { fexec pe; } else {
             if (sym != Qnil)
-            v = Parser::make_edn_symbol(sym);
+                v = Parser::make_edn_type(EDNT_MAKE_SYMBOL_METHOD, sym);
             fexec np;
         }
     }
@@ -411,7 +411,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
         // stand-alone operators (-, +, /, ... etc)
         char op[2] = { *p_save, 0 };
         VALUE sym = rb_str_new2(op);
-        v = Parser::make_edn_symbol(sym);
+        v = Parser::make_edn_type(EDNT_MAKE_SYMBOL_METHOD, sym);
     }
 
     valid_non_numeric_chars = alpha|operators|':'|'#';
@@ -598,7 +598,7 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, VALUE& s)
                     // parse_value() read an element we care
                     // about. Bind the metadata to it and add it to
                     // the sequence
-                    e = bind_meta_to_value(e);
+                    e = Parser::make_edn_type(EDNT_EXTENDED_VALUE_METHOD, e, ruby_meta());
                     rb_ary_push(elems, e);
                 }
             } else {
@@ -688,6 +688,8 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, VALUE& v)
 
     if (cs >= EDN_list_first_final) {
         v = elems;
+        // TODO: replace with this but first figure out why array is not unrolled by EDN::list()
+        //        v = Parser::make_edn_type(EDNT_MAKE_LIST_METHOD, elems);
         return p + 1;
     }
     else if (cs == EDN_list_error) {
@@ -848,7 +850,7 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, VALUE& v)
 
     if (cs >= EDN_set_first_final) {
         // all elements collected; now convert to a set
-        v = Parser::make_ruby_set(elems);
+        v = Parser::make_edn_type(EDNT_MAKE_SET_METHOD, elems);
         return p + 1;
     }
     else if (cs == EDN_set_error) {
@@ -993,14 +995,14 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
 
         if (!sym_ok || !data_ok) {
             error(__FUNCTION__, "tagged element symbol error", *p);
-            v =  EDNT_EOF;
+            v =  EDNT_EOF_CONST;
             return NULL;
         }
 
         try {
             // tagged_element makes a call to ruby which may throw an
             // exception when parsing the data
-            v = Parser::tagged_element(sym_name, data);
+            v = Parser::make_edn_type(EDNT_TAGGED_ELEM_METHOD, sym_name, data);
             return p + 1;
         } catch (std::exception& e) {
             error(__FUNCTION__, e.what());
@@ -1011,7 +1013,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
         error(__FUNCTION__, "tagged element symbol error", *p);
     }
     else if (cs == EDN_tagged_en_main) {} // silence ragel warning
-    v =  EDNT_EOF;
+    v =  EDNT_EOF_CONST;
     return NULL;
 }
 
@@ -1085,7 +1087,7 @@ const char* edn::Parser::parse_meta(const char *p, const char *pe)
             // metadata sequence to it
             if (!meta_empty() && meta_size() == meta_sz) {
                 // this will empty the metadata sequence too
-                result = bind_meta_to_value(result);
+                result = Parser::make_edn_type(EDNT_EXTENDED_VALUE_METHOD, result, ruby_meta());
             }
             fexec np;
         }
@@ -1102,7 +1104,7 @@ const char* edn::Parser::parse_meta(const char *p, const char *pe)
 VALUE edn::Parser::parse(const char* src, std::size_t len)
 {
     int cs;
-    VALUE result = EDNT_EOF;
+    VALUE result = EDNT_EOF_CONST;
 
     %% write init;
     set_source(src, len);
@@ -1110,7 +1112,7 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
 
     if (cs == EDN_parser_error) {
         error(__FUNCTION__, *p);
-        return EDNT_EOF;
+        return EDNT_EOF_CONST;
     }
     else if (cs == EDN_parser_first_final) {
         p = pe = eof = NULL;
@@ -1147,7 +1149,7 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
                 else {
                     // a value was read and there's a pending metadata
                     // sequence. Bind them.
-                    value = bind_meta_to_value(value);
+                    value = Parser::make_edn_type(EDNT_EXTENDED_VALUE_METHOD, value, ruby_meta());
                     state = TOKEN_OK;
                 }
             } else if (!discard.empty()) {

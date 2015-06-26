@@ -1,8 +1,10 @@
-require_relative 'edn_turbo/edn_parser'
+require_relative 'edn_turbo/constants'
+require_relative 'edn_turbo/tags'
+require_relative 'edn_turbo/utils'
 require_relative 'edn_turbo/version'
+require_relative 'edn_turbo/edn_parser'
 require_relative 'edn_turbo/edn_turbo'
 
-require 'date'
 require 'set'
 require 'edn'
 
@@ -23,58 +25,18 @@ module EDNT
   end
 
   # ----------------------------------------------------------------------------
-  # register a tagged element
-  #
-  TAGS = {
-    # built-in tagged elements
-    "inst" => lambda { |*a| DateTime.parse(*a) },
-    "uuid" => lambda { |*a| String.new(*a) }
-  }
-
-  def self.register(tag, func = nil, &block)
-    # don't allow re-registration of built-in tags
-    if tag != "inst" && tag != "uuid"
-      if block_given?
-        func = block
-      end
-
-      if func.nil?
-        func = lambda { |x| x }
-      end
-
-      if func.is_a?(Class)
-        TAGS[tag] = lambda { |*args| func.new(*args) }
-      else
-        TAGS[tag] = func
-      end
-    end
-  end
-
-  def self.unregister(tag)
-    TAGS[tag] = nil
-  end
-
-  def self.tagged_element(tag, element)
-    func = TAGS[tag]
-    if func
-      func.call(element)
-    else
-      EDN::Type::Unknown.new(tag, element)
-    end
-  end
-
-  # ----------------------------------------------------------------------------
-  # handles creation of a set from an array
-  #
-  def self.make_set(elems)
-    Set.new(elems)
-  end
-
-  # ----------------------------------------------------------------------------
-  # handles creation of an EDN::Type::Symbol
+  # handles creation of various EDN representations
   #
   def self.symbol(elem)
     EDN::Type::Symbol.new(elem)
+  end
+
+  def self.list(*elems)
+    EDN::Type::List.new(*elems)
+  end
+
+  def self.set(*elems)
+    Set.new(*elems)
   end
 
   # ----------------------------------------------------------------------------
@@ -90,35 +52,5 @@ module EDNT
   def self.string_double_to_bignum(str)
     str.to_f
   end
-
-  # ============================================================================
-  # emulate EDN::Metadata
-  module Metadata
-    attr_accessor :metadata
-  end
-
-  # ----------------------------------------------------------------------------
-  # bind the given meta to the value
-  #
-  def self.bind_metadata_to_value(value, ext_meta)
-
-    meta = ext_meta
-
-    metadata = meta.reduce({}) do |acc, m|
-      case m
-      when Symbol then acc.merge(m => true)
-      when EDN::Type::Symbol then acc.merge(:tag => m)
-      else acc.merge(m)
-      end
-    end
-
-    if !metadata.empty?
-      value.extend Metadata
-      value.metadata = metadata
-    end
-
-    value
-  end
-
 
 end # EDN namespace
