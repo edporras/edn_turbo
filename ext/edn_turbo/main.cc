@@ -151,7 +151,4 @@ void Init_edn_turbo(void)
 
     // so we can return EOF directly
     edn::EDNT_EOF_CONST                = rb_const_get(edn::rb_mEDNT, rb_intern("EOF"));
-
-    // import whatever else we've defined in the ruby side
-    rb_require("edn_turbo/edn_parser");
 }
