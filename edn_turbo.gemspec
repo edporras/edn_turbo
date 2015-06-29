@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.date = EDNT::RELEASE_DATE
   s.summary = %q{Read EDN files}
   s.description = %q{Optimization for parsing of EDN files using ragel in a c++ extension}
-  s.license = ''
+  s.license = 'MIT'
 
   s.files = `git ls-files`.split("\n").
                reject{|f| f =~ /\.gem/}.
