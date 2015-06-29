@@ -1,4 +1,5 @@
 require 'edn'
+require 'bigdecimal'
 
 module EDNT
 
@@ -21,6 +22,10 @@ module EDNT
       ext_read(data)
     end
 
+  end
+
+  def self.big_decimal(str)
+    BigDecimal.new(str)
   end
 
 end

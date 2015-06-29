@@ -89,20 +89,27 @@ namespace edn
 
     // we're using at most 2 args
     struct prot_args {
-        prot_args(ID r, ID m, VALUE arg) :
+        prot_args(VALUE r, ID m) :
+            receiver(r), method(m), count(0) {
+        }
+        prot_args(VALUE r, ID m, VALUE arg) :
             receiver(r), method(m), count(1) {
             args[0] = arg;
         }
-        prot_args(ID r, ID m, VALUE arg1, VALUE arg2) :
+        prot_args(VALUE r, ID m, VALUE arg1, VALUE arg2) :
             receiver(r), method(m), count(2) {
             args[0] = arg1;
             args[1] = arg2;
         }
 
-        VALUE call() const { return rb_funcall2( receiver, method, count, args ); }
+        VALUE call() const {
+            return ((count == 0) ?
+                    rb_funcall( receiver, method, 0 ) :
+                    rb_funcall2( receiver, method, count, args ));
+        }
 
     private:
-        ID receiver;
+        VALUE receiver;
         ID method;
         VALUE count;
         VALUE args[2];
@@ -148,10 +155,10 @@ namespace edn
     {
         if (str[len-1] == 'M' || len >= LL_max_chars)
         {
-            std::string buf;
-            buf.append(str, len);
+            std::string buf(str, len);
             VALUE vs = edn_prot_rb_new_str(buf.c_str());
-            return rb_funcall(vs, EDNT_STRING_TO_I_METHOD, 0);
+            prot_args args(vs, EDNT_STRING_TO_I_METHOD);
+            return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
         }
 
         return LONG2NUM(buftotype<long>(str, len));
@@ -161,12 +168,17 @@ namespace edn
     // as above.. TODO: check exponential..
     VALUE Parser::float_to_ruby(const char* str, std::size_t len)
     {
-        if (len >= LD_max_chars)
+        if (str[len-1] == 'M' || len >= LD_max_chars)
         {
-            std::string buf;
-            buf.append(str, len);
+            std::string buf(str, len);
             VALUE vs = edn_prot_rb_new_str(buf.c_str());
-            return rb_funcall(vs, EDNT_STRING_TO_F_METHOD, 0);
+
+            if (str[len-1] == 'M') {
+                return Parser::make_edn_type(EDNT_MAKE_BIG_DECIMAL_METHOD, vs);
+            }
+
+            prot_args args(vs, EDNT_STRING_TO_F_METHOD);
+            return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
         }
 
         return rb_float_new(buftotype<double>(str, len));

@@ -15,6 +15,7 @@ namespace edn {
     VALUE EDNT_MAKE_SYMBOL_METHOD       = Qnil;
     VALUE EDNT_MAKE_LIST_METHOD         = Qnil;
     VALUE EDNT_MAKE_SET_METHOD          = Qnil;
+    VALUE EDNT_MAKE_BIG_DECIMAL_METHOD  = Qnil;
     VALUE EDNT_TAGGED_ELEM_METHOD       = Qnil;
     VALUE EDNT_EXTENDED_VALUE_METHOD    = Qnil;
 
@@ -141,6 +142,7 @@ void Init_edn_turbo(void)
     edn::EDNT_MAKE_SYMBOL_METHOD       = rb_intern("symbol");
     edn::EDNT_MAKE_LIST_METHOD         = rb_intern("list");
     edn::EDNT_MAKE_SET_METHOD          = rb_intern("set");
+    edn::EDNT_MAKE_BIG_DECIMAL_METHOD  = rb_intern("big_decimal");
     edn::EDNT_TAGGED_ELEM_METHOD       = rb_intern("tagged_element");
     edn::EDNT_EXTENDED_VALUE_METHOD    = rb_intern("extend_for_meta");
 
