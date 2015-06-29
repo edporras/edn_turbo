@@ -18,13 +18,13 @@ and `edn_turbo` (see [issue 12](https://github.com/relevance/edn-ruby/issues/12)
 irb(main):004:0> s = "[{\"x\" {\"id\" \"/model/952\", \"model_name\" \"person\", \"ancestors\" [\"record\" \"asset\"], \"format\" \"edn\"}, \"id\" 952, \"name\" nil, \"model_name\" \"person\", \"rel\" {}, \"description\" nil, \"age\" nil, \"updated_at\" nil, \"created_at\" nil, \"anniversary\" nil, \"job\" nil, \"start_date\" nil, \"username\" nil, \"vacation_start\" nil, \"vacation_end\" nil, \"expenses\" nil, \"rate\" nil, \"display_name\" nil, \"gross_profit_per_month\" nil}]"
 => "[{\"x\" {\"id\" \"/model/952\", \"model_name\" \"person\", \"ancestors\" [\"record\" \"asset\"], \"format\" \"edn\"}, \"id\" 952, \"name\" nil, \"model_name\" \"person\", \"rel\" {}, \"description\" nil, \"age\" nil, \"updated_at\" nil, \"created_at\" nil, \"anniversary\" nil, \"job\" nil, \"start_date\" nil, \"username\" nil, \"vacation_start\" nil, \"vacation_end\" nil, \"expenses\" nil, \"rate\" nil, \"display_name\" nil, \"gross_profit_per_month\" nil}]"
 irb(main):005:0> Benchmark.realtime { 100.times { EDN::read(s) } }
-=> 0.078503
+=> 0.0786
 irb(main):006:0> Benchmark.realtime { 100.times { EDNT::read(s) } }
-=> 0.002669
+=> 0.002991
 irb(main):007:0> Benchmark.realtime { 100000.times { EDN::read(s) } }
-=> 75.219344
+=> 72.421565
 irb(main):008:0> Benchmark.realtime { 100000.times { EDNT::read(s) } }
-=> 2.560593
+=> 2.993059
 ```
 
 Dependencies
@@ -57,7 +57,7 @@ Simlar to `edn-ruby`:
 
     File.open(filename) do |file|
        output = EDNT.read(file)
-       pp output if output != nil
+       pp output if output != EOF
     end
 
     # also accepts a string
@@ -78,7 +78,7 @@ Or instantiate and reuse an instance of a parser:
     p = EDNT::Parser.new
     File.open(filename) do |file|
        output = p.parse(file)
-       pp output if output != nil
+       pp output if output != EOF
     end
 
     # with a string
@@ -92,7 +92,7 @@ Or instantiate and reuse an instance of a parser:
     # parse token by token
     loop do
       t = p.read
-      break if t == EDNT::EOF
+      break if t == EOF
 
       pp t
     end
@@ -101,8 +101,9 @@ Or instantiate and reuse an instance of a parser:
 
 Known problems
 ==============
-v0.3.1:
+v0.3.2:
 
 - Some unhandled corner cases with operators and spacing
   remain. `edn_turbo` handles things like `1 / 12` and `1/ 12` but
-  parse errors occur with `1/12` and `1 /12`.
+  parse errors occur with `1/12` and `1 /12` because it treats `/12`
+  as an invalid symbol.
