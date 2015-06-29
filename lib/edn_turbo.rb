@@ -39,18 +39,4 @@ module EDNT
     Set.new(*elems)
   end
 
-  # ----------------------------------------------------------------------------
-  # to create Big Ints (for now)
-  #
-  def self.string_int_to_bignum(str)
-    str.to_i
-  end
-
-  # ----------------------------------------------------------------------------
-  # to create Big Ints (for now)
-  #
-  def self.string_double_to_bignum(str)
-    str.to_f
-  end
-
 end # EDN namespace

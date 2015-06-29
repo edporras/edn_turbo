@@ -17,8 +17,9 @@ namespace edn {
     VALUE EDNT_MAKE_SET_METHOD          = Qnil;
     VALUE EDNT_TAGGED_ELEM_METHOD       = Qnil;
     VALUE EDNT_EXTENDED_VALUE_METHOD    = Qnil;
-    VALUE EDNT_STR_INT_TO_BIGNUM_METHOD = Qnil;
-    VALUE EDNT_STR_DBL_TO_BIGNUM_METHOD = Qnil;
+
+    VALUE EDNT_STRING_TO_I_METHOD       = Qnil;
+    VALUE EDNT_STRING_TO_F_METHOD       = Qnil;
 
     // returned when EOF - defined as a constant in EDN module
     VALUE EDNT_EOF_CONST                = Qnil;
@@ -142,8 +143,9 @@ void Init_edn_turbo(void)
     edn::EDNT_MAKE_SET_METHOD          = rb_intern("set");
     edn::EDNT_TAGGED_ELEM_METHOD       = rb_intern("tagged_element");
     edn::EDNT_EXTENDED_VALUE_METHOD    = rb_intern("extend_for_meta");
-    edn::EDNT_STR_INT_TO_BIGNUM_METHOD = rb_intern("string_int_to_bignum");
-    edn::EDNT_STR_DBL_TO_BIGNUM_METHOD = rb_intern("string_double_to_bignum");
+
+    edn::EDNT_STRING_TO_I_METHOD       = rb_intern("to_i");
+    edn::EDNT_STRING_TO_F_METHOD       = rb_intern("to_f");
 
     // so we can return EOF directly
     edn::EDNT_EOF_CONST                = rb_const_get(edn::rb_mEDNT, rb_intern("EOF"));

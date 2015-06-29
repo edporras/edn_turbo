@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <stack>
+#include <vector>
 #include <limits>
 #include <exception>
 
@@ -64,7 +66,7 @@ namespace edn
             del_top_meta_list();
         }
         // but clear any metadata on the first
-        metadata.back()->clear();
+        metadata.top()->clear();
     }
 
     //
@@ -144,29 +146,30 @@ namespace edn
     // hold, call into ruby to get a big num
     VALUE Parser::integer_to_ruby(const char* str, std::size_t len)
     {
-        if (len < LL_max_chars)
+        if (str[len-1] == 'M' || len >= LL_max_chars)
         {
-            return LONG2NUM(buftotype<long>(str, len));
+            std::string buf;
+            buf.append(str, len);
+            VALUE vs = edn_prot_rb_new_str(buf.c_str());
+            return rb_funcall(vs, EDNT_STRING_TO_I_METHOD, 0);
         }
 
-        // value is outside of range of long type. Use ruby to convert it
-        VALUE rb_s = edn_prot_rb_new_str( str );
-        prot_args args(rb_mEDNT, EDNT_STR_INT_TO_BIGNUM_METHOD, rb_s);
-        return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
+        return LONG2NUM(buftotype<long>(str, len));
     }
 
     //
     // as above.. TODO: check exponential..
     VALUE Parser::float_to_ruby(const char* str, std::size_t len)
     {
-        if (len < LD_max_chars)
+        if (len >= LD_max_chars)
         {
-            return rb_float_new(buftotype<double>(str, len));
+            std::string buf;
+            buf.append(str, len);
+            VALUE vs = edn_prot_rb_new_str(buf.c_str());
+            return rb_funcall(vs, EDNT_STRING_TO_F_METHOD, 0);
         }
 
-        // value is outside of range of long type. Use ruby to convert it
-        prot_args args(rb_mEDNT, EDNT_STR_DBL_TO_BIGNUM_METHOD, edn_prot_rb_new_str(str));
-        return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
+        return rb_float_new(buftotype<double>(str, len));
     }
 
 
@@ -252,9 +255,9 @@ namespace edn
         VALUE m_ary = rb_ary_new();
 
         // pop from the back of the top-most list
-        while (!metadata.back()->empty()) {
-            rb_ary_push(m_ary, metadata.back()->back());
-            metadata.back()->pop_back();
+        while (!metadata.top()->empty()) {
+            rb_ary_push(m_ary, metadata.top()->back());
+            metadata.top()->pop_back();
         }
 
         return m_ary;

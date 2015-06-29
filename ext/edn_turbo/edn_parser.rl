@@ -328,7 +328,7 @@ const char* edn::Parser::parse_decimal(const char *p, const char *pe, VALUE& v)
 
 
 // ============================================================
-// integer parsing machine
+// integer parsing machine - M suffix will return a BigNum
 //
 %%{
     machine EDN_integer;

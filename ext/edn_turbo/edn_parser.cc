@@ -841,7 +841,7 @@ case 8:
 
 
 // ============================================================
-// integer parsing machine
+// integer parsing machine - M suffix will return a BigNum
 //
 
 #line 848 "edn_parser.cc"

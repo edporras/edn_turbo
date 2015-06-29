@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <stack>
 
 #include <ruby/ruby.h>
 
@@ -16,9 +17,12 @@ namespace edn
     extern VALUE EDNT_MAKE_SET_METHOD;
     extern VALUE EDNT_TAGGED_ELEM_METHOD;
     extern VALUE EDNT_EXTENDED_VALUE_METHOD;
-    extern VALUE EDNT_STR_INT_TO_BIGNUM_METHOD;
-    extern VALUE EDNT_STR_DBL_TO_BIGNUM_METHOD;
+
+    extern VALUE EDNT_STRING_TO_I_METHOD;
+    extern VALUE EDNT_STRING_TO_F_METHOD;
+
     extern VALUE EDNT_EOF_CONST;
+
 
     //
     // C-extension EDN Parser class representation
@@ -50,7 +54,7 @@ namespace edn
         const char* eof;
         std::size_t line_number;
         std::vector<VALUE> discard;
-        std::vector<std::vector<VALUE>* > metadata;
+        std::stack<std::vector<VALUE>* > metadata;
 
         void reset_state();
 
@@ -90,11 +94,11 @@ namespace edn
 
         // metadata
         VALUE ruby_meta();
-        void  new_meta_list() { metadata.push_back( new std::vector<VALUE>() ); }
-        void  del_top_meta_list() { delete metadata.back(); metadata.pop_back(); }
-        void  append_to_meta(VALUE m) { metadata.back()->push_back(m); }
-        bool  meta_empty() const { return metadata.back()->empty(); }
-        std::size_t meta_size() const { return metadata.back()->size(); }
+        void  new_meta_list() { metadata.push( new std::vector<VALUE>() ); }
+        void  del_top_meta_list() { delete metadata.top(); metadata.pop(); }
+        void  append_to_meta(VALUE m) { metadata.top()->push_back(m); }
+        bool  meta_empty() const { return metadata.top()->empty(); }
+        std::size_t meta_size() const { return metadata.top()->size(); }
 
         // utility method to convert a primitive in string form to a
         // ruby type
