@@ -2,6 +2,8 @@
 #include <iostream>
 #include <clocale>
 
+#include <cstring>
+
 #include "edn_parser.h"
 
 #include <ruby/ruby.h>

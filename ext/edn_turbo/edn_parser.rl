@@ -3,6 +3,8 @@
 #include <vector>
 #include <exception>
 
+#include <cstring>
+
 #include "edn_parser.h"
 
 //

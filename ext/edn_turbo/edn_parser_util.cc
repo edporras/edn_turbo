@@ -5,6 +5,9 @@
 #include <limits>
 #include <exception>
 
+#include <cstring>
+#include <stdexcept>
+
 #include <ruby/ruby.h>
 #include <ruby/encoding.h>
 
