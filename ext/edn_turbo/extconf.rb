@@ -11,16 +11,14 @@ LIB_DIRS = [
   '/usr/local/opt/icu4c/lib'
 ]
 
-unless find_header('unicode/uversion.h', *HEADER_DIRS)
+dir_config('edn_ext', HEADER_DIRS, LIB_DIRS)
+
+unless find_header('unicode/uversion.h')
   abort "icu4c headers missing"
 end
 
-# haven't figured out how this ever works so..
-#unless have_library('icuuc', 'uconv_close', *LIB_DIRS)
-#  abort "ic4c lib missing"
-#end
-
-# do this instead. sigh
-$LOCAL_LIBS="-L#{LIB_DIRS[1]} -licuuc"
+unless have_library('icuuc')
+  abort "ic4c lib missing"
+end
 
 create_makefile("edn_turbo/edn_turbo")
