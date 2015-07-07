@@ -29,18 +29,16 @@ namespace edn {
 
     //
     // wrappers to hook the class w/ the C-api
-    template<class T>
-    static void delete_obj(T *ptr) {
+    static void delete_parser(edn::Parser *ptr) {
         delete ptr;
     }
 
-    template<class T>
-    static VALUE wrap_ptr(VALUE klass, T* ptr) {
-        return Data_Wrap_Struct(klass, 0, delete_obj<T>, ptr);
+    static VALUE wrap_parser_ptr(VALUE klass, edn::Parser* ptr) {
+        return Data_Wrap_Struct(klass, 0, delete_parser, ptr);
     }
 
     static VALUE alloc_obj(VALUE self){
-        return wrap_ptr<edn::Parser>(self, new Parser());
+        return wrap_parser_ptr(self, new Parser());
     }
 
     static inline Parser* get_parser(VALUE self)
