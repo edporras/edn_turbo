@@ -32,6 +32,8 @@ Gem::Specification.new do |s|
   s.add_dependency('rake', '~> 10.3')
   s.add_dependency('rake-compiler', '~> 0.9')
 
+  s.add_development_dependency 'minitest'
+
   if s.respond_to? :specification_version then
     s.specification_version = 3
 
