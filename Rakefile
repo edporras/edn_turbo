@@ -18,6 +18,8 @@ task :irb do
   sh "reset"
 end
 
+task :runthru => [:clean, :default, :test]
+
 Rake::ExtensionTask.new("#{NAME}") do |extension|
   extension.lib_dir = LIB_DIR
   extension.source_pattern = "*.{cc,h}"
