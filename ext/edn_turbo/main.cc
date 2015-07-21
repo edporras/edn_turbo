@@ -135,10 +135,11 @@ void Init_edn_turbo(void)
     VALUE rb_cParser = rb_define_class_under(edn::rb_mEDNT, "Parser", rb_cObject);
     rb_define_alloc_func(rb_cParser, edn::alloc_obj);
     rb_define_method(rb_cParser, "initialize", (VALUE(*)(ANYARGS)) &edn::initialize, -1 );
-    rb_define_method(rb_cParser, "ext_set_stream", (VALUE(*)(ANYARGS)) &edn::set_source, 1 );
     rb_define_method(rb_cParser, "ext_eof", (VALUE(*)(ANYARGS)) &edn::eof, 0 );
-    rb_define_method(rb_cParser, "ext_read", (VALUE(*)(ANYARGS)) &edn::read, 1 );
-    rb_define_method(rb_cParser, "ext_next", (VALUE(*)(ANYARGS)) &edn::next, 0 );
+
+    rb_define_method(rb_cParser, "set_input", (VALUE(*)(ANYARGS)) &edn::set_source, 1 );
+    rb_define_method(rb_cParser, "parse", (VALUE(*)(ANYARGS)) &edn::read, 1 );
+    rb_define_method(rb_cParser, "read", (VALUE(*)(ANYARGS)) &edn::next, 0 );
 
     // bind ruby methods we'll call - these should be defined in edn_turbo.rb
     edn::EDN_MODULE_SYMBOL             = rb_intern("EDN");
