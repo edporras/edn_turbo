@@ -13,6 +13,11 @@ RAGEL_PARSER_SRC_PATH  = "#{EXT_PATH}/#{RAGEL_PARSER_SRC}"
 GEN_CC_PARSER_SRC      = "edn_parser.cc"
 GEN_CC_PARSER_SRC_PATH = "#{EXT_PATH}/#{GEN_CC_PARSER_SRC}"
 
+task :irb do
+  sh "irb -I lib -r edn_turbo"
+  sh "reset"
+end
+
 Rake::ExtensionTask.new("#{NAME}") do |extension|
   extension.lib_dir = LIB_DIR
   extension.source_pattern = "*.{cc,h}"

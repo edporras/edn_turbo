@@ -1,12 +1,12 @@
-require_relative 'edn_turbo/constants'
-require_relative 'edn_turbo/tags'
+require 'edn'
+#require_relative 'edn_turbo/constants'
+#require_relative 'edn_turbo/tags'
 require_relative 'edn_turbo/utils'
 require_relative 'edn_turbo/version'
 require_relative 'edn_turbo/edn_parser'
 require_relative 'edn_turbo/edn_turbo'
 
 require 'set'
-require 'edn'
 
 module EDNT
 
@@ -27,6 +27,7 @@ module EDNT
   # ----------------------------------------------------------------------------
   # handles creation of various EDN representations
   #
+=begin
   def self.symbol(elem)
     EDN::Type::Symbol.new(elem)
   end
@@ -38,5 +39,6 @@ module EDNT
   def self.set(*elems)
     Set.new(*elems)
   end
+=end
 
 end # EDN namespace

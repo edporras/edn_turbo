@@ -249,13 +249,20 @@ namespace edn
     // get a set representation from the ruby side. See edn_turbo.rb
     VALUE Parser::make_edn_type(ID method, VALUE sym)
     {
-        prot_args args(rb_mEDNT, method, sym);
+        VALUE edn_module = rb_const_get(rb_cObject, edn::EDN_MODULE_SYMBOL);
+        prot_args args(edn_module, method, sym);
         return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 
     VALUE Parser::make_edn_type(ID method, VALUE name, VALUE data)
     {
-        prot_args args(rb_mEDNT, method, name, data);
+        VALUE module = rb_const_get(rb_cObject, edn::EDN_MODULE_SYMBOL);
+        return make_edn_type(module, method, name, data);
+    }
+
+    VALUE Parser::make_edn_type(VALUE module, ID method, VALUE name, VALUE data)
+    {
+        prot_args args(module, method, name, data);
         return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
     }
 

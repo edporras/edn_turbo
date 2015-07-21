@@ -201,7 +201,7 @@ class EDNT_Test < Minitest::Test
 
   def test_tagged_elem
 
-    EDNT.register("edn_turbo/test_tagged") do |data|
+    EDN.register("edn_turbo/test_tagged") do |data|
       Tagged.new(data).to_s
     end
 

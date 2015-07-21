@@ -12,6 +12,7 @@
 namespace edn
 {
     extern VALUE rb_mEDNT;
+    extern VALUE EDN_MODULE_SYMBOL;
     extern VALUE EDNT_MAKE_SYMBOL_METHOD;
     extern VALUE EDNT_MAKE_LIST_METHOD;
     extern VALUE EDNT_MAKE_SET_METHOD;
@@ -92,6 +93,7 @@ namespace edn
 
         static VALUE make_edn_type(ID method, VALUE value);
         static VALUE make_edn_type(ID method, VALUE value1, VALUE value2);
+        static VALUE make_edn_type(VALUE module, ID method, VALUE value1, VALUE value2);
 
         // metadata
         VALUE ruby_meta();

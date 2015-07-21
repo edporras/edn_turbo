@@ -23,9 +23,4 @@ module EDNT
     end
 
   end
-
-  def self.big_decimal(str)
-    BigDecimal.new(str)
-  end
-
 end

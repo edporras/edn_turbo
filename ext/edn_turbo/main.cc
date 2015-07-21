@@ -13,7 +13,9 @@ namespace edn {
 
     VALUE rb_mEDNT;
 
-    // methods on the ruby side we'll call from here
+    // Symbols used to call into the ruby world.
+    VALUE EDN_MODULE_SYMBOL             = Qnil;
+
     VALUE EDNT_MAKE_SYMBOL_METHOD       = Qnil;
     VALUE EDNT_MAKE_LIST_METHOD         = Qnil;
     VALUE EDNT_MAKE_SET_METHOD          = Qnil;
@@ -28,7 +30,7 @@ namespace edn {
     VALUE EDNT_EOF_CONST                = Qnil;
 
     //
-    // wrappers to hook the class w/ the C-api
+    // Wrappers to hook the class w/ the C-api.
     static void delete_parser(edn::Parser *ptr) {
         delete ptr;
     }
@@ -50,7 +52,7 @@ namespace edn {
 
 
     //
-    // called by the constructor - sets the source if passed
+    // Called by the constructor - sets the source if passed.
     static VALUE initialize(int argc, VALUE* argv, VALUE self)
     {
         Parser* p = get_parser(self);
@@ -139,6 +141,7 @@ void Init_edn_turbo(void)
     rb_define_method(rb_cParser, "ext_next", (VALUE(*)(ANYARGS)) &edn::next, 0 );
 
     // bind ruby methods we'll call - these should be defined in edn_turbo.rb
+    edn::EDN_MODULE_SYMBOL             = rb_intern("EDN");
     edn::EDNT_MAKE_SYMBOL_METHOD       = rb_intern("symbol");
     edn::EDNT_MAKE_LIST_METHOD         = rb_intern("list");
     edn::EDNT_MAKE_SET_METHOD          = rb_intern("set");
@@ -150,5 +153,6 @@ void Init_edn_turbo(void)
     edn::EDNT_STRING_TO_F_METHOD       = rb_intern("to_f");
 
     // so we can return EOF directly
-    edn::EDNT_EOF_CONST                = rb_const_get(edn::rb_mEDNT, rb_intern("EOF"));
+    VALUE edn_module                   = rb_const_get(rb_cObject, edn::EDN_MODULE_SYMBOL);
+    edn::EDNT_EOF_CONST                = rb_const_get(edn_module, rb_intern("EOF"));
 }
