@@ -21,6 +21,5 @@ module EDNT
     def parse(data)
       ext_read(data)
     end
-
   end
 end

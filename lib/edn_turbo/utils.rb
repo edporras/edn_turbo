@@ -4,7 +4,7 @@ module EDNT
 
   # ============================================================================
   # emulate EDN::Metadata
-  module Metadata
+  module Metadataqqq
     attr_accessor :metadata
   end
 
@@ -24,7 +24,7 @@ module EDNT
     end
 
     if !metadata.empty?
-      value.extend Metadata
+      value.extend EDN::Metadata
       value.metadata = metadata
     end
 

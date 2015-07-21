@@ -2273,7 +2273,7 @@ tr5:
                     // parse_value() read an element we care
                     // about. Bind the metadata to it and add it to
                     // the sequence
-                    e = Parser::make_edn_type(EDNT_EXTENDED_VALUE_METHOD, e, ruby_meta());
+                    e = Parser::make_edn_type(rb_mEDNT, EDNT_EXTENDED_VALUE_METHOD, e, ruby_meta());
                     rb_ary_push(elems, e);
                 }
             } else {
@@ -2471,7 +2471,7 @@ tr5:
                     // parse_value() read an element we care
                     // about. Bind the metadata to it and add it to
                     // the sequence
-                    e = Parser::make_edn_type(EDNT_EXTENDED_VALUE_METHOD, e, ruby_meta());
+                    e = Parser::make_edn_type(rb_mEDNT, EDNT_EXTENDED_VALUE_METHOD, e, ruby_meta());
                     rb_ary_push(elems, e);
                 }
             } else {
@@ -2671,7 +2671,7 @@ tr5:
                     // parse_value() read an element we care
                     // about. Bind the metadata to it and add it to
                     // the sequence
-                    e = Parser::make_edn_type(EDNT_EXTENDED_VALUE_METHOD, e, ruby_meta());
+                    e = Parser::make_edn_type(rb_mEDNT, EDNT_EXTENDED_VALUE_METHOD, e, ruby_meta());
                     rb_ary_push(elems, e);
                 }
             } else {
@@ -2994,7 +2994,7 @@ tr5:
                     // parse_value() read an element we care
                     // about. Bind the metadata to it and add it to
                     // the sequence
-                    e = Parser::make_edn_type(EDNT_EXTENDED_VALUE_METHOD, e, ruby_meta());
+                    e = Parser::make_edn_type(rb_mEDNT, EDNT_EXTENDED_VALUE_METHOD, e, ruby_meta());
                     rb_ary_push(elems, e);
                 }
             } else {
@@ -3680,7 +3680,7 @@ tr4:
             // metadata sequence to it
             if (!meta_empty() && meta_size() == meta_sz) {
                 // this will empty the metadata sequence too
-                result = Parser::make_edn_type(EDNT_EXTENDED_VALUE_METHOD, result, ruby_meta());
+                result = Parser::make_edn_type(rb_mEDNT, EDNT_EXTENDED_VALUE_METHOD, result, ruby_meta());
             }
             {p = (( np))-1;}
         }
@@ -3849,7 +3849,7 @@ tr3:
                 else {
                     // a value was read and there's a pending metadata
                     // sequence. Bind them.
-                    value = Parser::make_edn_type(EDNT_EXTENDED_VALUE_METHOD, value, ruby_meta());
+                    value = Parser::make_edn_type(rb_mEDNT, EDNT_EXTENDED_VALUE_METHOD, value, ruby_meta());
                     state = TOKEN_OK;
                 }
             } else if (!discard.empty()) {
