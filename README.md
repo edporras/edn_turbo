@@ -1,28 +1,44 @@
 edn_turbo
-============
+=========
 
-Fast EDN parser for Ruby. 
+Fast Ragel-based EDN parser for Ruby.
 
-Edn_turbo is a parser plugin for the 
+`edn_turbo` is a parser plugin for
 [edn](https://github.com/relevance/edn-ruby). With a few exceptions
-edn_turbo provides the same functionality as the edn gem,
-but since the edn_turbo parser is implemented in C, edn_turbo is 
-an order of magintude faster.
+`edn_turbo` provides the same functionality as the edn gem, but since
+the `edn_turbo` parser is implemented in C, it is an order of
+magintude faster.
 
 
 Some quick sample runs comparing time output of file reads using `edn`
 and `edn_turbo` (see [issue 12](https://github.com/relevance/edn-ruby/issues/12)):
 
-TBD
+```irb(main):001:0> require 'benchmark'
+=> true
+irb(main):002:0> require 'edn'
+=> true
+irb(main):003:0> s = "[{\"x\" {\"id\" \"/model/952\", \"model_name\" \"person\", \"ancestors\" [\"record\" \"asset\"], \"format\" \"edn\"}, \"id\" 952, \"name\" nil, \"model_name\" \"person\", \"rel\" {}, \"description\" nil, \"age\" nil, \"updated_at\" nil, \"created_at\" nil, \"anniversary\" nil, \"job\" nil, \"start_date\" nil, \"username\" nil, \"vacation_start\" nil, \"vacation_end\" nil, \"expenses\" nil, \"rate\" nil, \"display_name\" nil, \"gross_profit_per_month\" nil}]"
+=> "[{\"x\" {\"id\" \"/model/952\", \"model_name\" \"person\", \"ancestors\" [\"record\" \"asset\"], \"format\" \"edn\"}, \"id\" 952, \"name\" nil, \"model_name\" \"person\", \"rel\" {}, \"description\" nil, \"age\" nil, \"updated_at\" nil, \"created_at\" nil, \"anniversary\" nil, \"job\" nil, \"start_date\" nil, \"username\" nil, \"vacation_start\" nil, \"vacation_end\" nil, \"expenses\" nil, \"rate\" nil, \"display_name\" nil, \"gross_profit_per_month\" nil}]"
+irb(main):004:0> Benchmark.realtime { 100.times { EDN::read(s) } }
+=> 0.083543
+irb(main):005:0> Benchmark.realtime { 100000.times { EDN::read(s) } }
+=> 73.901049
+irb(main):006:0> require 'edn_turbo'
+=> true
+irb(main):007:0> Benchmark.realtime { 100.times { EDN::read(s) } }
+=> 0.007321
+irb(main):008:0> Benchmark.realtime { 100000.times { EDN::read(s) } }
+=> 2.866411
+```
 
 
 Dependencies
 ============
 
 - ruby gems:
-  - [rake 10.3.2](http://rake.rubyforge.org)
-  - [rake-compiler 0.9.2](http://rake-compiler.rubyforge.org)
-  - [edn 1.0.7](https://github.com/relevance/edn-ruby)
+  - [rake 10.3](http://rake.rubyforge.org)
+  - [rake-compiler 0.9](http://rake-compiler.rubyforge.org)
+  - [edn 1.1](https://github.com/relevance/edn-ruby)
 - [icu4c](http://icu-project.org/apiref/icu4c/)
 
 
@@ -39,8 +55,8 @@ Notes:
 Usage
 =====
 
-Simply require 'edn_turbo' instead of 'edn'. Other wise (with the exceptions noted below)
-the API api is the same as the edn gem.
+Simply require 'edn_turbo' instead of 'edn'. Otherwise (with the exceptions noted below)
+the API is the same as the edn gem.
 
 ```ruby
     require 'edn_turbo'
@@ -88,9 +104,11 @@ Or instantiate and reuse an instance of a parser:
     end
 ```
 
-Differences with edn gem.
-==============
-Note that edn_turbo cannot read multiple EDN values from a stream.
+Differences with edn gem
+========================
+Currently, `edn_turbo` cannot read multiple EDN values from a stream
+the way that `edn-ruby`'s parser can. `edn_turbo` expects string input
+and has no way to control ruby streams of other types.
 
 Known problems
 ==============
