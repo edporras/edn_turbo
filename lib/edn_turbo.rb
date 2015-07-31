@@ -14,6 +14,3 @@ module EDNT
     end
   end
 end
-
-puts "rewirting parser"
-EDN::parser=EDNT::Parser
