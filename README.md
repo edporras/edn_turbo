@@ -13,7 +13,8 @@ magintude faster.
 Some quick sample runs comparing time output of file reads using `edn`
 and `edn_turbo` (see [issue 12](https://github.com/relevance/edn-ruby/issues/12)):
 
-```irb(main):001:0> require 'benchmark'
+```
+irb(main):001:0> require 'benchmark'
 => true
 irb(main):002:0> require 'edn'
 => true
