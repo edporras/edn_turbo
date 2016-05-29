@@ -47,14 +47,14 @@ File.open(filename) do |file|
   if options[:use_parse]
     output = p.parse(file.read)
 
-    pp output if output != EDNT::EOF
+    pp output if output != EDN::EOF
   else
     p.set_input(file.read)
 
     loop do
       output = p.read
 
-      break if output == EDNT::EOF
+      break if output == EDN::EOF
 
       pp output
 
