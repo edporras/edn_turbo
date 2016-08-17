@@ -1,12 +1,12 @@
 #include <signal.h>
 #include <iostream>
 #include <clocale>
-
 #include <cstring>
+
+#include <ruby/ruby.h>
 
 #include "edn_parser.h"
 
-#include <ruby/ruby.h>
 
 
 namespace edn {

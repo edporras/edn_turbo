@@ -12,6 +12,7 @@
 #include <ruby/encoding.h>
 
 #include "edn_parser.h"
+#include "edn_parser_util.h"
 
 namespace edn
 {
@@ -198,7 +199,7 @@ namespace edn
             std::string buf;
 
             if (encode) {
-                if (!to_utf8(p_start, p_end - p_start, buf))
+                if (!util::to_utf8(p_start, p_end - p_start, buf))
                     return false;
             }
             else {

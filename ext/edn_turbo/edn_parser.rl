@@ -2,8 +2,9 @@
 #include <string>
 #include <vector>
 #include <exception>
-
 #include <cstring>
+
+#include <ruby/ruby.h>
 
 #include "edn_parser.h"
 
@@ -222,7 +223,7 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, VALUE& v)
                            ((0xc2..0xf5) |
                             '\\'[\"\\/bfnrt] |
                             '\\u'[0-9a-fA-F]{4}) $mark_for_encoding |
-                           '\\'^([\"\\/bfnrtu]))* %parse_chars
+                            '\\'^([\"\\/bfnrtu]))* %parse_chars
                           ) :>> string_delim @err(close_err) @exit;
 }%%
 
@@ -1189,11 +1190,9 @@ edn::Parser::eTokenState edn::Parser::parse_next(VALUE& value)
     return state;
 }
 
-
 /*
- * Local variables:
- * mode: c
- * c-file-style: ruby
- * indent-tabs-mode: nil
- * End:
- */
+- * Local variables:
+- * mode: c
+- * indent-tabs-mode: nil
+- * End:
+- */

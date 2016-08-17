@@ -1,0 +1,3 @@
+edn_parser.o: edn_parser.cc edn_parser.h
+edn_parser_util.o: edn_parser_util.cc edn_parser.h edn_parser_util.h
+edn_parser_util_encode.o: edn_parse_util_encode.cc edn_parser_util.h

@@ -1,12 +1,9 @@
-#ifndef EDN_RAGEL_PARSER_H
-#define EDN_RAGEL_PARSER_H
+#pragma once
 
 #include <string>
 #include <sstream>
 #include <vector>
 #include <stack>
-
-#include <ruby/ruby.h>
 
 
 namespace edn
@@ -81,9 +78,6 @@ namespace edn
 
         eTokenState parse_next(VALUE& value);
 
-        // defined in edn_parser_unicode.cc
-        static bool to_utf8(const char *s, std::size_t len, std::string& rslt);
-
         // defined in edn_parser_util.cc
         static VALUE integer_to_ruby(const char* str, std::size_t len);
         static VALUE float_to_ruby  (const char* str, std::size_t len);
@@ -117,8 +111,6 @@ namespace edn
         void error(const std::string& f, const std::string& err, char c) const;
         void error(const std::string& f, char err_c) const { error(f, "", err_c); }
         void error(const std::string& f, const std::string& err_msg) const { error(f, err_msg, '\0'); }
-    }; // Engine
+    }; // Parser
 
 } // namespace
-
-#endif
