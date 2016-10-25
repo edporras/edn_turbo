@@ -125,8 +125,7 @@ void Init_edn_turbo(void)
 
     // pass things back as utf-8
     if (!setlocale( LC_ALL, "" )) {
-        std::cerr << "Error setting locale" << std::endl;
-        return;
+        rb_raise(rb_eRuntimeError, "Extension init error calling setlocale() - It appears your system's locale is not configured correctly.\n");
     }
 
     edn::rb_mEDNT = rb_define_module("EDNT");
