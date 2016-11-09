@@ -107,9 +107,9 @@ Or instantiate and reuse an instance of a parser:
 
 Differences with edn gem
 ========================
-Currently, `edn_turbo` cannot read multiple EDN values from a stream
-the way that `edn-ruby`'s parser can. `edn_turbo` expects string input
-and has no way to control ruby streams of other types.
+`edn_turbo` reads `String` and core IO types using C-api calls.
+However, data from `StringIO` sources is extracted using `read()`
+calls into the ruby side.
 
 Known problems
 ==============

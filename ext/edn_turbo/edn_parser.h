@@ -19,6 +19,7 @@ namespace edn
 
     extern VALUE EDNT_STRING_TO_I_METHOD;
     extern VALUE EDNT_STRING_TO_F_METHOD;
+    extern VALUE EDNT_READ_METHOD;
 
     extern VALUE EDNT_EOF_CONST;
 
@@ -28,13 +29,18 @@ namespace edn
     class Parser
     {
     public:
-        Parser() : p(NULL), pe(NULL), eof(NULL), line_number(1) {
+        Parser() : p(NULL), pe(NULL), eof(NULL),
+          core_io(NULL), read_io(Qnil),
+          io_buffer(NULL), io_buffer_len(0),
+          line_number(1) {
             new_meta_list();
         }
-        ~Parser() { reset_state(); del_top_meta_list(); }
+        ~Parser();
 
         // change input source
         void set_source(const char* src, std::size_t len);
+        void set_source(FILE* fp);
+        void set_source(VALUE string_io);
 
         bool is_eof() const { return (p == eof); }
 
@@ -51,11 +57,16 @@ namespace edn
         const char* p;
         const char* pe;
         const char* eof;
+        FILE* core_io;  // for IO streams
+        VALUE read_io;  // for non-core IO that responds to read()
+        char* io_buffer;
+        uintmax_t io_buffer_len;
         std::size_t line_number;
         std::vector<VALUE> discard;
         std::stack<std::vector<VALUE>* > metadata;
 
         void reset_state();
+        void fill_buf();
 
         const char* parse_value   (const char *p, const char *pe, VALUE& v);
         const char* parse_string  (const char *p, const char *pe, VALUE& v);
@@ -81,6 +92,7 @@ namespace edn
         // defined in edn_parser_util.cc
         static VALUE integer_to_ruby(const char* str, std::size_t len);
         static VALUE float_to_ruby  (const char* str, std::size_t len);
+        static VALUE ruby_io_read(VALUE io);
 
         static bool parse_byte_stream (const char *p, const char *pe, VALUE& rslt, bool encode);
         static bool parse_escaped_char(const char *p, const char *pe, VALUE& rslt);

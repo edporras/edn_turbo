@@ -4,6 +4,7 @@
 #include <cstring>
 
 #include <ruby/ruby.h>
+#include <ruby/io.h>
 
 #include "edn_parser.h"
 
@@ -25,6 +26,7 @@ namespace edn {
 
     VALUE EDNT_STRING_TO_I_METHOD       = Qnil;
     VALUE EDNT_STRING_TO_F_METHOD       = Qnil;
+    VALUE EDNT_READ_METHOD              = Qnil;
 
     // returned when EOF - defined as a constant in EDN module
     VALUE EDNT_EOF_CONST                = Qnil;
@@ -49,7 +51,7 @@ namespace edn {
         Data_Get_Struct( self, edn::Parser, p );
         return p;
     }
-
+    static VALUE set_source(VALUE self, VALUE data);
 
     //
     // Called by the constructor - sets the source if passed.
@@ -57,11 +59,8 @@ namespace edn {
     {
         Parser* p = get_parser(self);
 
-        if (argc > 0)
-        {
-            const char* stream = StringValueCStr(argv[0]);
-            if (stream)
-                p->set_source( stream, std::strlen(stream) );
+        if (argc > 0) {
+            set_source( self, argv[0] );
         }
         return self;
     }
@@ -72,9 +71,49 @@ namespace edn {
     {
         Parser* p = get_parser(self);
 
-        const char* stream = StringValueCStr(data);
-        if (stream)
-            p->set_source( stream, std::strlen(stream) );
+        switch (TYPE(data))
+        {
+          case T_STRING:
+          {
+              const char* stream = StringValueCStr(data);
+              if (stream) {
+                  p->set_source( stream, std::strlen(stream) );
+              }
+              break;
+          }
+          case T_FILE:
+          {
+              // extract the stream pointer
+              rb_io_t* fptr = RFILE(data)->fptr;
+              if (!fptr) {
+                  rb_raise(rb_eRuntimeError, "Ruby IO - fptr is NULL");
+              }
+
+              rb_io_check_char_readable(fptr);
+
+              FILE* fp = rb_io_stdio_file(fptr);
+              if (!fp) {
+                  rb_raise(rb_eRuntimeError, "Ruby IO - fptr->fp is NULL");
+              }
+
+              p->set_source(fp);
+              break;
+          }
+          case T_DATA:
+          {
+              // StringIO or some other IO not part of the ruby core -
+              // this is very inefficient as it'll require read()
+              // calls from the ruby side (involves a lot of data
+              // wrapping, etc)
+              if (rb_respond_to(data, EDNT_READ_METHOD)) {
+                  p->set_source(data);
+                  break;
+              }
+          }
+          default:
+              rb_raise(rb_eRuntimeError, "set_source expected String, core IO, or IO that responds to read()");
+              break;
+        }
 
         return self;
     }
@@ -90,9 +129,13 @@ namespace edn {
     // parses an entire stream
     static VALUE read(VALUE self, VALUE data)
     {
+        if (TYPE(data) != T_STRING) {
+            rb_raise(rb_eTypeError, "Expected String data");
+        }
         const char* stream = StringValueCStr(data);
-        if (stream)
+        if (stream) {
             return get_parser(self)->parse(stream, std::strlen(stream) );
+        }
         return Qnil;
     }
 
@@ -151,6 +194,7 @@ void Init_edn_turbo(void)
 
     edn::EDNT_STRING_TO_I_METHOD       = rb_intern("to_i");
     edn::EDNT_STRING_TO_F_METHOD       = rb_intern("to_f");
+    edn::EDNT_READ_METHOD              = rb_intern("read");
 
     // so we can return EOF directly
     VALUE edn_module                   = rb_const_get(rb_cObject, edn::EDN_MODULE_SYMBOL);

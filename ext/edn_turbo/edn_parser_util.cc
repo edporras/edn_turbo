@@ -30,6 +30,18 @@ namespace edn
     static const std::size_t LD_max_chars = get_max_chars<>((double) 1);
 
 
+    // parser destructor
+    //
+    Parser::~Parser()
+    {
+        reset_state();
+        del_top_meta_list();
+
+        if (io_buffer) {
+            free(reinterpret_cast<void*>(io_buffer));
+        }
+    }
+    
     // =================================================================
     // for token-by-token parsing. If a discard or metadata is parsed,
     // attempt to get the following value
@@ -37,6 +49,11 @@ namespace edn
     VALUE Parser::next()
     {
         VALUE token = EDNT_EOF_CONST;
+
+        // buffer if reading from an IO
+        if (core_io || (read_io != Qnil)) {
+            fill_buf();
+        }
 
         while (!is_eof())
         {
@@ -71,6 +88,11 @@ namespace edn
         }
         // but clear any metadata on the first
         metadata.top()->clear();
+
+        // clean up
+        core_io = NULL;
+        read_io = Qnil;
+        p = pe = eof = NULL;
     }
 
     //
@@ -84,6 +106,78 @@ namespace edn
         eof = pe;
     }
 
+    void Parser::set_source(FILE* fp)
+    {
+        reset_state();
+        core_io = fp;
+    }
+
+    void Parser::set_source(VALUE str_io)
+    {
+        reset_state();
+        read_io = str_io;
+    }
+
+    //
+    // for IO sources, read and fill a buffer
+    void Parser::fill_buf()
+    {
+        std::string str_buf;
+
+        // read as much data available
+        if (core_io) {
+            // ruby core IO types
+            char c;
+            while (1)
+            {
+                c = fgetc(core_io);
+                if (c == EOF) {
+                    break;
+                }
+                str_buf += c;
+            }
+
+        } else if (read_io != Qnil) {
+            // StringIO, etc. Call read() from ruby side
+            VALUE v = ruby_io_read(read_io);
+            if (TYPE(v) == T_STRING) {
+                str_buf.assign( StringValuePtr(v), RSTRING_LEN(v));
+            }
+        }
+
+        // set the buffer to read from
+        if (str_buf.length() > 0) {
+            // first time when io_buffer is NULL, pe & p = 0
+            uintmax_t new_length = ((uintmax_t) (pe - p)) + str_buf.length();
+            char* start = NULL;
+
+            // allocate or extend storage needed
+            if (!io_buffer) {
+                io_buffer = reinterpret_cast<char*>(malloc(new_length));
+                start = io_buffer;
+            } else if (io_buffer_len < new_length) {
+                // resize the buffer
+                realloc(reinterpret_cast<void*>(io_buffer), new_length);
+            }
+
+            if (!start) {
+                // appending to the buffer but move the data not yet
+                // parsed first to the front
+                memmove(io_buffer, p, pe - p);
+                start = io_buffer + (pe - p);
+            }
+            
+            // and copy
+            memcpy(start, str_buf.c_str(), str_buf.length()); 
+            io_buffer_len = new_length;
+
+            // set ragel state
+            p = io_buffer;
+            pe = p + new_length;
+            eof = pe;
+        }
+    }
+    
 
     // =================================================================
     // work-around for idiotic rb_protect convention in order to avoid
@@ -188,6 +282,15 @@ namespace edn
         return rb_float_new(buftotype<double>(str, len));
     }
 
+
+    //
+    // read from a StringIO - expensive!!!
+    //
+    VALUE Parser::ruby_io_read(VALUE io)
+    {
+        prot_args args(io, EDNT_READ_METHOD);
+        return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
+    }
 
     //
     // copies the string data, unescaping any present values that need to be replaced
