@@ -1,4 +1,4 @@
 module EDNT
-  VERSION = '0.4.1'
-  RELEASE_DATE = %q{2016-07-21}
+  VERSION = '0.5.0'
+  RELEASE_DATE = '2016-11-18'
 end
