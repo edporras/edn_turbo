@@ -157,7 +157,7 @@ namespace edn
                 start = io_buffer;
             } else if (io_buffer_len < new_length) {
                 // resize the buffer
-                realloc(reinterpret_cast<void*>(io_buffer), new_length);
+                io_buffer = reinterpret_cast<char*>(realloc(reinterpret_cast<void*>(io_buffer), new_length));
             }
 
             if (!start) {
