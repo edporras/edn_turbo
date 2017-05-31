@@ -18,19 +18,31 @@ class EDNT_Test < Minitest::Test
 
       # test using parse() first
       output = @parser.parse(input)
-      assert_equal(expected_output, output)
+      if expected_output == nil
+        assert_nil(output)
+      else
+        assert_equal(expected_output, output)
+      end
 
       # now test setting the source and using read (although one-shot)
       @parser.set_input(input)
       output = @parser.read
-      assert_equal(expected_output, output)
+      if expected_output == nil
+        assert_nil(output)
+      else
+        assert_equal(expected_output, output)
+      end
     }
 
     # and test passing the IO
     File.open(file) { |file_io|
       @parser.set_input(file_io)
-       output = @parser.read
-       assert_equal(expected_output, output)
+      output = @parser.read
+      if expected_output == nil
+        assert_nil(output)
+      else
+        assert_equal(expected_output, output)
+      end
      }
     output
   end
