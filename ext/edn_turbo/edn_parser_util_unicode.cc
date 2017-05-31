@@ -7,6 +7,7 @@
 #include <unicode/utypes.h>
 #include <unicode/ustring.h>
 #include <unicode/ucnv.h>
+#include <unicode/unistr.h>
 
 #include "edn_parser_util.h"
 
