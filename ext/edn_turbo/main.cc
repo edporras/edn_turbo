@@ -8,8 +8,6 @@
 
 #include "edn_parser.h"
 
-
-
 namespace edn {
 
     VALUE rb_mEDNT;
@@ -33,12 +31,19 @@ namespace edn {
 
     //
     // Wrappers to hook the class w/ the C-api.
-    static void delete_parser(edn::Parser *ptr) {
-        delete ptr;
+    static void delete_parser(void* p_ptr) {
+        delete reinterpret_cast<edn::Parser*>(p_ptr);
     }
 
+    static const rb_data_type_t parser_data_type = {
+        "edn_turbo::Parser",
+        {0, delete_parser, 0, {0}},
+        0, 0,
+        RUBY_TYPED_FREE_IMMEDIATELY,
+    };
+
     static VALUE wrap_parser_ptr(VALUE klass, edn::Parser* ptr) {
-        return Data_Wrap_Struct(klass, 0, delete_parser, ptr);
+        return TypedData_Wrap_Struct(klass, &parser_data_type, ptr);
     }
 
     static VALUE alloc_obj(VALUE self){
@@ -48,7 +53,7 @@ namespace edn {
     static inline Parser* get_parser(VALUE self)
     {
         Parser *p;
-        Data_Get_Struct( self, edn::Parser, p );
+        TypedData_Get_Struct( self, edn::Parser, &parser_data_type, p );
         return p;
     }
     static VALUE set_source(VALUE self, VALUE data);
@@ -57,8 +62,6 @@ namespace edn {
     // Called by the constructor - sets the source if passed.
     static VALUE initialize(int argc, VALUE* argv, VALUE self)
     {
-        Parser* p = get_parser(self);
-
         if (argc > 0) {
             set_source( self, argv[0] );
         }
@@ -164,7 +167,7 @@ void Init_edn_turbo(void)
     a.sa_handler = edn::die;
     sigemptyset(&a.sa_mask);
     a.sa_flags = 0;
-    sigaction(SIGINT, &a, 0);
+    sigaction(SIGINT, &a, NULL);
 
     // pass things back as utf-8
     if (!setlocale( LC_ALL, "" )) {
