@@ -148,7 +148,11 @@ namespace edn
         // set the buffer to read from
         if (str_buf.length() > 0) {
             // first time when io_buffer is NULL, pe & p = 0
-            uintmax_t new_length = ((uintmax_t) (pe - p)) + str_buf.length();
+            uintmax_t new_length = (pe - p) + str_buf.length();
+            if (new_length > (((uintmax_t) 1 << 32) - 1)) {
+                // icu -> 32-bit. TODO: handle
+                rb_raise(rb_eRuntimeError, "Unsupported string buffer length");
+            }
             char* start = NULL;
 
             // allocate or extend storage needed
@@ -169,7 +173,7 @@ namespace edn
             
             // and copy
             memcpy(start, str_buf.c_str(), str_buf.length()); 
-            io_buffer_len = new_length;
+            io_buffer_len = (uint32_t) new_length;
 
             // set ragel state
             p = io_buffer;
@@ -209,7 +213,7 @@ namespace edn
     private:
         VALUE receiver;
         ID method;
-        VALUE count;
+        int count;
         VALUE args[2];
     };
 
@@ -302,7 +306,7 @@ namespace edn
             std::string buf;
 
             if (encode) {
-                if (!util::to_utf8(p_start, p_end - p_start, buf))
+                if (!util::to_utf8(p_start, (uint32_t) (p_end - p_start), buf))
                     return false;
             }
             else {

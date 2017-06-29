@@ -6,6 +6,6 @@ namespace edn
 {
     namespace util
     {
-        bool to_utf8(const char *s, std::size_t len, std::string& rslt);
+        bool to_utf8(const char *s, uint32_t len, std::string& rslt);
     }
 }

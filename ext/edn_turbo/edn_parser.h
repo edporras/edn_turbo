@@ -60,7 +60,7 @@ namespace edn
         FILE* core_io;  // for IO streams
         VALUE read_io;  // for non-core IO that responds to read()
         char* io_buffer;
-        uintmax_t io_buffer_len;
+        uint32_t io_buffer_len;
         std::size_t line_number;
         std::vector<VALUE> discard;
         std::stack<std::vector<VALUE>* > metadata;

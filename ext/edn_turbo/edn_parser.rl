@@ -280,7 +280,7 @@ const char* edn::Parser::parse_keyword(const char *p, const char *pe, VALUE& v)
 
     if (cs >= EDN_keyword_first_final) {
         std::string buf;
-        uint32_t len = p - p_save;
+        uintmax_t len = p - p_save;
         // don't include leading ':' because the ruby symbol will handle it
         buf.append(p_save + 1, len - 1);
         v = ID2SYM(rb_intern(buf.c_str()));
