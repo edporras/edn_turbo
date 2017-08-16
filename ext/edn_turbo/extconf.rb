@@ -13,6 +13,11 @@ LIB_DIRS = [
 
 dir_config('edn_ext', HEADER_DIRS, LIB_DIRS)
 
+# feels very hackish to do this
+if RUBY_PLATFORM =~ /darwin/
+  $CXXFLAGS << ' -stdlib=libc++ -std=c++11'
+end
+
 unless find_header('unicode/uversion.h')
   abort "icu4c headers missing"
 end
