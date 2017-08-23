@@ -6,28 +6,27 @@
 #include <ruby/ruby.h>
 #include <ruby/io.h>
 
-#include "edn_parser.h"
+#include "parser.h"
 
 namespace edn {
 
+    VALUE rb_mEDN;
     VALUE rb_mEDNT;
 
     // Symbols used to call into the ruby world.
-    VALUE EDN_MODULE_SYMBOL             = Qnil;
+    VALUE EDN_MAKE_SYMBOL_METHOD       = Qnil;
+    VALUE EDN_MAKE_LIST_METHOD         = Qnil;
+    VALUE EDN_MAKE_SET_METHOD          = Qnil;
+    VALUE EDN_MAKE_BIG_DECIMAL_METHOD  = Qnil;
+    VALUE EDN_TAGGED_ELEM_METHOD       = Qnil;
+    VALUE EDNT_EXTENDED_VALUE_METHOD   = Qnil;
 
-    VALUE EDNT_MAKE_SYMBOL_METHOD       = Qnil;
-    VALUE EDNT_MAKE_LIST_METHOD         = Qnil;
-    VALUE EDNT_MAKE_SET_METHOD          = Qnil;
-    VALUE EDNT_MAKE_BIG_DECIMAL_METHOD  = Qnil;
-    VALUE EDNT_TAGGED_ELEM_METHOD       = Qnil;
-    VALUE EDNT_EXTENDED_VALUE_METHOD    = Qnil;
-
-    VALUE EDNT_STRING_TO_I_METHOD       = Qnil;
-    VALUE EDNT_STRING_TO_F_METHOD       = Qnil;
-    VALUE EDNT_READ_METHOD              = Qnil;
+    VALUE RUBY_STRING_TO_I_METHOD      = Qnil;
+    VALUE RUBY_STRING_TO_F_METHOD      = Qnil;
+    VALUE RUBY_READ_METHOD             = Qnil;
 
     // returned when EOF - defined as a constant in EDN module
-    VALUE EDNT_EOF_CONST                = Qnil;
+    VALUE EDN_EOF_CONST                = Qnil;
 
     //
     // Wrappers to hook the class w/ the C-api.
@@ -108,7 +107,7 @@ namespace edn {
               // this is very inefficient as it'll require read()
               // calls from the ruby side (involves a lot of data
               // wrapping, etc)
-              if (rb_respond_to(data, EDNT_READ_METHOD)) {
+              if (rb_respond_to(data, RUBY_READ_METHOD)) {
                   p->set_source(data);
                   break;
               }
@@ -174,6 +173,7 @@ void Init_edn_turbo(void)
         rb_raise(rb_eRuntimeError, "Extension init error calling setlocale() - It appears your system's locale is not configured correctly.\n");
     }
 
+    edn::rb_mEDN  = rb_const_get(rb_cObject, rb_intern("EDN"));
     edn::rb_mEDNT = rb_define_module("EDNT");
 
     // bind the ruby Parser class to the C++ one
@@ -187,19 +187,20 @@ void Init_edn_turbo(void)
     rb_define_method(rb_cParser, "read", (VALUE(*)(ANYARGS)) &edn::next, 0 );
 
     // bind ruby methods we'll call - these should be defined in edn_turbo.rb
-    edn::EDN_MODULE_SYMBOL             = rb_intern("EDN");
-    edn::EDNT_MAKE_SYMBOL_METHOD       = rb_intern("symbol");
-    edn::EDNT_MAKE_LIST_METHOD         = rb_intern("list");
-    edn::EDNT_MAKE_SET_METHOD          = rb_intern("set");
-    edn::EDNT_MAKE_BIG_DECIMAL_METHOD  = rb_intern("big_decimal");
-    edn::EDNT_TAGGED_ELEM_METHOD       = rb_intern("tagged_element");
-    edn::EDNT_EXTENDED_VALUE_METHOD    = rb_intern("extend_for_meta");
+    edn::EDN_MAKE_SYMBOL_METHOD        = rb_intern("symbol");
+    edn::EDN_MAKE_LIST_METHOD          = rb_intern("list");
+    edn::EDN_MAKE_SET_METHOD           = rb_intern("set");
+    edn::EDN_MAKE_BIG_DECIMAL_METHOD   = rb_intern("big_decimal");
+    edn::EDN_TAGGED_ELEM_METHOD        = rb_intern("tagged_element");
 
-    edn::EDNT_STRING_TO_I_METHOD       = rb_intern("to_i");
-    edn::EDNT_STRING_TO_F_METHOD       = rb_intern("to_f");
-    edn::EDNT_READ_METHOD              = rb_intern("read");
+    // defined in EDNT - see edn_parser.rb
+    edn::EDNT_EXTENDED_VALUE_METHOD     = rb_intern("extend_for_meta");
+
+    // ruby methods
+    edn::RUBY_STRING_TO_I_METHOD       = rb_intern("to_i");
+    edn::RUBY_STRING_TO_F_METHOD       = rb_intern("to_f");
+    edn::RUBY_READ_METHOD              = rb_intern("read");
 
     // so we can return EOF directly
-    VALUE edn_module                   = rb_const_get(rb_cObject, edn::EDN_MODULE_SYMBOL);
-    edn::EDNT_EOF_CONST                = rb_const_get(edn_module, rb_intern("EOF"));
+    edn::EDN_EOF_CONST                 = rb_const_get(edn::rb_mEDN, rb_intern("EOF"));
 }

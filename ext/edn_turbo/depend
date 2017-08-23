@@ -1,3 +1,5 @@
-edn_parser.o: edn_parser.cc edn_parser.h
-edn_parser_util.o: edn_parser_util.cc edn_parser.h edn_parser_util.h
-edn_parser_util_encode.o: edn_parse_util_encode.cc edn_parser_util.h
+main.o: main.cc parser.h
+edn_parser.o: edn_parser.cc parser.h util.h
+parser_def.o: parser_def.cc parser.h util.h
+util.o: util.cc util_unicode.h
+util_unicode.o: util_unicode.cc util_unicode.h
