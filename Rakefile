@@ -31,9 +31,8 @@ end
 
 CLEAN.include(["*.png", "*.gem"])
 
+# ragel cc source generation
 task :ragel => GEN_CC_PARSER_SRC_PATH
-
-
 file GEN_CC_PARSER_SRC_PATH => RAGEL_PARSER_SRC_PATH do
   cd EXT_PATH do
     sh "ragel -G2 -o #{GEN_CC_PARSER_SRC} #{RAGEL_PARSER_SRC}"
@@ -42,7 +41,7 @@ file GEN_CC_PARSER_SRC_PATH => RAGEL_PARSER_SRC_PATH do
   end
 end
 
-
+# graph generation for testing machine output
 task :graph, [:machine] do |t, args|
   args.with_defaults(:machine => 'EDN_value')
   TMPFILE='/tmp/ragel_edn'

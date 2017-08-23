@@ -22,7 +22,7 @@ begin
   File.open(filename) do |file|
     doc_data = EDN.read(file)
   end
-rescue Exception => e
+rescue Exception
   $stderr.puts "Error reading file"
   abort
 end
