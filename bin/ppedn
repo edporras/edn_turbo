@@ -4,6 +4,7 @@
 $LOAD_PATH << File.expand_path( File.dirname(__FILE__) + '/../lib' )
 
 require 'optparse'
+require 'edn'
 require 'edn_turbo'
 require 'pp'
 
@@ -17,7 +18,7 @@ optparse = OptionParser.new do |opts|
   end
 
   opts.on( '-v', '--version', 'Display version information and exit' ) do
-    $stderr.puts "EDN parsing C++-extension version #{EDNt::VERSION}"
+    $stderr.puts "EDN parsing C++-extension version #{EDNT::VERSION}"
     exit
   end
 
