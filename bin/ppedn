@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
+# frozen_string_literal: true
 
-$LOAD_PATH << File.expand_path( File.dirname(__FILE__) + '/../lib' )
+$LOAD_PATH << File.expand_path(File.dirname(__FILE__) + '/../lib')
 
 require 'optparse'
 require 'edn'
@@ -10,41 +11,39 @@ require 'pp'
 
 options = {}
 optparse = OptionParser.new do |opts|
-  opts.banner = "Usage: #{$0} [options] filename"
+  opts.banner = "Usage: #{$PROGRAM_NAME} [options] filename"
 
   options[:use_parse] = false
-  opts.on( '-p', '--use_parse', 'User single-shot parse() instead of token-wise read()' ) do
+  opts.on('-p', '--use_parse', 'User single-shot parse() instead of token-wise read()') do
     options[:use_parse] = true
   end
 
-  opts.on( '-v', '--version', 'Display version information and exit' ) do
+  opts.on('-v', '--version', 'Display version information and exit') do
     $stderr.puts "EDN parsing C++-extension version #{EDNT::VERSION}"
     exit
   end
 
-  opts.on( '-h', '--help', 'Display this screen' ) do
+  opts.on('-h', '--help', 'Display this screen') do
     $stderr.puts opts
     exit
   end
 end
 optparse.parse!
 
-if ARGV.size == 0
+if ARGV.empty?
   $stderr.puts optparse
   exit 1
 end
 
 filename = ARGV[0]
-if !File.exist? filename
+unless File.exist? filename
   $stderr.puts "Path '#{filename}' not valid"
   exit 1
 end
 
 p = EDNT::Parser.new
 
-
 File.open(filename) do |file|
-
   if options[:use_parse]
     output = p.parse(file.read)
 
@@ -58,8 +57,7 @@ File.open(filename) do |file|
       break if output == EDN::EOF
 
       pp output
-
-#      puts "\tread() meta: #{p.metadata}" if p.has_metadata?
+      # puts "\tread() meta: #{p.metadata}" if p.has_metadata?
     end
   end
 end

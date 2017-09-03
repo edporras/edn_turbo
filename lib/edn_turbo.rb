@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'edn'
 require 'edn_turbo/version'
 require 'edn_turbo/edn_parser'

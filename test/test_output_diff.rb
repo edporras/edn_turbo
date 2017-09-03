@@ -1,12 +1,11 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
-$LOAD_PATH << File.expand_path( File.dirname(__FILE__) + '/../lib' )
+$LOAD_PATH << File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'minitest/autorun'
 require 'edn_turbo'
 require 'date'
 
 class EDNT_Test < Minitest::Test
-
   def setup
     @parser = EDNT::Parser.new
   end
@@ -47,7 +46,7 @@ class EDNT_Test < Minitest::Test
     output
   end
 
-  # ========================================================================================
+  # ============================================================================
   # tests start here
   #
   def test_false
@@ -95,8 +94,8 @@ class EDNT_Test < Minitest::Test
 
     check_file('test/values.edn',
                [false, true, nil, "this is a test", "this\tis\\only\ta\ttest\rof\"various\nescaped\\values",
-                ["c", "\n", "\t"],
-                "123➪456®789"]
+                ['c', "\n", "\t"],
+                '123➪456®789']
               )
   end
 
@@ -104,103 +103,94 @@ class EDNT_Test < Minitest::Test
 
     check_file('test/inst.edn',
                [
-                 DateTime.rfc3339("1985-04-12T23:20:50.52Z"),
-                 DateTime.rfc3339("1996-12-19T16:39:57-08:00"),
-                 DateTime.rfc3339("1990-12-31T23:59:60Z"),
-                 DateTime.rfc3339("1990-12-31T15:59:60-08:00"),
-                 DateTime.rfc3339("1937-01-01T12:00:27.87+00:20")
+                 DateTime.rfc3339('1985-04-12T23:20:50.52Z'),
+                 DateTime.rfc3339('1996-12-19T16:39:57-08:00'),
+                 DateTime.rfc3339('1990-12-31T23:59:60Z'),
+                 DateTime.rfc3339('1990-12-31T15:59:60-08:00'),
+                 DateTime.rfc3339('1937-01-01T12:00:27.87+00:20')
                ]
               )
   end
 
   def test_builtin_tagged_uuid
 
-    check_file('test/uuid.edn', "f81d4fae-7dec-11d0-a765-00a0c91e6bf6")
+    check_file('test/uuid.edn', 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6')
 
   end
 
   def test_sets
-
     check_file('test/set.edn',
                [ Set.new(),
                  Set.new([1, Set.new([:abc])]),
                  Set.new([1]),
-                 Set.new([1, "abc" ]),
-                 Set.new([1, 2, 3, [4, 5], "abc", 23.3])
+                 Set.new([1, 'abc' ]),
+                 Set.new([1, 2, 3, [4, 5], 'abc', 23.3])
                ]
               )
-
   end
 
   def test_symbol
-
     check_file('test/symbol.edn',
                [
-                 EDN::Type::Symbol.new("asymbol"),
-                 EDN::Type::Symbol.new(".asymbol"),
+                 EDN::Type::Symbol.new('asymbol'),
+                 EDN::Type::Symbol.new('.asymbol'),
                  EDN::Type::Symbol.new("with'_a_'"),
-                 EDN::Type::Symbol.new("with.123"),
-                 EDN::Type::Symbol.new("-with.123"),
-                 EDN::Type::Symbol.new("/"),
-                 EDN::Type::Symbol.new(">:FOuy/+"),
+                 EDN::Type::Symbol.new('with.123'),
+                 EDN::Type::Symbol.new('-with.123'),
+                 EDN::Type::Symbol.new('/'),
+                 EDN::Type::Symbol.new('>:FOuy/+'),
                ]
                )
-
   end
 
   def test_unicode
-
     check_file('test/unicode.edn',
                [:text,
                 "Page \u0018, October 2009 TechTIPS",
-                "This should be an unfilled star: ☆"]
+                'This should be an unfilled star: ☆']
               )
   end
 
   def test_vector
-
     check_file('test/vector_1.edn',
-               [true, true, 34, [true, nil, "añ", "", :test, [3213.23]]]
+               [true, true, 34, [true, nil, 'añ', '', :test, [3213.23]]]
               )
   end
 
   def test_list
-
     check_file('test/list_1.edn',
-               [22, 3312, "dss", {:powerpuff=>[:buttercup, :bubbles, :blossom]}]
+               [22, 3312, 'dss', {:powerpuff=>[:buttercup, :bubbles, :blossom]}]
               )
-
   end
 
   def test_map
-
     check_file('test/map1.edn',
-               {:key_a1=>true,:key_a2=>false,:key_a3=>[1, 2, 3, "test string", nil, {1=>2}],
-                :key_a4=>{:key_a31=>23, :key_a32=>24.4},"string_key"=>:kval,
-                :embedded=>[true, {:c2g_md5=>"2bbee1cd3045710db6fec432b00d1e0c"}],
+               {:key_a1=>true,:key_a2=>false,:key_a3=>[1, 2, 3, 'test string', nil, {1=>2}],
+                :key_a4=>{:key_a31=>23, :key_a32=>24.4},'string_key'=>:kval,
+                :embedded=>[true, {:c2g_md5=>'2bbee1cd3045710db6fec432b00d1e0c'}],
                 2=>{:a=>:b}}
               )
 
     check_file('test/map2.edn',
-               {:int=>1, :string=>"hello", :char=>"a", :array=>[0, 1], :hash=>{:key=>"value"}}
+               {int: 1, string: 'hello', char: 'a', array: [0, 1], hash: {key: 'value'}}
               )
   end
 
 
   def test_metadata
     f = check_file('test/metadata.edn', [98.6, 99.7])
-    assert_equal({:doc=>"This is my vector", :rel=>:temps}, f.metadata)
+    assert_equal({:doc=>'This is my vector', rel: :temps}, f.metadata)
   end
 
   def test_metadata2
     f = check_file('test/metadata2.edn', [1, 2])
-    assert_equal({:foo=>true, :tag=>EDN::Type::Symbol.new('String'), :bar=>2}, f.metadata)
+    assert_equal({ foo: true, tag: EDN::Type::Symbol.new('String'), bar: 2 }, f.metadata)
   end
 
   def test_metadata_in_vector
     check_file('test/meta_in_vector.edn',
                [ [ EDN::Type::Symbol.new('c'), :d, true ],
-                 DateTime.rfc3339("1390-09-07T21:27:03+00:00")
+                 DateTime.rfc3339('1390-09-07T21:27:03+00:00')
                ]
               )
   end
@@ -220,7 +210,7 @@ class EDNT_Test < Minitest::Test
 
   def test_tagged_elem
 
-    EDN.register("edn_turbo/test_tagged") do |data|
+    EDN.register('edn_turbo/test_tagged') do |data|
       Tagged.new(data).to_s
     end
 
@@ -257,7 +247,7 @@ class EDNT_Test < Minitest::Test
   end
 
   REF_MAP3_DATA = {:meta=>{:data_format_version=>304,
-                           :filename=>"test/colorspan.pdf",
+                           :filename=>'test/colorspan.pdf',
                            :is_ok=>true,
                            :font_engine_ok=>true,
                            :pdf_ver_major=>1,
@@ -388,7 +378,7 @@ class EDNT_Test < Minitest::Test
   end
 
   def test_ruby_file_io
-    File.open("test/true.edn", "r") do |f|
+    File.open('test/true.edn', 'r') do |f|
       # now test setting the source and using read (although one-shot)
       @parser.set_input(f)
       output = @parser.read
@@ -397,12 +387,12 @@ class EDNT_Test < Minitest::Test
   end
 
   def test_ruby_file_io_long
-      File.open("test/map3.edn", "r") do |f|
-        # now test setting the source and using read (although one-shot)
-        @parser.set_input(f)
-        output = @parser.read
-        assert_equal(REF_MAP3_DATA, output)
-      end
+    File.open('test/map3.edn', 'r') do |f|
+      # now test setting the source and using read (although one-shot)
+      @parser.set_input(f)
+      output = @parser.read
+      assert_equal(REF_MAP3_DATA, output)
+    end
   end
 
   def test_ruby_string_io
@@ -415,11 +405,10 @@ class EDNT_Test < Minitest::Test
 
   def test_init_arg
     # test passing IO to constructor
-    File.open("test/map3.edn", "r") do |f|
+    File.open('test/map3.edn', 'r') do |f|
       p = EDNT::Parser.new(f)
       output = p.read
       assert_equal(REF_MAP3_DATA, output)
     end
   end
-  
 end

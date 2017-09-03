@@ -10,3 +10,5 @@ tmp/*
 *.hpp
 *.ipp
 *.png
+_*.edn
+_*.rb

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'mkmf'
 
 HEADER_DIRS = [
@@ -13,17 +15,11 @@ LIB_DIRS = [
 
 dir_config('edn_ext', HEADER_DIRS, LIB_DIRS)
 
-# feels very hackish to do this
-if RUBY_PLATFORM =~ /darwin/
-  $CXXFLAGS << ' -stdlib=libc++ -std=c++11'
-end
+# feels very hackish to do this but the new icu4c needs it on MacOS
+$CXXFLAGS << ' -stdlib=libc++ -std=c++11' if RUBY_PLATFORM.match?(/darwin/)
 
-unless find_header('unicode/uversion.h')
-  abort "icu4c headers missing"
-end
+abort 'icu4c headers missing' unless find_header('unicode/uversion.h')
 
-unless have_library('icuuc')
-  abort "ic4c lib missing"
-end
+abort 'ic4c lib missing' unless have_library('icuuc')
 
-create_makefile("edn_turbo/edn_turbo")
+create_makefile('edn_turbo/edn_turbo')
