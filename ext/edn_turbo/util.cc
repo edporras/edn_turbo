@@ -2,8 +2,6 @@
 #include <string>
 #include <sstream>
 #include <limits>
-#include <exception>
-#include <stdexcept>
 
 #include <ruby/ruby.h>
 #include <ruby/encoding.h>
@@ -34,11 +32,7 @@ namespace edn
             return;
 
         VALUE err = rb_errinfo();
-        VALUE klass = rb_class_path(CLASS_OF(err));
-        VALUE message = rb_obj_as_string(err);
-        std::stringstream msg;
-        msg << RSTRING_PTR(klass) << " exception: " << RSTRING_PTR(message);
-        throw std::runtime_error(msg.str());
+        rb_raise(CLASS_OF(err), "%s", RSTRING_PTR(rb_obj_as_string(err)));
     }
 
     // =================================================================
