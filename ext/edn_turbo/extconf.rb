@@ -16,7 +16,7 @@ LIB_DIRS = [
 dir_config('edn_ext', HEADER_DIRS, LIB_DIRS)
 
 # feels very hackish to do this but the new icu4c needs it on MacOS
-$CXXFLAGS << ' -stdlib=libc++ -std=c++11' if RUBY_PLATFORM.match?(/darwin/)
+$CXXFLAGS << ' -stdlib=libc++ -std=c++11' if RUBY_PLATFORM =~ /darwin/
 
 abort 'icu4c headers missing' unless find_header('unicode/uversion.h')
 
