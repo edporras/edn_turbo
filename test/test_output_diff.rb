@@ -1,23 +1,27 @@
 #!/usr/bin/env ruby
-# -*- coding: utf-8 -*-
+
+# frozen_string_literal: true
+
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'minitest/autorun'
 require 'edn_turbo'
 require 'date'
 
 class EDNT_Test < Minitest::Test
+  #
+  # helpers
   def setup
     @parser = EDNT::Parser.new
   end
 
   def check_file(file, expected_output)
     output = nil
-    File.open(file) { |source|
+    File.open(file) do |source|
       input = source.instance_of?(String) ? source : source.read
 
       # test using parse() first
       output = @parser.parse(input)
-      if expected_output == nil
+      if expected_output.nil?
         assert_nil(output)
       else
         assert_equal(expected_output, output)
@@ -26,23 +30,23 @@ class EDNT_Test < Minitest::Test
       # now test setting the source and using read (although one-shot)
       @parser.set_input(input)
       output = @parser.read
-      if expected_output == nil
+      if expected_output.nil?
         assert_nil(output)
       else
         assert_equal(expected_output, output)
       end
-    }
+    end
 
     # and test passing the IO
-    File.open(file) { |file_io|
+    File.open(file) do |file_io|
       @parser.set_input(file_io)
       output = @parser.read
-      if expected_output == nil
+      if expected_output.nil?
         assert_nil(output)
       else
         assert_equal(expected_output, output)
       end
-     }
+    end
     output
   end
 
@@ -74,33 +78,26 @@ class EDNT_Test < Minitest::Test
   end
 
   def test_number
-
     check_file('test/number.edn',
                [0, 0, 5, 12, 232, -98798, 13213, 0.11, 231.312, -2321.0, 11.22, 432,
                 123412341231212121241234,
                 123412341231212121241234,
-                4.54e+44, 4.5e+44]
-              )
+                4.54e+44, 4.5e+44])
   end
 
   def test_keyword
-
     check_file('test/keyword.edn',
-               [:key1, :"key_2/adsd2", :key_3, :"key-4", :"key_5/asd-32_ee", :"#/:a"]
-              )
+               [:key1, :"key_2/adsd2", :key_3, :"key-4", :"key_5/asd-32_ee", :"#/:a"])
   end
 
   def test_values
-
     check_file('test/values.edn',
                [false, true, nil, "this is a test", "this\tis\\only\ta\ttest\rof\"various\nescaped\\values",
                 ['c', "\n", "\t"],
-                '123➪456®789']
-              )
+                '123➪456®789'])
   end
 
   def test_builtin_tagged_inst
-
     check_file('test/inst.edn',
                [
                  DateTime.rfc3339('1985-04-12T23:20:50.52Z'),
@@ -108,14 +105,11 @@ class EDNT_Test < Minitest::Test
                  DateTime.rfc3339('1990-12-31T23:59:60Z'),
                  DateTime.rfc3339('1990-12-31T15:59:60-08:00'),
                  DateTime.rfc3339('1937-01-01T12:00:27.87+00:20')
-               ]
-              )
+               ])
   end
 
   def test_builtin_tagged_uuid
-
     check_file('test/uuid.edn', 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6')
-
   end
 
   def test_sets

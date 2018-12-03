@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.email = 'ed@motologic.com'
   s.date = EDNT::RELEASE_DATE
   s.summary = 'Read EDN files'
-  s.description = 'Optimization for parsing of EDN files using ragel in a c++ extension'
+  s.description = 'Optimized plugin for parsing EDN files using ragel'
   s.license = 'MIT'
 
   s.files = `git ls-files`.split("\n")
@@ -31,9 +31,9 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
   s.rubygems_version = '1.6.2'
 
-  s.add_dependency('edn', '~> 1.1')
-  s.add_dependency('rake', '~> 10.3')
-  s.add_dependency('rake-compiler', '~> 0.9')
+  s.add_runtime_dependency('edn', '~> 1.1')
+  s.add_runtime_dependency('rake', '~> 12.0')
+  s.add_runtime_dependency('rake-compiler', '~> 1.0')
 
   s.add_development_dependency('minitest', '~> 5.7')
 
