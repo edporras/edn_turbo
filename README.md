@@ -1,5 +1,5 @@
-edn_turbo
-=========
+edn_turbo 0.5.5
+===============
 
 Fast Ragel-based EDN parser for Ruby.
 
@@ -49,9 +49,9 @@ Notes:
 - `edn_turbo` uses a ragel-based parser but the generated .cc file is
   bundled so ragel should not need to be installed.
 
-- As of 0.3.0, [rice](http://rice.rubyforge.org) is no longer
-  required.
-
+- If the gem fails to install due to a compilation error, make sure you
+  have `icu4c` installed. The reported gem install error doesn't make
+  it clear this is the issue.
 
 Usage
 =====
