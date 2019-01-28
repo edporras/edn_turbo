@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-$LOAD_PATH.push File.expand_path('../lib', __FILE__)
+$LOAD_PATH.push File.expand_path('lib', __dir__)
 require 'edn_turbo/version'
 
 Gem::Specification.new do |s|
@@ -32,7 +32,7 @@ Gem::Specification.new do |s|
   s.rubygems_version = '1.6.2'
 
   s.add_runtime_dependency('edn', '~> 1.1')
-  s.add_runtime_dependency('rake', '~> 12.0')
+  s.add_runtime_dependency('rake')
   s.add_runtime_dependency('rake-compiler', '~> 1.0')
 
   s.add_development_dependency('minitest', '~> 5.7')
