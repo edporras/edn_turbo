@@ -2,18 +2,18 @@
 
 require 'mkmf'
 
-HEADER_DIRS = [
+header_dirs = [
   '/usr/local/include',
   '/usr/local/opt/icu4c/include',
   '/usr/include'
 ].freeze
 
-LIB_DIRS = [
+lib_dirs = [
   '/usr/local/lib', # must be the first entry; add others after it
   '/usr/local/opt/icu4c/lib'
 ].freeze
 
-dir_config('edn_ext', HEADER_DIRS, LIB_DIRS)
+dir_config('icuuc', header_dirs, lib_dirs)
 
 # feels very hackish to do this but the new icu4c needs it on MacOS
 $CXXFLAGS << ' -stdlib=libc++ -std=c++11' if RUBY_PLATFORM.match?(/darwin/)
