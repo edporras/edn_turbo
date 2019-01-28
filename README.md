@@ -1,4 +1,4 @@
-edn_turbo 0.5.5
+edn_turbo 0.5.6
 ===============
 
 Fast Ragel-based EDN parser for Ruby.
@@ -37,8 +37,8 @@ Dependencies
 ============
 
 - ruby gems:
-  - [rake 10.3](http://rake.rubyforge.org)
-  - [rake-compiler 0.9](http://rake-compiler.rubyforge.org)
+  - [rake](http://rake.rubyforge.org)
+  - [rake-compiler 1.0](http://rake-compiler.rubyforge.org)
   - [edn 1.1](https://github.com/relevance/edn-ruby)
 - [icu4c](http://icu-project.org/apiref/icu4c/)
 
