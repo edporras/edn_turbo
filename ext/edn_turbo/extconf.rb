@@ -9,8 +9,8 @@ header_dirs = [
 ].freeze
 
 lib_dirs = [
-  '/usr/local/lib', # must be the first entry; add others after it
-  '/usr/local/opt/icu4c/lib'
+  '/usr/local/opt/icu4c/lib',
+  '/usr/local/lib'
 ].freeze
 
 dir_config('icuuc', header_dirs, lib_dirs)
