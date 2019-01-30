@@ -4,10 +4,13 @@ require 'mkmf'
 
 header_dirs =
   if RUBY_PLATFORM =~ /darwin/
+    abort "\n>> failed to find pkg-config binary - Is brew installed? If so, run 'brew install pkg-config'?\n\n" unless
+      File.exist?('/usr/local/bin/pkg-config')
+
     abort "\n>> failed to find icu4c package - Did you run 'brew install icu4c'?\n\n" unless
       File.exist?('/usr/local/opt/icu4c/lib/pkgconfig/icu-uc.pc')
 
-    i_opt = %x[ export PKG_CONFIG_PATH="/usr/local/opt/icu4c/lib/pkgconfig" && pkg-config --cflags-only-I icu-uc ]
+    i_opt = %x[ export PKG_CONFIG_PATH="/usr/local/opt/icu4c/lib/pkgconfig" && /usr/local/bin/pkg-config --cflags-only-I icu-uc ]
     [
       i_opt[/-I(.+?)\s/,1]
     ].freeze
@@ -21,7 +24,7 @@ header_dirs =
 
 lib_dirs =
   if RUBY_PLATFORM =~ /darwin/
-    l_opt = %x[ pkg-config --libs icu-uc ]
+    l_opt = %x[ /usr/local/bin/pkg-config --libs icu-uc ]
     [
       l_opt[/-L(.+?)\s/,1]
     ].freeze
