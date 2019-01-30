@@ -24,7 +24,7 @@ header_dirs =
 
 lib_dirs =
   if RUBY_PLATFORM =~ /darwin/
-    l_opt = %x[ /usr/local/bin/pkg-config --libs icu-uc ]
+    l_opt = %x[ export PKG_CONFIG_PATH="/usr/local/opt/icu4c/lib/pkgconfig" && /usr/local/bin/pkg-config --libs icu-uc ]
     [
       l_opt[/-L(.+?)\s/,1]
     ].freeze
