@@ -7,13 +7,12 @@ Gem::Specification.new do |s|
   s.name               = 'edn_turbo'
   s.version            = EDNT::VERSION
   s.platform           = Gem::Platform::RUBY
-  s.default_executable = 'ppedn'
 
   s.required_rubygems_version = Gem::Requirement.new('>= 0') if
     s.respond_to? :required_rubygems_version=
 
   s.authors = ['Ed Porras']
-  s.email = 'ed@motologic.com'
+  s.email = 'github@digressed.net'
   s.date = EDNT::RELEASE_DATE
   s.summary = 'Read EDN files'
   s.description = 'Optimized plugin for parsing EDN files using ragel'
