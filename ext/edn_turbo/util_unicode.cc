@@ -35,24 +35,24 @@
 
 namespace edn
 {
-    namespace util
-    {
-        namespace unicode
-        {
-            //
-            // unescapes any values that need to be replaced, saves it to utf8
-            //
-            bool to_utf8(const char *s, uint32_t len, std::string& rslt)
-            {
-                icu::UnicodeString ustr(s, len);
+   namespace util
+   {
+      namespace unicode
+      {
+         //
+         // unescapes any values that need to be replaced, saves it to utf8
+         //
+         bool to_utf8(const char *s, uint32_t len, std::string& rslt)
+         {
+            icu::UnicodeString ustr(s, len);
 
-                if (ustr.isBogus()) {
-                    return false;
-                }
-
-                ustr.unescape().toUTF8String(rslt);
-                return true;
+            if (ustr.isBogus()) {
+               return false;
             }
-        }
-    }
+
+            ustr.unescape().toUTF8String(rslt);
+            return true;
+         }
+      }
+   }
 }
