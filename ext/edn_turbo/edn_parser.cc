@@ -123,7 +123,7 @@ tr0:
 	{
         // stand-alone operators *, +, -, etc.
         const char *np = parse_operator(p, pe, v);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
     }
 	goto st2;
 tr2:
@@ -131,7 +131,7 @@ tr2:
 	{
         // string types within double-quotes
         const char *np = parse_string(p, pe, v);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
     }
 	goto st2;
 tr3:
@@ -139,7 +139,7 @@ tr3:
 	{
         // handles tokens w/ leading # ("#_", "#{", and tagged elems)
         const char *np = parse_dispatch(p + 1, pe, v);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
     }
 	goto st2;
 tr4:
@@ -147,7 +147,7 @@ tr4:
 	{
         // (
         const char *np = parse_list(p, pe, v);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
     }
 	goto st2;
 tr5:
@@ -156,7 +156,7 @@ tr5:
         // tokens w/ leading digits: non-negative integers & decimals.
         // try to parse a decimal first
         const char *np = parse_decimal(p, pe, v);
-        if (np == NULL) {
+        if (np == nullptr) {
             // if we can't, try to parse it as an int
             np = parse_integer(p, pe, v);
         }
@@ -177,7 +177,7 @@ tr6:
 	{
         // tokens with a leading ':'
         const char *np = parse_keyword(p, pe, v);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
     }
 	goto st2;
 tr7:
@@ -186,7 +186,7 @@ tr7:
         // user identifiers and reserved keywords (true, false, nil)
         VALUE sym = Qnil;
         const char *np = parse_symbol(p, pe, sym);
-        if (np == NULL) { {p = (( pe))-1;} } else {
+        if (np == nullptr) { {p = (( pe))-1;} } else {
             // parse_symbol will make 'sym' a ruby string
             if      (std::strcmp(RSTRING_PTR(sym), "true") == 0)  { v = Qtrue; }
             else if (std::strcmp(RSTRING_PTR(sym), "false") == 0) { v = Qfalse; }
@@ -203,7 +203,7 @@ tr8:
 	{
         // [
         const char *np = parse_vector(p, pe, v);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
     }
 	goto st2;
 tr9:
@@ -211,7 +211,7 @@ tr9:
 	{
         // tokens w/ leading \ (escaped characters \newline, \c, etc.)
         const char *np = parse_esc_char(p, pe, v);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
     }
 	goto st2;
 tr10:
@@ -219,7 +219,7 @@ tr10:
 	{
         // ^
         const char *np = parse_meta(p, pe);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
     }
 	goto st2;
 tr11:
@@ -227,7 +227,7 @@ tr11:
 	{
         // {
         const char *np = parse_map(p, pe, v);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
     }
 	goto st2;
 st2:
@@ -255,7 +255,7 @@ case 2:
         return pe;
     }
     else if (cs == EDN_value_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -484,7 +484,7 @@ case 7:
         return pe;
     }
     else if (cs == EDN_string_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -646,7 +646,7 @@ case 5:
         return pe;
     }
     else if (cs == EDN_keyword_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -863,7 +863,7 @@ case 8:
         return p + 1;
     }
     else if (cs == EDN_decimal_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -991,7 +991,7 @@ case 6:
         return p + 1;
     }
     else if (cs == EDN_integer_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -1102,7 +1102,7 @@ tr17:
         // parse a symbol including the leading operator (-, +, .)
         VALUE sym = Qnil;
         const char *np = parse_symbol(p_save, pe, sym);
-        if (np == NULL) { {p = (( pe))-1;} } else {
+        if (np == nullptr) { {p = (( pe))-1;} } else {
             if (sym != Qnil)
                 v = edn::util::call_module_fn(rb_mEDN, EDN_MAKE_SYMBOL_METHOD, sym);
             {p = (( np))-1;}
@@ -1219,7 +1219,7 @@ tr9:
         // parse a symbol including the leading operator (-, +, .)
         VALUE sym = Qnil;
         const char *np = parse_symbol(p_save, pe, sym);
-        if (np == NULL) { {p = (( pe))-1;} } else {
+        if (np == nullptr) { {p = (( pe))-1;} } else {
             if (sym != Qnil)
                 v = edn::util::call_module_fn(rb_mEDN, EDN_MAKE_SYMBOL_METHOD, sym);
             {p = (( np))-1;}
@@ -1235,7 +1235,7 @@ tr16:
         //
         // try to parse a decimal first
         const char *np = parse_decimal(p_save, pe, v);
-        if (np == NULL) {
+        if (np == nullptr) {
             // if we can't, try to parse it as an int
             np = parse_integer(p_save, pe, v);
         }
@@ -1343,7 +1343,7 @@ tr18:
         // parse a symbol including the leading operator (-, +, .)
         VALUE sym = Qnil;
         const char *np = parse_symbol(p_save, pe, sym);
-        if (np == NULL) { {p = (( pe))-1;} } else {
+        if (np == nullptr) { {p = (( pe))-1;} } else {
             if (sym != Qnil)
                 v = edn::util::call_module_fn(rb_mEDN, EDN_MAKE_SYMBOL_METHOD, sym);
             {p = (( np))-1;}
@@ -1432,7 +1432,7 @@ case 11:
         // parse a symbol including the leading operator (-, +, .)
         VALUE sym = Qnil;
         const char *np = parse_symbol(p_save, pe, sym);
-        if (np == NULL) { {p = (( pe))-1;} } else {
+        if (np == nullptr) { {p = (( pe))-1;} } else {
             if (sym != Qnil)
                 v = edn::util::call_module_fn(rb_mEDN, EDN_MAKE_SYMBOL_METHOD, sym);
             {p = (( np))-1;}
@@ -1467,7 +1467,7 @@ case 11:
         return pe;
     }
     else if (cs == EDN_operator_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -1907,7 +1907,7 @@ case 25:
         return pe;
     }
     else if (cs == EDN_escaped_char_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -2187,7 +2187,7 @@ case 9:
         error(__FUNCTION__, "invalid symbol sequence", *p);
     }
     else if (cs == EDN_symbol_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -2284,7 +2284,7 @@ tr5:
         VALUE e;
         std::size_t meta_sz = meta_size();
         const char *np = parse_value(p, pe, e);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {
             // if there's an entry in the discard list, the current
             // object is not meant to be kept due to a #_ so don't
             // push it into the list of elements
@@ -2395,7 +2395,7 @@ case 4:
         return pe;
     }
     else if (cs == EDN_vector_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -2482,7 +2482,7 @@ tr5:
         VALUE e;
         std::size_t meta_sz = meta_size();
         const char *np = parse_value(p, pe, e);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {
             // if there's an entry in the discard list, the current
             // object is not meant to be kept due to a #_ so don't
             // push it into the list of elements
@@ -2595,7 +2595,7 @@ case 3:
         return pe;
     }
     else if (cs == EDN_list_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -2682,7 +2682,7 @@ tr5:
         VALUE e;
         std::size_t meta_sz = meta_size();
         const char *np = parse_value(p, pe, e);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {
             // if there's an entry in the discard list, the current
             // object is not meant to be kept due to a #_ so don't
             // push it into the list of elements
@@ -2810,7 +2810,7 @@ case 4:
         return pe;
     }
     else if (cs == EDN_map_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -2870,7 +2870,7 @@ tr0:
 	{
         // #inst, #uuid, or #user/tag
         const char *np = parse_tagged(p, pe, v);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
     }
 #line 80 "edn_parser.rl"
 	{ p--; {p++; cs = 2; goto _out;} }
@@ -2880,7 +2880,7 @@ tr2:
 	{
         // discard token #_
         const char *np = parse_discard(p, pe);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
     }
 #line 80 "edn_parser.rl"
 	{ p--; {p++; cs = 2; goto _out;} }
@@ -2890,7 +2890,7 @@ tr3:
 	{
         // #{ }
         const char *np = parse_set(p, pe, v);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {p = (( np))-1;}
     }
 #line 80 "edn_parser.rl"
 	{ p--; {p++; cs = 2; goto _out;} }
@@ -2919,7 +2919,7 @@ case 2:
     }
     else if (cs == EDN_dispatch_en_main) {} // silence ragel warning
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -3005,7 +3005,7 @@ tr5:
         VALUE e;
         std::size_t meta_sz = meta_size();
         const char *np = parse_value(p, pe, e);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {
             // if there's an entry in the discard list, the current
             // object is not meant to be kept due to a #_ so don't
             // push it into the list of elements
@@ -3120,7 +3120,7 @@ case 4:
         return pe;
     }
     else if (cs == EDN_set_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -3216,7 +3216,7 @@ tr4:
 #line 906 "edn_parser.rl"
 	{
         const char *np = parse_value(p, pe, v);
-        if (np == NULL) { p--; {p++; cs = 4; goto _out;} } else {
+        if (np == nullptr) { p--; {p++; cs = 4; goto _out;} } else {
             // this token is to be discarded so store it in the
             // discard stack - we really don't need to save it so this
             // could be simplified
@@ -3276,7 +3276,7 @@ case 3:
     }
     else if (cs == EDN_discard_en_main) {} // silence ragel warning
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -3346,7 +3346,7 @@ tr0:
 	{
         // parses the symbol portion of the pair
         const char *np = parse_symbol(p, pe, sym_name);
-        if (np == NULL) { p--; {p++; cs = 2; goto _out;} } else {
+        if (np == nullptr) { p--; {p++; cs = 2; goto _out;} } else {
             sym_ok = true;
             {p = (( np))-1;}
         }
@@ -3419,7 +3419,7 @@ tr7:
 	{
         // parses the value portion
         const char *np = parse_value(p, pe, data);
-        if (np == NULL) { p--; {p++; cs = 7; goto _out;} } else {
+        if (np == nullptr) { p--; {p++; cs = 7; goto _out;} } else {
             data_ok = true;
             {p = (( np))-1;}
         }
@@ -3517,7 +3517,7 @@ case 6:
         if (!sym_ok || !data_ok) {
             error(__FUNCTION__, "tagged element symbol error", *p);
             v = EDN_EOF_CONST;
-            return NULL;
+            return nullptr;
         }
 
         try {
@@ -3535,7 +3535,7 @@ case 6:
     }
     else if (cs == EDN_tagged_en_main) {} // silence ragel warning
     v =  EDN_EOF_CONST;
-    return NULL;
+    return nullptr;
 }
 
 
@@ -3614,7 +3614,7 @@ tr2:
 #line 1061 "edn_parser.rl"
 	{
         const char *np = parse_value(p, pe, v);
-        if (np == NULL) { p--; {p++; cs = 3; goto _out;} } else { {p = (( np))-1;} }
+        if (np == nullptr) { p--; {p++; cs = 3; goto _out;} } else { {p = (( np))-1;} }
     }
 #line 80 "edn_parser.rl"
 	{ p--; {p++; cs = 3; goto _out;} }
@@ -3645,7 +3645,7 @@ case 3:
     }
     else if (cs == EDN_meta_en_main) {} // silence ragel warning
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -3699,7 +3699,7 @@ tr4:
         // an actual data item
         std::size_t meta_sz = meta_size();
         const char* np = parse_value(p, pe, result);
-        if (np == NULL) { {p = (( pe))-1;} {p++; cs = 2; goto _out;} } else {
+        if (np == nullptr) { {p = (( pe))-1;} {p++; cs = 2; goto _out;} } else {
             // if we have metadata saved and it matches the count we
             // saved before we parsed a value, then we must bind the
             // metadata sequence to it
@@ -3765,7 +3765,7 @@ case 1:
         return EDN_EOF_CONST;
     }
     else if (cs == EDN_parser_first_final) {
-        p = pe = eof = NULL;
+        p = pe = eof = nullptr;
     }
     else if (cs == EDN_parser_en_main) {} // silence ragel warning
     return result;
@@ -3864,7 +3864,7 @@ tr3:
         meta_sz = meta_size();
 
         const char* np = parse_value(p, pe, value);
-        if (np == NULL) { p--; {p++; cs = 4; goto _out;} } else {
+        if (np == nullptr) { p--; {p++; cs = 4; goto _out;} } else {
             if (!meta_empty()) {
                 // was an additional metadata entry read? if so, don't
                 // return a value

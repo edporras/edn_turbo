@@ -93,20 +93,20 @@
     action parse_val_string {
         // string types within double-quotes
         const char *np = parse_string(fpc, pe, v);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
+        if (np == nullptr) { fhold; fbreak; } else fexec np;
     }
 
     action parse_val_keyword {
         // tokens with a leading ':'
         const char *np = parse_keyword(fpc, pe, v);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
+        if (np == nullptr) { fhold; fbreak; } else fexec np;
     }
 
     action parse_val_number {
         // tokens w/ leading digits: non-negative integers & decimals.
         // try to parse a decimal first
         const char *np = parse_decimal(fpc, pe, v);
-        if (np == NULL) {
+        if (np == nullptr) {
             // if we can't, try to parse it as an int
             np = parse_integer(fpc, pe, v);
         }
@@ -125,20 +125,20 @@
     action parse_val_operator {
         // stand-alone operators *, +, -, etc.
         const char *np = parse_operator(fpc, pe, v);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
+        if (np == nullptr) { fhold; fbreak; } else fexec np;
     }
 
     action parse_val_char {
         // tokens w/ leading \ (escaped characters \newline, \c, etc.)
         const char *np = parse_esc_char(fpc, pe, v);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
+        if (np == nullptr) { fhold; fbreak; } else fexec np;
     }
 
     action parse_val_symbol {
         // user identifiers and reserved keywords (true, false, nil)
         VALUE sym = Qnil;
         const char *np = parse_symbol(fpc, pe, sym);
-        if (np == NULL) { fexec pe; } else {
+        if (np == nullptr) { fexec pe; } else {
             // parse_symbol will make 'sym' a ruby string
             if      (std::strcmp(RSTRING_PTR(sym), "true") == 0)  { v = Qtrue; }
             else if (std::strcmp(RSTRING_PTR(sym), "false") == 0) { v = Qfalse; }
@@ -153,31 +153,31 @@
     action parse_val_vector {
         // [
         const char *np = parse_vector(fpc, pe, v);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
+        if (np == nullptr) { fhold; fbreak; } else fexec np;
     }
 
     action parse_val_list {
         // (
         const char *np = parse_list(fpc, pe, v);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
+        if (np == nullptr) { fhold; fbreak; } else fexec np;
     }
 
     action parse_val_map {
         // {
         const char *np = parse_map(fpc, pe, v);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
+        if (np == nullptr) { fhold; fbreak; } else fexec np;
     }
 
     action parse_val_meta {
         // ^
         const char *np = parse_meta(fpc, pe);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
+        if (np == nullptr) { fhold; fbreak; } else fexec np;
     }
 
     action parse_val_dispatch {
         // handles tokens w/ leading # ("#_", "#{", and tagged elems)
         const char *np = parse_dispatch(fpc + 1, pe, v);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
+        if (np == nullptr) { fhold; fbreak; } else fexec np;
     }
 
 
@@ -213,7 +213,7 @@ const char *edn::Parser::parse_value(const char *p, const char *pe, VALUE& v)
         return pe;
     }
     else if (cs == EDN_value_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -269,7 +269,7 @@ const char* edn::Parser::parse_string(const char *p, const char *pe, VALUE& v)
         return pe;
     }
     else if (cs == EDN_string_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -315,7 +315,7 @@ const char* edn::Parser::parse_keyword(const char *p, const char *pe, VALUE& v)
         return pe;
     }
     else if (cs == EDN_keyword_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -350,7 +350,7 @@ const char* edn::Parser::parse_decimal(const char *p, const char *pe, VALUE& v)
         return p + 1;
     }
     else if (cs == EDN_decimal_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -382,7 +382,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
         return p + 1;
     }
     else if (cs == EDN_integer_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -404,7 +404,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
         // parse a symbol including the leading operator (-, +, .)
         VALUE sym = Qnil;
         const char *np = parse_symbol(p_save, pe, sym);
-        if (np == NULL) { fexec pe; } else {
+        if (np == nullptr) { fexec pe; } else {
             if (sym != Qnil)
                 v = edn::util::call_module_fn(rb_mEDN, EDN_MAKE_SYMBOL_METHOD, sym);
             fexec np;
@@ -418,7 +418,7 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
         //
         // try to parse a decimal first
         const char *np = parse_decimal(p_save, pe, v);
-        if (np == NULL) {
+        if (np == nullptr) {
             // if we can't, try to parse it as an int
             np = parse_integer(p_save, pe, v);
         }
@@ -469,7 +469,7 @@ const char* edn::Parser::parse_operator(const char *p, const char *pe, VALUE& v)
         return pe;
     }
     else if (cs == EDN_operator_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -513,7 +513,7 @@ const char* edn::Parser::parse_esc_char(const char *p, const char *pe, VALUE& v)
         return pe;
     }
     else if (cs == EDN_escaped_char_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -573,7 +573,7 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, VALUE& s)
         error(__FUNCTION__, "invalid symbol sequence", *p);
     }
     else if (cs == EDN_symbol_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -611,7 +611,7 @@ const char* edn::Parser::parse_symbol(const char *p, const char *pe, VALUE& s)
         VALUE e;
         std::size_t meta_sz = meta_size();
         const char *np = parse_value(fpc, pe, e);
-        if (np == NULL) { fhold; fbreak; } else {
+        if (np == nullptr) { fhold; fbreak; } else {
             // if there's an entry in the discard list, the current
             // object is not meant to be kept due to a #_ so don't
             // push it into the list of elements
@@ -679,7 +679,7 @@ const char* edn::Parser::parse_vector(const char *p, const char *pe, VALUE& v)
         return pe;
     }
     else if (cs == EDN_vector_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -724,7 +724,7 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, VALUE& v)
         return pe;
     }
     else if (cs == EDN_list_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -782,7 +782,7 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, VALUE& v)
         return pe;
     }
     else if (cs == EDN_map_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -801,19 +801,19 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, VALUE& v)
     action parse_disp_set {
         // #{ }
         const char *np = parse_set(fpc, pe, v);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
+        if (np == nullptr) { fhold; fbreak; } else fexec np;
     }
 
     action parse_disp_discard {
         // discard token #_
         const char *np = parse_discard(fpc, pe);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
+        if (np == nullptr) { fhold; fbreak; } else fexec np;
     }
 
     action parse_disp_tagged {
         // #inst, #uuid, or #user/tag
         const char *np = parse_tagged(fpc, pe, v);
-        if (np == NULL) { fhold; fbreak; } else fexec np;
+        if (np == nullptr) { fhold; fbreak; } else fexec np;
     }
 
 
@@ -841,7 +841,7 @@ const char* edn::Parser::parse_dispatch(const char *p, const char *pe, VALUE& v)
     }
     else if (cs == EDN_dispatch_en_main) {} // silence ragel warning
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -885,7 +885,7 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, VALUE& v)
         return pe;
     }
     else if (cs == EDN_set_en_main) {} // silence ragel warning
-    return NULL;
+    return nullptr;
 }
 
 
@@ -905,7 +905,7 @@ const char* edn::Parser::parse_set(const char *p, const char *pe, VALUE& v)
 
     action discard_value {
         const char *np = parse_value(fpc, pe, v);
-        if (np == NULL) { fhold; fbreak; } else {
+        if (np == nullptr) { fhold; fbreak; } else {
             // this token is to be discarded so store it in the
             // discard stack - we really don't need to save it so this
             // could be simplified
@@ -944,7 +944,7 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
     }
     else if (cs == EDN_discard_en_main) {} // silence ragel warning
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -984,7 +984,7 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
     action parse_tag {
         // parses the symbol portion of the pair
         const char *np = parse_symbol(fpc, pe, sym_name);
-        if (np == NULL) { fhold; fbreak; } else {
+        if (np == nullptr) { fhold; fbreak; } else {
             sym_ok = true;
             fexec np;
         }
@@ -992,7 +992,7 @@ const char* edn::Parser::parse_discard(const char *p, const char *pe)
     action parse_data {
         // parses the value portion
         const char *np = parse_value(fpc, pe, data);
-        if (np == NULL) { fhold; fbreak; } else {
+        if (np == nullptr) { fhold; fbreak; } else {
             data_ok = true;
             fexec np;
         }
@@ -1023,7 +1023,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
         if (!sym_ok || !data_ok) {
             error(__FUNCTION__, "tagged element symbol error", *p);
             v = EDN_EOF_CONST;
-            return NULL;
+            return nullptr;
         }
 
         try {
@@ -1041,7 +1041,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
     }
     else if (cs == EDN_tagged_en_main) {} // silence ragel warning
     v =  EDN_EOF_CONST;
-    return NULL;
+    return nullptr;
 }
 
 
@@ -1060,7 +1060,7 @@ const char* edn::Parser::parse_tagged(const char *p, const char *pe, VALUE& v)
 
     action parse_data {
         const char *np = parse_value(fpc, pe, v);
-        if (np == NULL) { fhold; fbreak; } else { fexec np; }
+        if (np == nullptr) { fhold; fbreak; } else { fexec np; }
     }
 
     main := begin_meta (
@@ -1087,7 +1087,7 @@ const char* edn::Parser::parse_meta(const char *p, const char *pe)
     }
     else if (cs == EDN_meta_en_main) {} // silence ragel warning
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -1108,7 +1108,7 @@ const char* edn::Parser::parse_meta(const char *p, const char *pe)
         // an actual data item
         std::size_t meta_sz = meta_size();
         const char* np = parse_value(fpc, pe, result);
-        if (np == NULL) { fexec pe; fbreak; } else {
+        if (np == nullptr) { fexec pe; fbreak; } else {
             // if we have metadata saved and it matches the count we
             // saved before we parsed a value, then we must bind the
             // metadata sequence to it
@@ -1142,7 +1142,7 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
         return EDN_EOF_CONST;
     }
     else if (cs == EDN_parser_first_final) {
-        p = pe = eof = NULL;
+        p = pe = eof = nullptr;
     }
     else if (cs == EDN_parser_en_main) {} // silence ragel warning
     return result;
@@ -1166,7 +1166,7 @@ VALUE edn::Parser::parse(const char* src, std::size_t len)
         meta_sz = meta_size();
 
         const char* np = parse_value(fpc, pe, value);
-        if (np == NULL) { fhold; fbreak; } else {
+        if (np == nullptr) { fhold; fbreak; } else {
             if (!meta_empty()) {
                 // was an additional metadata entry read? if so, don't
                 // return a value

@@ -110,14 +110,14 @@ namespace edn {
               // extract the stream pointer
               rb_io_t* fptr = RFILE(data)->fptr;
               if (!fptr) {
-                 rb_raise(rb_eRuntimeError, "Ruby IO - fptr is NULL");
+                 rb_raise(rb_eRuntimeError, "Ruby IO - fptr is null");
               }
 
               rb_io_check_char_readable(fptr);
 
               FILE* fp = rb_io_stdio_file(fptr);
               if (!fp) {
-                 rb_raise(rb_eRuntimeError, "Ruby IO - fptr->fp is NULL");
+                 rb_raise(rb_eRuntimeError, "Ruby IO - fptr->fp is null");
               }
 
               p->set_source(fp);
@@ -188,7 +188,7 @@ void Init_edn_turbo(void)
    a.sa_handler = edn::die;
    sigemptyset(&a.sa_mask);
    a.sa_flags = 0;
-   sigaction(SIGINT, &a, NULL);
+   sigaction(SIGINT, &a, nullptr);
 
    // pass things back as utf-8
    if (!setlocale( LC_ALL, "" )) {

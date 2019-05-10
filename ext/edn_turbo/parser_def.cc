@@ -91,9 +91,9 @@ namespace edn
       metadata.top()->clear();
 
       // clean up
-      core_io = NULL;
+      core_io = nullptr;
       read_io = Qnil;
-      p = pe = eof = NULL;
+      p = pe = eof = nullptr;
    }
 
    //
@@ -148,13 +148,13 @@ namespace edn
 
       // set the buffer to read from
       if (str_buf.length() > 0) {
-         // first time when io_buffer is NULL, pe & p = 0
+         // first time when io_buffer is null, pe & p = 0
          uintmax_t new_length = (pe - p) + str_buf.length();
          if (new_length > (((uintmax_t) 1 << 32) - 1)) {
             // icu -> 32-bit. TODO: handle
             rb_raise(rb_eRuntimeError, "Unsupported string buffer length");
          }
-         char* start = NULL;
+         char* start = nullptr;
 
          // allocate or extend storage needed
          if (!io_buffer) {

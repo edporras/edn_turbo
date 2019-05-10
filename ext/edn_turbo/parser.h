@@ -34,9 +34,9 @@ namespace edn
    {
    public:
       Parser() :
-         p(NULL), pe(NULL), eof(NULL),
-         core_io(NULL), read_io(Qnil),
-         io_buffer(NULL), io_buffer_len(0),
+         p(nullptr), pe(nullptr), eof(nullptr),
+         core_io(nullptr), read_io(Qnil),
+         io_buffer(nullptr), io_buffer_len(0),
          line_number(1) {
          new_meta_list();
       }
