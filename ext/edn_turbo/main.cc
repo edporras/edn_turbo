@@ -125,10 +125,7 @@ namespace edn {
            }
         case T_DATA:
            {
-              // StringIO or some other IO not part of the ruby core -
-              // this is very inefficient as it'll require read()
-              // calls from the ruby side (involves a lot of data
-              // wrapping, etc)
+              // StringIO or some other IO not part of the ruby core
               if (rb_respond_to(data, RUBY_READ_METHOD)) {
                  p->set_source(data);
                  break;
@@ -201,12 +198,16 @@ void Init_edn_turbo(void)
    // bind the ruby Parser class to the C++ one
    VALUE rb_cParser = rb_define_class_under(edn::rb_mEDNT, "Parser", rb_cObject);
    rb_define_alloc_func(rb_cParser, edn::alloc_obj);
-   rb_define_method(rb_cParser, "initialize", (VALUE(*)(ANYARGS)) &edn::initialize, -1 );
-   rb_define_method(rb_cParser, "ext_eof", (VALUE(*)(ANYARGS)) &edn::eof, 0 );
-
-   rb_define_method(rb_cParser, "set_input", (VALUE(*)(ANYARGS)) &edn::set_source, 1 );
-   rb_define_method(rb_cParser, "parse", (VALUE(*)(ANYARGS)) &edn::read, 1 );
-   rb_define_method(rb_cParser, "read", (VALUE(*)(ANYARGS)) &edn::next, 0 );
+   rb_define_method(rb_cParser, "initialize",
+                    reinterpret_cast<VALUE(*)(ANYARGS)>(&edn::initialize), -1 );
+   rb_define_method(rb_cParser, "ext_eof",
+                    reinterpret_cast<VALUE(*)(ANYARGS)>(&edn::eof), 0 );
+   rb_define_method(rb_cParser, "set_input",
+                    reinterpret_cast<VALUE(*)(ANYARGS)>(&edn::set_source), 1 );
+   rb_define_method(rb_cParser, "parse",
+                    reinterpret_cast<VALUE(*)(ANYARGS)>(&edn::read), 1 );
+   rb_define_method(rb_cParser, "read",
+                    reinterpret_cast<VALUE(*)(ANYARGS)>(&edn::next), 0 );
 
    // bind ruby methods we'll call - these should be defined in edn_turbo.rb
    edn::EDN_MAKE_SYMBOL_METHOD        = rb_intern("symbol");
@@ -216,7 +217,7 @@ void Init_edn_turbo(void)
    edn::EDN_TAGGED_ELEM_METHOD        = rb_intern("tagged_element");
 
    // defined in EDNT - see edn_parser.rb
-   edn::EDNT_EXTENDED_VALUE_METHOD     = rb_intern("extend_for_meta");
+   edn::EDNT_EXTENDED_VALUE_METHOD    = rb_intern("extend_for_meta");
 
    // ruby methods
    edn::RUBY_STRING_TO_I_METHOD       = rb_intern("to_i");

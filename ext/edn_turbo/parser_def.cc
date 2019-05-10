@@ -174,7 +174,7 @@ namespace edn
             
          // and copy
          memcpy(start, str_buf.c_str(), str_buf.length()); 
-         io_buffer_len = (uint32_t) new_length;
+         io_buffer_len = static_cast<uint32_t>(new_length);
 
          // set ragel state
          p = io_buffer;

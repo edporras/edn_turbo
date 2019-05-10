@@ -43,8 +43,8 @@ namespace edn
       return s.str().length();
    }
 
-   static const std::size_t LL_max_chars = get_max_chars<>((long) 1);
-   static const std::size_t LD_max_chars = get_max_chars<>((double) 1);
+   static const std::size_t LL_max_chars = get_max_chars<>(1l);
+   static const std::size_t LD_max_chars = get_max_chars<>(1.0);
 
    //
    // throw runtime error
@@ -175,7 +175,7 @@ namespace edn
 
 
       //
-      // read from a StringIO - expensive!!!
+      // read from a StringIO - handled from ruby side
       //
       VALUE ruby_io_read(VALUE io)
       {
@@ -192,7 +192,7 @@ namespace edn
             std::string buf;
 
             if (encode) {
-               if (!util::unicode::to_utf8(p_start, (uint32_t) (p_end - p_start), buf))
+               if (!util::unicode::to_utf8(p_start, static_cast<uint32_t>(p_end - p_start), buf))
                   return false;
             }
             else {
