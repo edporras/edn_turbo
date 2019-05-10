@@ -34,7 +34,8 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency('rake', '~> 12.3')
   s.add_runtime_dependency('rake-compiler', '~> 1.0')
 
-  s.add_development_dependency('minitest', '~> 5.7')
+  s.add_development_dependency('pry-byebug', '3.7', '~> 3.7.0')
+  s.add_development_dependency('rspec', '3.8', '~> 3.8.0')
 
   s.specification_version = 3 if s.respond_to? :specification_version
 end
