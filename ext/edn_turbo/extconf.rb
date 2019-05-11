@@ -60,7 +60,8 @@ lib_dirs =
 dir_config('icuuc', header_dirs, lib_dirs)
 
 # feels very hackish to do this but the new icu4c needs it on MacOS
-$CXXFLAGS << ' -stdlib=libc++ -std=c++11 -Wno-deprecated-register' if RUBY_PLATFORM.match?(/darwin/)
+$CXXFLAGS << ' -stdlib=libc++ -Wno-deprecated-register' if RUBY_PLATFORM =~ /darwin/
+$CXXFLAGS << ' -std=c++11 -std=gnu++11'
 
 abort "\n>> failed to find icu4c headers - is icu4c installed?\n\n" unless
   find_header('unicode/uversion.h')
