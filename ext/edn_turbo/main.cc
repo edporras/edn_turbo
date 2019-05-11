@@ -132,7 +132,7 @@ namespace edn {
               }
            }
         default:
-           rb_raise(rb_eRuntimeError, "set_source expected String, core IO, or IO that responds to read()");
+           rb_raise(rb_eArgError, "set_source expected String, core IO, or IO that responds to read()");
            break;
       }
 
