@@ -42,6 +42,12 @@ namespace edn
       }
       ~Parser();
 
+      // prohibit
+      Parser(const Parser&) = delete;
+      Parser(const Parser&&) = delete;
+      Parser& operator=(const Parser&) = delete;
+      Parser& operator=(const Parser&&) = delete;
+
       // change input source
       void set_source(const char* src, std::size_t len);
       void set_source(FILE* fp);
