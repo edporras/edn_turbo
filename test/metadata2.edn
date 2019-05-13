@@ -1,1 +1,0 @@
-^String ^:foo ^{:foo false :tag Boolean :bar 2} [1 2]

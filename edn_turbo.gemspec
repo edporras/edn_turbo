@@ -25,7 +25,6 @@ Gem::Specification.new do |s|
 
   s.extensions = ['ext/edn_turbo/extconf.rb']
   s.executables = ['ppedn']
-  s.test_files = ['test/test_output_diff.rb']
   s.homepage = 'http://rubygems.org/gems/edn_turbo'
   s.require_paths = ['lib']
   s.rubygems_version = '1.6.2'

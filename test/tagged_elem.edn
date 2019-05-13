@@ -1,4 +1,0 @@
-#edn_turbo/test_tagged {
-                        :item 345
-                        :other :a
-                        }
