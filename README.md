@@ -1,14 +1,13 @@
-edn_turbo 0.5.7
+edn_turbo 0.6.0
 ===============
 
-Fast Ragel-based EDN parser for Ruby.
+Fast (Ragel)[http://www.colm.net/open-source/ragel/]-based EDN parser for Ruby.
 
-`edn_turbo` is a parser plugin for
+`edn_turbo` can be used as a parser plugin for
 [edn](https://github.com/relevance/edn-ruby). With a few exceptions
 `edn_turbo` provides the same functionality as the edn gem, but since
-the `edn_turbo` parser is implemented in C, it is an order of
-magintude faster.
-
+the `edn_turbo` parser is implemented in C++, it is an order of
+magnitude faster.
 
 Some quick sample runs comparing time output of file reads using `edn`
 and `edn_turbo` (see [issue 12](https://github.com/relevance/edn-ruby/issues/12)):
@@ -32,26 +31,23 @@ irb(main):008:0> Benchmark.realtime { 100000.times { EDN::read(s) } }
 => 2.866411
 ```
 
-
 Dependencies
 ============
+
+Ruby 2.4 or greater as `edn_turbo` does not use the deprecated `Fixnum` or `Bignum`.
 
 - ruby gems:
   - [rake](http://rake.rubyforge.org)
   - [rake-compiler 1.0](http://rake-compiler.rubyforge.org)
   - [edn 1.1](https://github.com/relevance/edn-ruby)
+- a C++-11 capable compiler.
 - [icu4c](http://icu-project.org/apiref/icu4c/)
-
 
 Notes:
 ------
 
 - `edn_turbo` uses a ragel-based parser but the generated .cc file is
   bundled so ragel should not need to be installed.
-
-- If the gem fails to install due to a compilation error, make sure you
-  have `icu4c` installed. The reported gem install error doesn't make
-  it clear this is the issue.
 
 Usage
 =====
@@ -110,13 +106,3 @@ Differences with edn gem
 `edn_turbo` reads `String` and core IO types using C-api calls.
 However, data from `StringIO` sources is extracted using `read()`
 calls into the ruby side.
-
-Known problems
-==============
-
-v0.3.2:
-
-- Some unhandled corner cases with operators and spacing
-  remain. `edn_turbo` handles things like `1 / 12` and `1/ 12` but
-  parse errors occur with `1/12` and `1 /12` because it treats `/12`
-  as an invalid symbol.

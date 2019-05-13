@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # The MIT License (MIT)
 #
 # Copyright (c) 2015-2019 Ed Porras
@@ -23,6 +21,6 @@
 # THE SOFTWARE.
 
 module EDNT
-  VERSION = '0.5.7'
-  RELEASE_DATE = '2019-01-30'
+  VERSION = '0.6.0'.freeze
+  RELEASE_DATE = '2019-05-13'.freeze
 end
