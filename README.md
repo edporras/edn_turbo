@@ -66,10 +66,10 @@ the API is the same as the edn gem.
     # also accepts a string
     pp EDN.read("[ 1 2 3 abc ]")
 
-	# metadata
-	e = EDN.read('^String ^:foo ^{:foo false :tag Boolean :bar 2} [1 2]')
-	pp e          # -> [1, 2]
-	pp e.metadata # -> {:foo=>true, :tag=>#<EDN::Type::Symbol:0x007fdbea8a29b0 @symbol=:String>, :bar=>2}
+    # metadata
+    e = EDN.read('^String ^:foo ^{:foo false :tag Boolean :bar 2} [1 2]')
+    pp e          # -> [1, 2]
+    pp e.metadata # -> {:foo=>true, :tag=>#<EDN::Type::Symbol:0x007fdbea8a29b0 @symbol=:String>, :bar=>2}
 
 ```
 
