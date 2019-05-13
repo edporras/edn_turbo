@@ -1,7 +1,7 @@
 edn_turbo 0.6.0
 ===============
 
-Fast (Ragel)[http://www.colm.net/open-source/ragel/]-based EDN parser for Ruby.
+Fast [Ragel](http://www.colm.net/open-source/ragel/)-based EDN parser for Ruby.
 
 `edn_turbo` can be used as a parser plugin for
 [edn](https://github.com/relevance/edn-ruby). With a few exceptions
