@@ -2,7 +2,7 @@
 
 set -e
 
-if [[ $# -ne 1 ]]; then
+if [[ $# -eq 0 ]]; then
     RUBY_VERSION=2.6.3
 else
     RUBY_VERSION=$1
