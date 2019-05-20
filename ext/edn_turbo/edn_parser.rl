@@ -752,9 +752,7 @@ const char* edn::Parser::parse_list(const char *p, const char *pe, VALUE& v)
    %% write exec;
 
    if (cs >= EDN_list_first_final) {
-      v = elems;
-      // TODO: replace with this but first figure out why array is not unrolled by EDN::list()
-      //        v = edn::util::call_module_fn(EDN_MAKE_LIST_METHOD, elems);
+      v = edn::util::call_module_fn(rb_mEDN, EDN_MAKE_LIST_METHOD, elems);
       return p + 1;
    }
    else if (cs == EDN_list_error) {
