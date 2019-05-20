@@ -152,20 +152,23 @@ namespace edn
       }
 
       //
-      // as above.. TODO: check exponential..
+      // as above, but for floats
       VALUE float_to_ruby(const char* str, std::size_t len)
       {
          // if big decimal is needed, call into ruby side to get the
          // correct value
-         if (str[len-1] == 'M' || len >= LD_max_chars)
+         if (str[len-1] == 'M')
          {
-            VALUE vs = edn_prot_rb_new_str(str);
+            std::string f_val(str, len-1); // strip the M
+            VALUE vs = edn_prot_rb_new_str(f_val.c_str());
 
-            if (str[len-1] == 'M') {
-               return call_module_fn(rb_mEDN, EDN_MAKE_BIG_DECIMAL_METHOD, vs);
-            }
+            return call_module_fn(rb_mEDN, EDN_MAKE_BIG_DECIMAL_METHOD, vs);
+         }
 
-            prot_args args(vs, RUBY_STRING_TO_F_METHOD);
+         // really long value string or exp
+         if (len >= LD_max_chars ||
+             std::string(str, len).find("e") != std::string::npos) {
+            prot_args args(edn_prot_rb_new_str(str), RUBY_STRING_TO_F_METHOD);
             return edn_prot_rb_funcall( edn_wrap_funcall2, reinterpret_cast<VALUE>(&args) );
          }
 
