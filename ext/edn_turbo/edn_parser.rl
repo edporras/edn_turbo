@@ -107,8 +107,13 @@
         // try to parse a decimal first
         const char *np = parse_decimal(fpc, pe, v);
         if (np == nullptr) {
-            // if we can't, try to parse it as an int
-            np = parse_integer(fpc, pe, v);
+            // if we can't, try to parse it as a ratio
+            np = parse_ratio(fpc, pe, v);
+
+            // otherwise, an int
+            if (np == nullptr) {
+               np = parse_integer(fpc, pe, v);
+            }
         }
 
         if (np) {
@@ -319,7 +324,6 @@ const char* edn::Parser::parse_keyword(const char *p, const char *pe, VALUE& v)
 }
 
 
-
 // ============================================================
 // decimal parsing machine
 //
@@ -386,6 +390,37 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
 }
 
 
+// ============================================================
+// ratio parsing machine
+//
+%%{
+    machine EDN_ratio;
+    include EDN_common;
+
+    write data noerror;
+
+
+    main := (
+             ('-'|'+')? (integer '/' integer)
+            ) (^[0-9+\-\/]? @exit);
+}%%
+
+
+const char* edn::Parser::parse_ratio(const char *p, const char *pe, VALUE& v)
+{
+    int cs;
+
+    %% write init;
+    const char* p_save = p;
+    %% write exec;
+
+    if (cs >= EDN_ratio_first_final) {
+        v = edn::util::ratio_to_ruby(p_save, p - p_save);
+        return p + 1;
+    }
+    else if (cs == EDN_ratio_en_main) {} // silence ragel warning
+    return nullptr;
+}
 
 // ============================================================
 // operator parsing - handles tokens w/ a leading operator:
@@ -419,8 +454,13 @@ const char* edn::Parser::parse_integer(const char *p, const char *pe, VALUE& v)
         // try to parse a decimal first
         const char *np = parse_decimal(p_save, pe, v);
         if (np == nullptr) {
-            // if we can't, try to parse it as an int
-            np = parse_integer(p_save, pe, v);
+            // if we can't, try to parse it as a ratio
+            np = parse_ratio(p_save, pe, v);
+
+            if (np == nullptr) {
+               // again, if we can't, try to parse it as an int
+               np = parse_integer(p_save, pe, v);
+            }
         }
 
         if (np) {

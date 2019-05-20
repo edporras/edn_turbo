@@ -126,7 +126,7 @@ module EDNT
       end
     end
 
-    context 'numbers' do
+    context 'numeric' do
       it 'zero' do
         expect(subject.parse(' 0 ')).to eq(0)
       end
@@ -187,6 +187,18 @@ module EDNT
       #   expect(val).to eq(4.54e+44)
       #   expect(val.class).to eq(Float)
       # end
+      it 'ratio' do
+        val = subject.parse(' 2/3 ')
+        expect(val).to eq(Rational(2, 3))
+      end
+      it 'positive ratio' do
+        val = subject.parse(' +2/3 ')
+        expect(val).to eq(Rational(2, 3))
+      end
+      it 'negative ratio' do
+        val = subject.parse(' -2/3 ')
+        expect(val).to eq(Rational(-2, 3))
+      end
     end
 
     context 'operators' do

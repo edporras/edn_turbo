@@ -155,12 +155,11 @@ namespace edn
       // as above.. TODO: check exponential..
       VALUE float_to_ruby(const char* str, std::size_t len)
       {
-         // if big decimal is needed, call into ruby side to get
-         // the correct value
+         // if big decimal is needed, call into ruby side to get the
+         // correct value
          if (str[len-1] == 'M' || len >= LD_max_chars)
          {
-            std::string buf(str, len);
-            VALUE vs = edn_prot_rb_new_str(buf.c_str());
+            VALUE vs = edn_prot_rb_new_str(str);
 
             if (str[len-1] == 'M') {
                return call_module_fn(rb_mEDN, EDN_MAKE_BIG_DECIMAL_METHOD, vs);
@@ -173,6 +172,12 @@ namespace edn
          return rb_float_new(buftotype<double>(str, len));
       }
 
+      //
+      // returns a ruby Rational
+      VALUE ratio_to_ruby(const char* str, std::size_t len)
+      {
+         return call_module_fn(rb_mEDN, EDN_MAKE_RATIONAL_METHOD, edn_prot_rb_new_str(str));
+      }
 
       //
       // read from a StringIO - handled from ruby side

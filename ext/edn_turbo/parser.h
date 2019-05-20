@@ -82,6 +82,7 @@ namespace edn
       const char* parse_keyword (const char *p, const char *pe, VALUE& v);
       const char* parse_decimal (const char *p, const char *pe, VALUE& v);
       const char* parse_integer (const char *p, const char *pe, VALUE& v);
+      const char* parse_ratio   (const char *p, const char *pe, VALUE& v);
       const char* parse_operator(const char *p, const char *pe, VALUE& v);
       const char* parse_esc_char(const char *p, const char *pe, VALUE& v);
       const char* parse_symbol  (const char *p, const char *pe, VALUE& v);

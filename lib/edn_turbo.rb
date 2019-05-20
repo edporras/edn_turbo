@@ -30,4 +30,10 @@ require 'edn_turbo/edn_turbo'
 # Replace the parser in the EDN module with the C based one.
 module EDN
   self.parser = EDNT::Parser
+
+  # makes a rational type for converting a clojure ratio
+  # - this should be in edn-ruby
+  def self.rational(value)
+    Rational(value)
+  end
 end

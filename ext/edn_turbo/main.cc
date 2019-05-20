@@ -40,6 +40,7 @@ namespace edn {
    VALUE EDN_MAKE_LIST_METHOD         = Qnil;
    VALUE EDN_MAKE_SET_METHOD          = Qnil;
    VALUE EDN_MAKE_BIG_DECIMAL_METHOD  = Qnil;
+   VALUE EDN_MAKE_RATIONAL_METHOD     = Qnil;
    VALUE EDN_TAGGED_ELEM_METHOD       = Qnil;
    VALUE EDNT_EXTENDED_VALUE_METHOD   = Qnil;
 
@@ -209,7 +210,7 @@ void Init_edn_turbo(void)
    rb_define_method(rb_cParser, "read",
                     reinterpret_cast<VALUE(*)(ANYARGS)>(&edn::next), 0 );
 
-   // bind ruby methods we'll call - these should be defined in edn_turbo.rb
+   // bind edn-ruby methods we'll call
    edn::EDN_MAKE_SYMBOL_METHOD        = rb_intern("symbol");
    edn::EDN_MAKE_LIST_METHOD          = rb_intern("list");
    edn::EDN_MAKE_SET_METHOD           = rb_intern("set");
@@ -218,6 +219,7 @@ void Init_edn_turbo(void)
 
    // defined in EDNT - see edn_parser.rb
    edn::EDNT_EXTENDED_VALUE_METHOD    = rb_intern("extend_for_meta");
+   edn::EDN_MAKE_RATIONAL_METHOD      = rb_intern("rational"); // should be in edn-ruby
 
    // ruby methods
    edn::RUBY_STRING_TO_I_METHOD       = rb_intern("to_i");

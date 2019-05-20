@@ -31,6 +31,7 @@ namespace edn
    extern VALUE EDN_MAKE_LIST_METHOD;
    extern VALUE EDN_MAKE_SET_METHOD;
    extern VALUE EDN_MAKE_BIG_DECIMAL_METHOD;
+   extern VALUE EDN_MAKE_RATIONAL_METHOD;
    extern VALUE EDN_TAGGED_ELEM_METHOD;
    extern VALUE EDN_EOF_CONST;
 
@@ -45,6 +46,7 @@ namespace edn
       // defined in edn_parser_util.cc
       VALUE integer_to_ruby(const char* str, std::size_t len);
       VALUE float_to_ruby  (const char* str, std::size_t len);
+      VALUE ratio_to_ruby  (const char* str, std::size_t len);
 
       VALUE ruby_io_read(VALUE io);
 
