@@ -176,17 +176,31 @@ module EDNT
         expect(val).to eq(432)
         expect(val.class).to eq(Integer)
       end
-      it 'exact precision decimal' do
+      it 'exact precision integer' do
         val = subject.parse(' 12M ')
         expect(val).to eq(12)
         expect(val.class).to eq(Integer)
       end
-      # TODO: fix?
-      # it 'exact precision scientific notation' do
-      #   val = subject.parse('45.4e+43M')
-      #   expect(val).to eq(4.54e+44)
-      #   expect(val.class).to eq(Float)
-      # end
+      it 'exact precision decimal' do
+        val = subject.parse('3.0M')
+        expect(val).to eq(3.0)
+        expect(val.class).to eq(BigDecimal)
+      end
+      it 'exact precision positive decimal with exp' do
+        val = subject.parse('+3.0e44M')
+        expect(val).to eq(3e44)
+        expect(val.class).to eq(BigDecimal)
+      end
+      it 'exact precision negative decimal with exp' do
+        val = subject.parse('-3.0e44M')
+        expect(val).to eq(-3e44)
+        expect(val.class).to eq(BigDecimal)
+      end
+      it 'exact precision decimal with negative exp' do
+        val = subject.parse('3.0e-44M')
+        expect(val).to eq(3e-44)
+        expect(val.class).to eq(BigDecimal)
+      end
       it 'ratio' do
         val = subject.parse(' 2/3 ')
         expect(val).to eq(Rational(2, 3))
