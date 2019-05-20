@@ -103,6 +103,9 @@ Or instantiate and reuse an instance of a parser:
 
 Differences with edn gem
 ========================
-`edn_turbo` reads `String` and core IO types using C-api calls.
+- `edn_turbo` reads `String` and core IO types using C-api calls.
 However, data from `StringIO` sources is extracted using `read()`
 calls into the ruby side.
+
+- As of v0.6.1, `edn_turbo` supports EDN ratio literals, returning a
+  ruby Rational representation for them.
