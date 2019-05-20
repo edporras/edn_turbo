@@ -352,6 +352,15 @@ module EDNT
       it 'with mathematical operators' do
         expect(subject.parse('>:FOuy/+')).to eq(EDN::Type::Symbol.new('>:FOuy/+'))
       end
+      it 'NaN' do
+        expect(subject.parse('##NaN').to_f.nan?).to be_truthy
+      end
+      it 'infinity' do
+        expect(subject.parse('##Inf')).to eq(Float::INFINITY)
+      end
+      it 'negative infinity' do
+        expect(subject.parse('##-Inf')).to eq(EDN::Type::Symbol.new('-Inf'))
+      end
     end
 
     context 'metadata' do

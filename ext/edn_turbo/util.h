@@ -41,6 +41,9 @@ namespace edn
    extern VALUE RUBY_STRING_TO_F_METHOD;
    extern VALUE RUBY_READ_METHOD;
 
+   extern VALUE RUBY_NAN_CONST;
+   extern VALUE RUBY_INF_CONST;
+
    namespace util
    {
       // defined in edn_parser_util.cc

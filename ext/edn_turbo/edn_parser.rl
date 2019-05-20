@@ -851,10 +851,29 @@ const char* edn::Parser::parse_map(const char *p, const char *pe, VALUE& v)
       if (np == nullptr) { fhold; fbreak; } else fexec np;
    }
 
+   action parse_disp_symbol {
+      // ##Inf, ##NaN, etc.
+      VALUE sym = Qnil;
+      const char *np = parse_symbol(fpc+1, pe, sym);
+      if (np == nullptr) { fhold; fbreak; } else {
+         if (std::strcmp(RSTRING_PTR(sym), "NaN") == 0) {
+            v = RUBY_NAN_CONST;
+         }
+         else if (std::strcmp(RSTRING_PTR(sym), "Inf") == 0) {
+            v = RUBY_INF_CONST;
+         }
+         else {
+            v = edn::util::call_module_fn(rb_mEDN, EDN_MAKE_SYMBOL_METHOD, sym);
+         }
+
+         fexec np;
+      }
+   }
 
    main := (
             ('{' >parse_disp_set |
              '_' >parse_disp_discard |
+             '#' >parse_disp_symbol |
              alpha >parse_disp_tagged)
            ) @exit;
 }%%

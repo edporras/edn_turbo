@@ -48,6 +48,9 @@ namespace edn {
    VALUE RUBY_STRING_TO_F_METHOD      = Qnil;
    VALUE RUBY_READ_METHOD             = Qnil;
 
+   VALUE RUBY_NAN_CONST               = Qnil;
+   VALUE RUBY_INF_CONST               = Qnil;
+
    // returned when EOF - defined as a constant in EDN module
    VALUE EDN_EOF_CONST                = Qnil;
 
@@ -225,6 +228,10 @@ void Init_edn_turbo(void)
    edn::RUBY_STRING_TO_I_METHOD       = rb_intern("to_i");
    edn::RUBY_STRING_TO_F_METHOD       = rb_intern("to_f");
    edn::RUBY_READ_METHOD              = rb_intern("read");
+
+   VALUE rb_mFloat = rb_const_get(rb_cObject, rb_intern("Float"));
+   edn::RUBY_NAN_CONST                = rb_const_get(rb_mFloat, rb_intern("NAN"));
+   edn::RUBY_INF_CONST                = rb_const_get(rb_mFloat, rb_intern("INFINITY"));
 
    // so we can return EOF directly
    edn::EDN_EOF_CONST                 = rb_const_get(edn::rb_mEDN, rb_intern("EOF"));
