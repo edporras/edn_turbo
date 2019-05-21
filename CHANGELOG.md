@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## 0.6.2 - 2019-05-21
+### Fixed
+- Handling of ##Inf, ##Nan, et al.
+
 ## 0.6.1 - 2019-05-20
 ### Added
 - Implement parsing of Ratio literals, represented as a ruby Rational.

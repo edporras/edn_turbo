@@ -1,4 +1,4 @@
-edn_turbo 0.6.1
+edn_turbo 0.6.2
 ===============
 
 Fast [Ragel](http://www.colm.net/open-source/ragel/)-based EDN parser for Ruby.
@@ -109,3 +109,6 @@ calls into the ruby side.
 
 - As of v0.6.1, `edn_turbo` supports EDN ratio literals, returning a
   ruby Rational representation for them. See https://github.com/edn-format/edn/issues/64.
+
+- As of v0.6.2, `edn_turbo` supports representation of `##Inf` as
+  `Float::INFINITY` and `##NaN` as `Float::NAN`.

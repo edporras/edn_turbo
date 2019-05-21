@@ -21,6 +21,6 @@
 # THE SOFTWARE.
 
 module EDNT
-  VERSION = '0.6.1'.freeze
-  RELEASE_DATE = '2019-05-20'.freeze
+  VERSION = '0.6.2'.freeze
+  RELEASE_DATE = '2019-05-21'.freeze
 end
