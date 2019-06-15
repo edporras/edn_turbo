@@ -60,7 +60,19 @@ lib_dirs =
 dir_config('icuuc', header_dirs, lib_dirs)
 
 # feels very hackish to do this but the new icu4c needs it on MacOS
-$CXXFLAGS << ' -stdlib=libc++ -Wno-deprecated-register' if RUBY_PLATFORM =~ /darwin/
+if RUBY_PLATFORM =~ /darwin/
+  $CXXFLAGS << ' -stdlib=libc++ -Wno-deprecated-register'
+else
+  # remove some flags that are either clang-specific or unrecognized
+  # but somehow get passed under linux (?!)
+  %w[
+  -Wno-self-assign -Wno-parentheses-equality -Wno-constant-logical-operand
+  -Wno-cast-function-type -Wdeclaration-after-statement -Wimplicit-function-declaration
+  -Wimplicit-int
+    ].each do |f|
+    $warnflags.sub!(f, '')
+  end
+end
 $CXXFLAGS << ' -std=c++11 -std=gnu++11'
 
 abort "\n>> failed to find icu4c headers - is icu4c installed?\n\n" unless
