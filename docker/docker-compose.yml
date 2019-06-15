@@ -1,0 +1,16 @@
+version: "3"
+services:
+
+  rb-2.6.3:
+    image: edn_turbo_image:rb-2.6.3
+    stdin_open: true
+    tty: true
+    volumes:
+      - /Volumes/homes/ep/work/edn_turbo:/home/ned/app
+
+  rb-2.4.2:
+    image: edn_turbo_image:rb-2.4.2
+    stdin_open: true
+    tty: true
+    volumes:
+      - /Volumes/homes/ep/work/edn_turbo:/home/ned/app

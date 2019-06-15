@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+    RUBY_VERSION=2.6.3
+else
+    RUBY_VERSION=$1
+fi
+
+set -e
+
+docker-compose -f docker/docker-compose.yml run rb-$RUBY_VERSION docker/make-check
