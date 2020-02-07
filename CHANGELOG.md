@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## 0.7.0 - 2020-02-07
+### Added
+- big_decimal_edn_turbo method to replace calling edn-ruby's
+  big_decimal as it breaks things in ruby 2.7 and up
+
+### Changed
+- Removed compiler warning due to scalar wrapped in braces
+- Updated docker configs to use latest 2.4 and 2.6 ruby
+  versions. Added 2.5 and 2.7 too.
+
 ## 0.6.2 - 2019-05-21
 ### Fixed
 - Handling of ##Inf, ##Nan, et al.
