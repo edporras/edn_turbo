@@ -36,4 +36,10 @@ module EDN
   def self.rational(value)
     Rational(value)
   end
+
+  # edn-ruby uses BigDecimal.new() which breaks in ruby >= 2.7.0 so we
+  # use this instead
+  def self.big_decimal_edn_turbo(value)
+    BigDecimal(value)
+  end
 end
