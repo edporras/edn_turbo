@@ -1,11 +1,11 @@
 #!/bin/bash
 
 if [ $# -eq 0 ]; then
-    RUBY_VERSION=2.6.3
+    RUBY_VERSION=2.7.0
 else
     RUBY_VERSION=$1
 fi
 
 set -e
 
-docker build --build-arg ruby_version=$RUBY_VERSION -f docker/Dockerfile -t edn_turbo_image:rb-$RUBY_VERSION .
+docker build --build-arg ruby_version=$RUBY_VERSION -f docker/Dockerfile -t digressed/test:edn_turbo-rb-$RUBY_VERSION .
