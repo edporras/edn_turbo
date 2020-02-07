@@ -4,6 +4,5 @@ set -x -e
 
 gem install bundler &&
     bundle && \
-    rake clean && \
     rake compile && \
     bundle exec rspec
