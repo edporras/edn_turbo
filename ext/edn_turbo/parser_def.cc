@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 
-// Copyright (c) 2015-2019 Ed Porras
+// Copyright (c) 2015-2020 Ed Porras
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -205,7 +205,7 @@ namespace edn
    // =================================================================
    //
    // error reporting
-   void Parser::error(const std::string& func, const std::string& err, char c) const
+   void Parser::error(const std::string& /*func*/, const std::string& err, char c) const
    {
       std::cerr << "Parse error "
          //            "from " << func << "() "
