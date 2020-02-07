@@ -62,7 +62,7 @@ namespace edn {
 
    static const rb_data_type_t parser_data_type = {
       "edn_turbo::Parser",
-      {0, delete_parser, 0, {0}},
+      {0, delete_parser, 0, 0},
       0, 0,
       RUBY_TYPED_FREE_IMMEDIATELY,
    };
