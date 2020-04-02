@@ -1,8 +1,8 @@
 version: "3"
 services:
 
-  rb-2.7.0:
-    image: digressed/test:edn_turbo-rb-2.7.0
+  rb-2.7.1:
+    image: digressed/test:edn_turbo-rb-2.7.1
     stdin_open: true
     tty: true
 
