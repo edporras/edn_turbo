@@ -36,7 +36,7 @@ CLEAN.include(['*.png', '*.gem'])
 # ragel cc source generation
 task ragel: GEN_CC_PARSER_SRC_PATH
 file GEN_CC_PARSER_SRC_PATH => RAGEL_PARSER_SRC_PATH do
-  cd EXT_PATH do
+  Dir.chdir(EXT_PATH) do
     sh "ragel -G2 -o #{GEN_CC_PARSER_SRC} #{RAGEL_PARSER_SRC}"
     src = File.read(GEN_CC_PARSER_SRC).gsub(/[ \t]+$/, '')
     File.open(GEN_CC_PARSER_SRC, 'w') { |f| f.print src }
@@ -44,24 +44,16 @@ file GEN_CC_PARSER_SRC_PATH => RAGEL_PARSER_SRC_PATH do
 end
 
 # graph generation for testing machine output
-task :graph, [:machine] do |_t, args|
+task :graph, %i[machine] do |_t, args|
   args.with_defaults(machine: 'EDN_value')
-  TMPFILE = '/tmp/ragel_edn'
-  MACHINE = args[:machine]
+  tmpfile = '/tmp/ragel_edn'
+  machine = args[:machine]
 
   # assumes graphviz is installed
-  sh "ragel -Vp -S #{MACHINE} -o #{TMPFILE} #{EXT_PATH}/#{RAGEL_PARSER_SRC} && "\
-    "dot -Tpng #{TMPFILE} -o #{MACHINE}.png"
+  sh "ragel -Vp -S #{machine} -o #{tmpfile} #{EXT_PATH}/#{RAGEL_PARSER_SRC} && "\
+    "dot -Tpng #{tmpfile} -o #{machine}.png"
 end
 
-task build: [:clean, :ragel, :compile, :chmod]
-
-# add dependency to test task
-task test:  EXT_BUNDLE
-
-Rake::TestTask.new do |t|
-  t.libs << 'test'
-  t.test_files = FileList['test/test_output_diff.rb']
-end
+task build: %i[clean ragel compile chmod]
 
 task default: :compile
