@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 # The MIT License (MIT)
 #
-# Copyright (c) 2015-2020 Ed Porras
+# Copyright (c) 2015-2021 Ed Porras
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +23,6 @@
 # THE SOFTWARE.
 
 module EDNT
-  VERSION = '0.7.0'.freeze
-  RELEASE_DATE = '2020-02-07'.freeze
+  VERSION = '0.7.0'
+  RELEASE_DATE = '2020-02-07'
 end
