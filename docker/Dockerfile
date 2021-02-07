@@ -29,6 +29,8 @@ ENV PATH "/home/ned/.rbenv/bin:/home/ned/.rbenv/shims:$PATH"
 RUN \curl -sL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash - && \
     eval "$(rbenv init -)"
 
+RUN rm -f .ruby-version
+
 # the specified ruby version
 RUN rbenv install $ruby_version && \
     rbenv global $ruby_version

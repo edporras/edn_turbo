@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $# -eq 0 ]; then
-    RUBY_VERSION=2.7.0
+    RUBY_VERSION=3.0.0
 else
     RUBY_VERSION=$1
 fi

@@ -1,24 +1,22 @@
 version: "3"
 services:
 
-  rb-2.7.1:
-    image: digressed/test:edn_turbo-rb-2.7.1
+  rb-3.0.0:
+    image: digressed/test:edn_turbo-rb-3.0.0
     stdin_open: true
     tty: true
 
-  rb-2.6.5:
-    image: digressed/test:edn_turbo-rb-2.6.5
+  rb-2.7.2:
+    image: digressed/test:edn_turbo-rb-2.7.2
     stdin_open: true
     tty: true
 
-  rb-2.5.7:
-    image: digressed/test:edn_turbo-rb-2.5.7
+  rb-2.6.6:
+    image: digressed/test:edn_turbo-rb-2.6.6
     stdin_open: true
     tty: true
 
-  rb-2.4.9:
-    image: digressed/test:edn_turbo-rb-2.4.9
+  rb-2.5.8:
+    image: digressed/test:edn_turbo-rb-2.5.8
     stdin_open: true
     tty: true
-    # volumes:
-    #   - /Volumes/homes/ep/work/edn_turbo:/home/ned/app

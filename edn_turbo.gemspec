@@ -8,6 +8,8 @@ Gem::Specification.new do |s|
   s.version            = EDNT::VERSION
   s.platform           = Gem::Platform::RUBY
 
+  s.required_ruby_version = '>= 2.5.0'
+
   s.required_rubygems_version = Gem::Requirement.new('>= 0') if
     s.respond_to? :required_rubygems_version=
 
@@ -35,6 +37,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency('pry-byebug', '3.7', '~> 3.7.0')
   s.add_development_dependency('rspec', '3.8', '~> 3.8.0')
+  s.add_development_dependency('rubocop', '~> 1.9')
 
   s.specification_version = 3 if s.respond_to? :specification_version
 end

@@ -220,13 +220,8 @@ void Init_edn_turbo(void)
    edn::EDN_MAKE_SET_METHOD           = rb_intern("set");
    edn::EDN_TAGGED_ELEM_METHOD        = rb_intern("tagged_element");
 
-#if defined(RUBY_API_VERSION_MAJOR) && (RUBY_API_VERSION_MAJOR == 2) && \
-    defined(RUBY_API_VERSION_MINOR) && (RUBY_API_VERSION_MINOR > 4)
    // see lib/edn_turbo.rb
    edn::EDN_MAKE_BIG_DECIMAL_METHOD   = rb_intern("big_decimal_edn_turbo");
-#else
-   edn::EDN_MAKE_BIG_DECIMAL_METHOD   = rb_intern("big_decimal");
-#endif
 
    // defined in EDNT - see edn_parser.rb
    edn::EDNT_EXTENDED_VALUE_METHOD    = rb_intern("extend_for_meta");

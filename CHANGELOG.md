@@ -1,6 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [Unreleased]
+
+
+
+## 0.7.1 - 2021-02-07
+### Changed
+- Set minimum ruby version to 2.5
+
+### Fixed
+- Compilation error when building against ruby versions > 2
+
 ## 0.7.0 - 2020-02-07
 ### Added
 - big_decimal_edn_turbo method to replace calling edn-ruby's
@@ -38,3 +49,8 @@ All notable changes to this project will be documented in this file. This change
 ### Added
 - initial version of docker configs for testing on Ubuntu.
 
+[Unreleased]: https://github.com/edporras/edn_turbo/-/compare/0.7.0...main
+[0.7.0]: https://github.com/edporras/edn_turbo/-/compare/0.6.2...0.7.0
+[0.6.2]: https://github.com/edporras/edn_turbo/-/compare/0.6.1...0.6.2
+[0.6.1]: https://github.com/edporras/edn_turbo/-/compare/0.6.0...0.6.1
+[0.6.0]: https://github.com/edporras/edn_turbo/-/compare/0.5.7...0.6.0
