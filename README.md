@@ -1,4 +1,4 @@
-edn_turbo 0.7.0
+edn_turbo 0.7.1
 ===============
 
 Fast [Ragel](http://www.colm.net/open-source/ragel/)-based EDN parser for Ruby.
@@ -34,7 +34,7 @@ irb(main):008:0> Benchmark.realtime { 100000.times { EDN::read(s) } }
 Dependencies
 ============
 
-Ruby 2.4 or greater as `edn_turbo` does not use the deprecated `Fixnum` or `Bignum`.
+Ruby 2.6 or greater.
 
 - ruby gems:
   - [rake](http://rake.rubyforge.org)
@@ -112,3 +112,5 @@ calls into the ruby side.
 
 - As of v0.6.2, `edn_turbo` supports representation of `##Inf` as
   `Float::INFINITY` and `##NaN` as `Float::NAN`.
+
+- As of v0.7.1, `edn_turbo` requires ruby 2.5 or greater.
