@@ -32,7 +32,7 @@ Gem::Specification.new do |s|
   s.rubygems_version = '1.6.2'
 
   s.add_runtime_dependency('edn', '~> 1.1')
-  s.add_runtime_dependency('rake', '~> 12.3')
+  s.add_runtime_dependency('rake', '>= 12.3', '< 14.0')
   s.add_runtime_dependency('rake-compiler', '~> 1.0')
 
   s.add_development_dependency('pry-byebug', '3.7', '~> 3.7.0')
