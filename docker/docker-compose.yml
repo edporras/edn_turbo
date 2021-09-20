@@ -1,22 +1,22 @@
 version: "3"
 services:
 
-  rb-3.0.0:
-    image: digressed/test:edn_turbo-rb-3.0.0
+  rb-3.0.2:
+    image: digressed/test:edn_turbo-rb-3.0.2
     stdin_open: true
     tty: true
 
-  rb-2.7.2:
-    image: digressed/test:edn_turbo-rb-2.7.2
+  rb-2.7.4:
+    image: digressed/test:edn_turbo-rb-2.7.4
     stdin_open: true
     tty: true
 
-  rb-2.6.6:
-    image: digressed/test:edn_turbo-rb-2.6.6
+  rb-2.6.8:
+    image: digressed/test:edn_turbo-rb-2.6.8
     stdin_open: true
     tty: true
 
-  rb-2.5.8:
-    image: digressed/test:edn_turbo-rb-2.5.8
+  rb-2.5.9:
+    image: digressed/test:edn_turbo-rb-2.5.9
     stdin_open: true
     tty: true
