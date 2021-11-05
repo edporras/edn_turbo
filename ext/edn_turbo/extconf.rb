@@ -3,17 +3,17 @@
 # The MIT License (MIT)
 
 # Copyright (c) 2015-2021 Ed Porras
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,40 +24,14 @@
 
 require 'mkmf'
 
-header_dirs =
-  if RUBY_PLATFORM =~ /darwin/
-    abort "\n>> failed to find pkg-config binary - Is brew installed? If so, run 'brew install pkg-config'?\n\n" unless
-      File.exist?('/usr/local/bin/pkg-config')
+ENV['PKG_CONFIG_PATH'] ||= ""
+ENV['PKG_CONFIG_PATH'] += if RUBY_PLATFORM =~ /darwin/
+                            ":/usr/local/opt/icu4c/lib/pkgconfig:/opt/homebrew/opt/icu4c/lib/pkgconfig"
+                          else
+                            ":/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig"
+                          end
 
-    abort "\n>> failed to find icu4c package - Did you run 'brew install icu4c'?\n\n" unless
-      File.exist?('/usr/local/opt/icu4c/lib/pkgconfig/icu-uc.pc')
-
-    i_opt = %x[ export PKG_CONFIG_PATH="/usr/local/opt/icu4c/lib/pkgconfig" && /usr/local/bin/pkg-config --cflags-only-I icu-uc ]
-    [
-      i_opt[/-I(.+?)\s/,1]
-    ].freeze
-  else
-    [
-      '/usr/local/include',
-      '/usr/local/opt/icu4c/include',
-      '/usr/include'
-    ].freeze
-  end
-
-lib_dirs =
-  if RUBY_PLATFORM =~ /darwin/
-    l_opt = %x[ export PKG_CONFIG_PATH="/usr/local/opt/icu4c/lib/pkgconfig" && /usr/local/bin/pkg-config --libs icu-uc ]
-    [
-      l_opt[/-L(.+?)\s/,1]
-    ].freeze
-  else
-    [
-      '/usr/local/lib', # must be the first entry; add others after it
-      '/usr/local/opt/icu4c/lib'
-    ].freeze
-  end
-
-dir_config('icuuc', header_dirs, lib_dirs)
+pkg_config('icu-uc')
 
 # feels very hackish to do this but the new icu4c needs it on MacOS
 if RUBY_PLATFORM =~ /darwin/
