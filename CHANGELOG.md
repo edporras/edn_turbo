@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.7.3] - 2021-11-06
+### Changed
+* Fix by Caleb Land for new homebrew installs to /opt
+
 ## [0.7.2] - 2021-09-20
 ### Changed
 * allow rake versions > 12
@@ -48,7 +52,8 @@ All notable changes to this project will be documented in this file. This change
 ### Added
 * initial version of docker configs for testing on Ubuntu.
 
-[Unreleased]: https://github.com/edporras/edn_turbo/-/compare/0.7.2...main
+[Unreleased]: https://github.com/edporras/edn_turbo/-/compare/0.7.3...main
+[0.7.3]: https://github.com/edporras/edn_turbo/-/compare/0.7.2...0.7.3
 [0.7.2]: https://github.com/edporras/edn_turbo/-/compare/0.7.1...0.7.2
 [0.7.1]: https://github.com/edporras/edn_turbo/-/compare/0.7.0...0.7.1
 [0.7.0]: https://github.com/edporras/edn_turbo/-/compare/0.6.2...0.7.0
