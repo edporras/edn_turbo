@@ -214,7 +214,7 @@ namespace edn
             if (error) throw_error(error);
             return true;
          } else if (p_end == p_start) {
-            v_utf8 = rb_str_new("", 0);
+            v_utf8 = rb_utf8_str_new_lit("");
             return true;
          }
 

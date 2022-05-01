@@ -415,5 +415,11 @@ module EDNT
         expect(subject.parse('[ 1 2 3 4 #_ { :a 1 } ]')).to eq([1, 2, 3, 4])
       end
     end
+
+    context 'encoding' do
+      it 'empty str as utf-8' do
+        expect(subject.parse('""').encoding).to eq(Encoding::UTF_8)
+      end
+    end
   end
 end
