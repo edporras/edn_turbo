@@ -1,9 +1,0 @@
-#!/bin/bash
-
-. docker/common.sh
-
-set -e
-
-set_ruby_ver $@
-
-docker-compose -f docker/docker-compose.yml run rb-$RUBY_VERSION docker/make-check
