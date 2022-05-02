@@ -1,4 +1,4 @@
-edn_turbo 0.7.3
+edn_turbo 0.7.4
 ===============
 
 Fast [Ragel](http://www.colm.net/open-source/ragel/)-based EDN parser for Ruby.
