@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.version            = EDNT::VERSION
   s.platform           = Gem::Platform::RUBY
 
-  s.required_ruby_version = '>= 2.5.0'
+  s.required_ruby_version = '>= 2.6.0'
 
   s.required_rubygems_version = Gem::Requirement.new('>= 0') if
     s.respond_to? :required_rubygems_version=
