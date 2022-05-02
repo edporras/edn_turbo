@@ -1,0 +1,32 @@
+name: Build c-ext gem
+
+on:
+  push:
+  pull_request:
+    branches: [ devel ]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: 
+          - ubuntu-latest
+        #  - macos-latest
+        # Due to https://github.com/actions/runner/issues/849, we have to use quotes for '3.0'
+        ruby:
+          - '2.6'
+          - '2.7'
+          - '3.0'
+          - '3.1'
+    runs-on: ${{ matrix.os }}
+    steps:
+    - run: sudo apt-get install -y libicu-dev libreadline-dev ragel
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+    - uses: actions/checkout@v2
+    - run: bundle install
+    - run: bundle exec rake
+    - run: bundle exec rspec
