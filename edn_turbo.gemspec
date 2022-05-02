@@ -33,11 +33,11 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency('edn', '~> 1.1')
   s.add_runtime_dependency('rake', '>= 12.3', '< 14.0')
-  s.add_runtime_dependency('rake-compiler', '~> 1.0')
 
-  s.add_development_dependency('pry-byebug', '3.7', '~> 3.7.0')
-  s.add_development_dependency('rspec', '3.8', '~> 3.8.0')
-  s.add_development_dependency('rubocop', '~> 1.9')
+  s.add_development_dependency('pry-byebug', '~> 3.9')
+  s.add_development_dependency('rake-compiler', '~> 1.2')
+  s.add_development_dependency('rspec', '~> 3.11')
+  s.add_development_dependency('rubocop', '~> 1.28')
 
   s.specification_version = 3 if s.respond_to? :specification_version
 end
