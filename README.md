@@ -3,11 +3,10 @@ edn_turbo 0.7.4
 
 Fast [Ragel](http://www.colm.net/open-source/ragel/)-based EDN parser for Ruby.
 
-`edn_turbo` can be used as a parser plugin for
-[edn](https://github.com/relevance/edn-ruby). With a few exceptions
-`edn_turbo` provides the same functionality as the edn gem, but since
-the `edn_turbo` parser is implemented in C++, it is an order of
-magnitude faster.
+`edn_turbo` can be used as a parser plugin for [edn-ruby]. With a few
+exceptions `edn_turbo` provides the same functionality as the edn gem,
+but since the `edn_turbo` parser is implemented in C++, it is an order
+of magnitude faster.
 
 Some quick sample runs comparing time output of file reads using `edn`
 and `edn_turbo` (see [issue 12](https://github.com/relevance/edn-ruby/issues/12)):
@@ -38,8 +37,8 @@ Ruby 2.6 or greater.
 
 - ruby gems:
   - [rake](http://rake.rubyforge.org)
-  - [rake-compiler 1.0](http://rake-compiler.rubyforge.org)
-  - [edn 1.1](https://github.com/relevance/edn-ruby)
+  - [rake-compiler](http://rake-compiler.rubyforge.org)
+  - [edn2023]
 - a C++-11 capable compiler.
 - [icu4c](http://icu-project.org/apiref/icu4c/)
 
@@ -48,6 +47,11 @@ Notes:
 
 - `edn_turbo` uses a ragel-based parser but the generated .cc file is
   bundled so ragel should not need to be installed.
+- If your system updates the installed version of icu4c, you'll likely
+  get symbol errors when trying to use `edn_turbo` as the libraries it
+  was linked against when first installed will no longer exist. To
+  resolve this, reinstall the gem so it is built against the new icu4c
+  libraries.
 
 Usage
 =====
@@ -114,3 +118,10 @@ calls into the ruby side.
   `Float::INFINITY` and `##NaN` as `Float::NAN`.
 
 - As of v0.7.1, `edn_turbo` requires ruby 2.5 or greater.
+
+- As of v0.7.4, `edn_turbo` requires ruby 2.6 or greater.
+
+- As of v0.8.0, `edn_turbo` replaces its [edn-ruby] with [edn2023].
+
+[edn-ruby]: https://github.com/relevance/edn-ruby
+[edn2023]: https://github.com/edn2023/edn2023
