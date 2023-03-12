@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [0.8.0] - 2023-03-12
+### Changed
+* switch edn-ruby dependency to use edn2023.
+
 ## [0.7.4] - 2022-05-03
 ### Fixed
 * empty strings should use utf-8 encoding (#11).
@@ -56,7 +60,8 @@ All notable changes to this project will be documented in this file. This change
 ### Added
 * initial version of docker configs for testing on Ubuntu.
 
-[Unreleased]: https://github.com/edporras/edn_turbo/-/compare/0.7.4...main
+[Unreleased]: https://github.com/edporras/edn_turbo/-/compare/0.8.0...main
+[0.8.0]: https://github.com/edporras/edn_turbo/-/compare/0.7.4...0.8.0
 [0.7.4]: https://github.com/edporras/edn_turbo/-/compare/0.7.3...0.7.4
 [0.7.3]: https://github.com/edporras/edn_turbo/-/compare/0.7.2...0.7.3
 [0.7.2]: https://github.com/edporras/edn_turbo/-/compare/0.7.1...0.7.2

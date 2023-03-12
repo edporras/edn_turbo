@@ -23,6 +23,6 @@
 # THE SOFTWARE.
 
 module EDNT
-  VERSION = '0.7.4'
-  RELEASE_DATE = '2022-05-03'
+  VERSION = '0.8.0'
+  RELEASE_DATE = '2023-03-12'
 end
