@@ -15,21 +15,21 @@ Gem::Specification.new do |s|
 
   s.authors = ['Ed Porras']
   s.email = 'github@digressed.net'
-  s.date = EDNT::RELEASE_DATE
+  # s.date = EDNT::RELEASE_DATE
   s.summary = 'Read EDN files'
   s.description = 'Optimized plugin for parsing EDN files using ragel'
   s.license = 'MIT'
 
   s.files = `git ls-files`.split("\n")
-                          .reject { |f| f =~ /\.gem/ }
-                          .reject { |f| f =~ /\.txt/ }
-                          .reject { |f| f =~ /\.edn/ }
+                          .grep_v(/\.gem/)
+                          .grep_v(/\.txt/)
+                          .grep_v(/\.edn/)
 
   s.extensions = ['ext/edn_turbo/extconf.rb']
   s.executables = ['ppedn']
   s.homepage = 'http://rubygems.org/gems/edn_turbo'
   s.require_paths = ['lib']
-  s.rubygems_version = '1.6.2'
+  # s.rubygems_version = '1.6.2'
 
   s.add_runtime_dependency('edn', '~> 1.1')
   s.add_runtime_dependency('rake', '>= 12.3', '< 14.0')
@@ -39,5 +39,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency('rspec', '~> 3.11')
   s.add_development_dependency('rubocop', '~> 1.28')
 
-  s.specification_version = 3 if s.respond_to? :specification_version
+  # s.specification_version = 3 if s.respond_to? :specification_version
 end

@@ -50,8 +50,8 @@ task :graph, %i[machine] do |_t, args|
   machine = args[:machine]
 
   # assumes graphviz is installed
-  sh "ragel -Vp -S #{machine} -o #{tmpfile} #{EXT_PATH}/#{RAGEL_PARSER_SRC} && "\
-    "dot -Tpng #{tmpfile} -o #{machine}.png"
+  sh "ragel -Vp -S #{machine} -o #{tmpfile} #{EXT_PATH}/#{RAGEL_PARSER_SRC} && " \
+     "dot -Tpng #{tmpfile} -o #{machine}.png"
 end
 
 task build: %i[clean ragel compile chmod]
