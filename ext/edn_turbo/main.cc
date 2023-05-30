@@ -167,7 +167,7 @@ namespace edn {
 
    //
    // gets the next token in the current stream
-   static VALUE next(VALUE self, VALUE data)
+   static VALUE next(VALUE self)
    {
       return get_parser(self)->next();
    }
