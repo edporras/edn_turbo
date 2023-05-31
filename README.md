@@ -123,5 +123,14 @@ calls into the ruby side.
 
 - As of v0.8.0, `edn_turbo` replaces its [edn-ruby] with [edn2023].
 
+Building and running tests
+==========================
+
+```sh
+bundle install
+bundle exec rake
+bundle exec rspec
+```
+
 [edn-ruby]: https://github.com/relevance/edn-ruby
 [edn2023]: https://github.com/edn2023/edn2023
