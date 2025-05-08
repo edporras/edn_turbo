@@ -128,14 +128,14 @@ namespace edn
       // read as much data available
       if (core_io) {
          // ruby core IO types
-         char c;
+         int c;
          while (1)
          {
             c = fgetc(core_io);
             if (c == EOF) {
                break;
             }
-            str_buf += c;
+            str_buf += static_cast<char>(c);
          }
 
       } else if (read_io != Qnil) {
