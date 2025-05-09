@@ -1,4 +1,4 @@
-edn_turbo 0.8.0
+edn_turbo 0.8.1
 ===============
 
 Fast [Ragel](http://www.colm.net/open-source/ragel/)-based EDN parser for Ruby.
@@ -39,7 +39,7 @@ Ruby 2.6 or greater.
   - [rake](http://rake.rubyforge.org)
   - [rake-compiler](http://rake-compiler.rubyforge.org)
   - [edn2023]
-- a C++-11 capable compiler.
+- a C++-17 capable compiler.
 - [icu4c](http://icu-project.org/apiref/icu4c/)
 
 Notes:

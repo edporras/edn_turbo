@@ -1,16 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-## [Unreleased]
-* bigdecimal as explicit dependency.
-
+## [0.8.1] - 2025-05-09
 ### Added
+* bigdecimal as explicit dependency.
 
 ### Changed
 * remove extra argument to Parser#next (caleb).
 * changed compile flags to use c++17.
 
 ### Fixed
+* coerce char to fix endless loop in aarch64 linux systems (#20).
 
 ## [0.8.0] - 2023-03-12
 ### Changed
@@ -71,7 +71,8 @@ All notable changes to this project will be documented in this file. This change
 ### Added
 * initial version of docker configs for testing on Ubuntu.
 
-[Unreleased]: https://github.com/edporras/edn_turbo/-/compare/0.8.0...main
+[Unreleased]: https://github.com/edporras/edn_turbo/-/compare/0.8.1...devel
+[0.8.1]: https://github.com/edporras/edn_turbo/-/compare/0.8.0...0.8.1
 [0.8.0]: https://github.com/edporras/edn_turbo/-/compare/0.7.4...0.8.0
 [0.7.4]: https://github.com/edporras/edn_turbo/-/compare/0.7.3...0.7.4
 [0.7.3]: https://github.com/edporras/edn_turbo/-/compare/0.7.2...0.7.3
