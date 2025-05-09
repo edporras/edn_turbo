@@ -31,6 +31,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
   # s.rubygems_version = '1.6.2'
 
+  s.add_runtime_dependency('bigdecimal', '~> 3.0')
   s.add_runtime_dependency('edn2023', '~> 1.1')
   s.add_runtime_dependency('rake', '>= 12.3', '< 14.0')
 
