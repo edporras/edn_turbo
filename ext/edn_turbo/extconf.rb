@@ -47,7 +47,7 @@ else
     $warnflags.sub!(f, '')
   end
 end
-$CXXFLAGS << ' -std=c++11 -std=gnu++11'
+$CXXFLAGS << ' -std=c++17 -std=gnu++17'
 
 abort "\n>> failed to find icu4c headers - is icu4c installed?\n\n" unless
   find_header('unicode/uversion.h')

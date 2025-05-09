@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [Unreleased]
+
+### Added
+
+### Changed
+* remove extra argument to Parser#next (caleb).
+* changed compile flags to use c++17.
+
+### Fixed
+
 ## [0.8.0] - 2023-03-12
 ### Changed
 * switch edn-ruby dependency to use edn2023.
