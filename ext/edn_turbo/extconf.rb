@@ -24,11 +24,11 @@
 
 require 'mkmf'
 
-ENV['PKG_CONFIG_PATH'] ||= ""
+ENV['PKG_CONFIG_PATH'] ||= ''
 ENV['PKG_CONFIG_PATH'] += if RUBY_PLATFORM =~ /darwin/
-                            ":/usr/local/opt/icu4c/lib/pkgconfig:/opt/homebrew/opt/icu4c/lib/pkgconfig"
+                            ':/usr/local/opt/icu4c/lib/pkgconfig:/opt/homebrew/opt/icu4c/lib/pkgconfig'
                           else
-                            ":/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig"
+                            ':/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig'
                           end
 
 pkg_config('icu-uc')
@@ -40,10 +40,10 @@ else
   # remove some flags that are either clang-specific or unrecognized
   # but somehow get passed under linux (?!)
   %w[
-  -Wno-self-assign -Wno-parentheses-equality -Wno-constant-logical-operand
-  -Wno-cast-function-type -Wdeclaration-after-statement -Wimplicit-function-declaration
-  -Wimplicit-int
-    ].each do |f|
+     -Wno-self-assign -Wno-parentheses-equality -Wno-constant-logical-operand
+     -Wno-cast-function-type -Wdeclaration-after-statement -Wimplicit-function-declaration
+     -Wimplicit-int
+     ].each do |f|
     $warnflags.sub!(f, '')
   end
 end
