@@ -308,6 +308,17 @@ module EDNT
       it 'uuid' do
         expect(subject.parse('  #uuid "f81d4fae-7dec-11d0-a765-00a0c91e6bf6" ')).to eq('f81d4fae-7dec-11d0-a765-00a0c91e6bf6')
       end
+
+      it 'survives GC.compact while parsing tags' do
+        skip 'GC.compact not supported' unless GC.respond_to?(:compact)
+
+        data = '  #uuid "f81d4fae-7dec-11d0-a765-00a0c91e6bf6" '
+        expect(subject.parse(data)).to eq('f81d4fae-7dec-11d0-a765-00a0c91e6bf6')
+
+        GC.compact
+
+        expect(subject.parse(data)).to eq('f81d4fae-7dec-11d0-a765-00a0c91e6bf6')
+      end
     end
 
     context 'collections' do

@@ -26,6 +26,7 @@
 #include <cstring>
 
 #include <ruby/ruby.h>
+#include <ruby/internal/gc.h>
 #include <ruby/version.h>
 #include <ruby/io.h>
 
@@ -196,6 +197,13 @@ void Init_edn_turbo(void)
    if (!setlocale( LC_ALL, "" )) {
       rb_raise(rb_eRuntimeError, "Extension init error calling setlocale() - It appears your system's locale is not configured correctly.\n");
    }
+
+   // Register global VALUE slots before assigning Ruby objects to them.
+   rb_global_variable(&edn::rb_mEDN);
+   rb_global_variable(&edn::rb_mEDNT);
+   rb_global_variable(&edn::RUBY_NAN_CONST);
+   rb_global_variable(&edn::RUBY_INF_CONST);
+   rb_global_variable(&edn::EDN_EOF_CONST);
 
    edn::rb_mEDN  = rb_const_get(rb_cObject, rb_intern("EDN"));
    edn::rb_mEDNT = rb_define_module("EDNT");
