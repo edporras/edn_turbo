@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. This change
 ### Added
 
 ### Changed
+* Bumped minimum ruby version to 3.0.
 
 ### Fixed
 

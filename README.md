@@ -33,7 +33,7 @@ irb(main):008:0> Benchmark.realtime { 100000.times { EDN::read(s) } }
 Dependencies
 ============
 
-Ruby 2.6 or greater.
+Ruby 3.0 or greater.
 
 - ruby gems:
   - [rake](http://rake.rubyforge.org)
