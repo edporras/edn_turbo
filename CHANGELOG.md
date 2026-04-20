@@ -1,15 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-## [Unreleased]
-
-### Added
-
+## [0.9.0] - 2026-04-20
 ### Changed
 * Bumped minimum ruby version to 3.0.
 
 ### Fixed
-
+* Register global VALUEs using `rb_global_variable`.
 
 ## [0.8.1] - 2025-05-09
 ### Added
@@ -81,7 +78,8 @@ All notable changes to this project will be documented in this file. This change
 ### Added
 * initial version of docker configs for testing on Ubuntu.
 
-[Unreleased]: https://github.com/edporras/edn_turbo/-/compare/0.8.1...devel
+[Unreleased]: https://github.com/edporras/edn_turbo/-/compare/0.9.0...devel
+[0.9.0]: https://github.com/edporras/edn_turbo/-/compare/0.8.1...0.9.0
 [0.8.1]: https://github.com/edporras/edn_turbo/-/compare/0.8.0...0.8.1
 [0.8.0]: https://github.com/edporras/edn_turbo/-/compare/0.7.4...0.8.0
 [0.7.4]: https://github.com/edporras/edn_turbo/-/compare/0.7.3...0.7.4
