@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [Unreleased]
+
+### Added
+
+### Changed
+
+### Fixed
+
+
 ## [0.9.0] - 2026-04-20
 ### Changed
 * Bumped minimum ruby version to 3.0.
